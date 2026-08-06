@@ -1,17 +1,51 @@
-# flowa
+# Flowa
 
-Flowa - Premium fintech finance app
+Premium fintech finance app built with **Flutter** for Android and iOS.
 
-## Getting Started
+Flowa focuses on **clarity, control, and confidence** when managing money —
+personal, family, and business flows in one place.
 
-This project is a starting point for a Flutter application.
+## Product pillars
 
-A few resources to get you started if this is your first Flutter project:
+- Clear money flows (Send ≠ Top-Up ≠ Receive)
+- Customizable sub-accounts (Family / Business)
+- Granular notification preferences
+- AI assistant for guided actions
+- External wallet linking (e.g. PayPal)
+- Confirmation steps that prevent costly mistakes
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Tech stack
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+| Layer | Choice |
+| --- | --- |
+| Framework | Flutter / Dart |
+| Platforms | Android + iOS |
+| Architecture | Feature-first + clean layers |
+| Quality | Unit, widget, and flow tests |
+| Performance | Lean rebuilds, efficient lists |
+
+## Project structure
+
+```
+lib/
+  app/           # App widget, theme, routing
+  core/          # Constants, errors, utils, extensions
+  design_system/ # Colors, typography, spacing, components
+  domain/        # Entities and business rules
+  data/          # Repositories and data sources
+  features/      # Feature modules (home, send, ai, ...)
+  shared/        # Cross-feature widgets and helpers
+```
+
+## Getting started
+
+```bash
+flutter pub get
+flutter analyze
+flutter test
+flutter run
+```
+
+## License
+
+Private portfolio project.
