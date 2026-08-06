@@ -45,20 +45,14 @@ abstract final class FlowaColors {
   static const Color cardGreenEnd = Color(0xFFE9F7EF);
 
   static const LinearGradient cardPrimaryGradient = LinearGradient(
-    begin: Alignment.centerLeft,
-    end: Alignment.centerRight,
     colors: [cardPurpleStart, cardPurpleEnd],
   );
 
   static const LinearGradient cardGoldGradient = LinearGradient(
-    begin: Alignment.centerLeft,
-    end: Alignment.centerRight,
     colors: [cardGoldStart, cardGoldEnd],
   );
 
   static const LinearGradient cardGreenGradient = LinearGradient(
-    begin: Alignment.centerLeft,
-    end: Alignment.centerRight,
     colors: [cardGreenStart, cardGreenEnd],
   );
 }
