@@ -6,7 +6,7 @@ void main() {
     await tester.pumpWidget(const FlowaApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('Good Morning,'), findsOneWidget);
+    expect(find.text('John Doe'), findsOneWidget);
     expect(find.text('Recent Transaction'), findsOneWidget);
   });
 }
