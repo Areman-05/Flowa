@@ -1,17 +1,72 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/constants/flowa_constants.dart';
+import '../../../core/utils/flowa_formatters.dart';
+import '../../../core/utils/flowa_services.dart';
+import '../../../design_system/components/flowa_transaction_tile.dart';
+import '../../../design_system/components/flowa_visa_card.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
+import '../../../domain/entities/finance_entities.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
+import '../../receive/presentation/receive_page.dart';
+import '../../send_money/presentation/send_money_page.dart';
+import '../../top_up/presentation/top_up_page.dart';
 
-/// Home dashboard placeholder — card + quick actions come next.
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+/// Home dashboard with live account card and recent transactions.
+class HomePage extends StatefulWidget {
+  const HomePage({super.key, this.onSeeAllTransactions});
+
+  final VoidCallback? onSeeAllTransactions;
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  Account? _account;
+  UserProfile? _user;
+  List<TransactionItem> _recent = const [];
+  bool _loading = true;
+  bool _balanceVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final results = await Future.wait([
+      FlowaServices.accountRepository.getPrimaryAccount(),
+      FlowaServices.accountRepository.getCurrentUser(),
+      FlowaServices.transactionRepository.getRecent(),
+    ]);
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _account = results[0] as Account;
+      _user = results[1] as UserProfile;
+      _recent = results[2] as List<TransactionItem>;
+      _loading = false;
+    });
+  }
+
+  Future<void> _open<T extends Widget>(T page) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => page),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+
+    if (_loading || _account == null || _user == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return SafeArea(
       child: ListView(
@@ -29,8 +84,11 @@ class HomePage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Good Morning,', style: textTheme.bodyMedium),
-                    Text('John Doe', style: textTheme.titleLarge),
+                    Text(
+                      FlowaGreeting.forDateTime(DateTime.now()),
+                      style: textTheme.bodyMedium,
+                    ),
+                    Text(_user!.fullName, style: textTheme.titleLarge),
                   ],
                 ),
               ),
@@ -44,75 +102,12 @@ class HomePage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: FlowaSpacing.lg),
-          Container(
-            height: 180,
-            decoration: const BoxDecoration(
-              gradient: FlowaColors.cardPrimaryGradient,
-              borderRadius: FlowaRadii.xlAll,
-              boxShadow: FlowaShadows.card,
-            ),
-            padding: FlowaSpacing.cardPadding,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      'Account Number',
-                      style: textTheme.labelMedium?.copyWith(
-                        color: FlowaColors.textOnCard.withValues(alpha: 0.85),
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      'VISA',
-                      style: textTheme.titleMedium?.copyWith(
-                        color: FlowaColors.textOnCard,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: FlowaSpacing.xs),
-                Text(
-                  '**** **** **** 6457',
-                  style: textTheme.titleMedium?.copyWith(
-                    color: FlowaColors.textOnCard,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  'Available Balance',
-                  style: textTheme.labelMedium?.copyWith(
-                    color: FlowaColors.textOnCard.withValues(alpha: 0.85),
-                  ),
-                ),
-                Row(
-                  children: [
-                    Text(
-                      '******',
-                      style: textTheme.headlineMedium?.copyWith(
-                        color: FlowaColors.textOnCard,
-                      ),
-                    ),
-                    const SizedBox(width: FlowaSpacing.xs),
-                    Icon(
-                      Icons.visibility_off_outlined,
-                      size: 18,
-                      color: FlowaColors.textOnCard.withValues(alpha: 0.9),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '12/28 Expire Date',
-                      style: textTheme.labelSmall?.copyWith(
-                        color: FlowaColors.textOnCard.withValues(alpha: 0.9),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          FlowaVisaCard(
+            account: _account!,
+            balanceVisible: _balanceVisible,
+            onToggleVisibility: () {
+              setState(() => _balanceVisible = !_balanceVisible);
+            },
           ),
           const SizedBox(height: FlowaSpacing.xl),
           Row(
@@ -122,25 +117,31 @@ class HomePage extends StatelessWidget {
                 label: 'Send',
                 icon: Icons.account_balance_wallet_outlined,
                 background: FlowaColors.actionSend,
-                onTap: () {},
+                onTap: () => _open(const SendMoneyPage()),
               ),
               FlowaQuickAction(
                 label: 'Receive',
                 icon: Icons.payments_outlined,
                 background: FlowaColors.actionReceive,
-                onTap: () {},
+                onTap: () => _open(const ReceivePage()),
               ),
               FlowaQuickAction(
                 label: 'Top-Up',
                 icon: Icons.point_of_sale_outlined,
                 background: FlowaColors.actionTopUp,
-                onTap: () {},
+                onTap: () => _open(const TopUpPage()),
               ),
               FlowaQuickAction(
                 label: 'More',
                 icon: Icons.grid_view_rounded,
                 background: FlowaColors.actionMore,
-                onTap: () {},
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('More actions coming soon'),
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -150,16 +151,13 @@ class HomePage extends StatelessWidget {
               Text('Recent Transaction', style: textTheme.titleMedium),
               const Spacer(),
               TextButton(
-                onPressed: () {},
+                onPressed: widget.onSeeAllTransactions,
                 child: const Text('See all >'),
               ),
             ],
           ),
           const SizedBox(height: FlowaSpacing.sm),
-          Text(
-            FlowaConstants.appTagline,
-            style: textTheme.bodyMedium,
-          ),
+          FlowaTransactionList(items: _recent),
         ],
       ),
     );
