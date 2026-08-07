@@ -17,19 +17,23 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _index = 0;
 
-  static const _pages = <Widget>[
-    HomePage(),
-    TransactionsPage(),
-    AiAssistantPage(),
-    ProfilePage(),
-  ];
+  void _openTransactionsTab() {
+    setState(() => _index = 1);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final pages = <Widget>[
+      HomePage(onSeeAllTransactions: _openTransactionsTab),
+      const TransactionsPage(),
+      const AiAssistantPage(),
+      const ProfilePage(),
+    ];
+
     return Scaffold(
       body: IndexedStack(
         index: _index,
-        children: _pages,
+        children: pages,
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
