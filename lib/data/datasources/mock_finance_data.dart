@@ -16,6 +16,25 @@ abstract final class MockFinanceData {
     email: 'john@gmail.com',
   );
 
+  static final List<SubAccount> subAccounts = [
+    const SubAccount(
+      id: 'sub-1',
+      name: "Emma's College Fund",
+      accountNumber: '1476 5849 5748 0101',
+      purpose: AccountKind.family,
+      accessLevel: AccessLevel.limited,
+      iconKey: 'school',
+      linkedEmail: 'emma@family.com',
+    ),
+    const SubAccount(
+      id: 'sub-2',
+      name: "Mega's World",
+      accountNumber: '1476 5849 5748 0102',
+      purpose: AccountKind.business,
+      accessLevel: AccessLevel.full,
+    ),
+  ];
+
   static final List<TransactionItem> transactions = [
     TransactionItem(
       id: 'tx-1',
