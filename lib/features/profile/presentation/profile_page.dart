@@ -4,8 +4,11 @@ import '../../../core/constants/flowa_constants.dart';
 import '../../../core/utils/flowa_services.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/finance_entities.dart';
+import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
 import '../../notifications/presentation/notification_settings_page.dart';
+import '../../sub_accounts/presentation/sub_accounts_page.dart';
+import '../../wallets/presentation/connect_paypal_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -42,7 +45,10 @@ class _ProfilePageState extends State<ProfilePage> {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(user.fullName, style: Theme.of(context).textTheme.headlineMedium),
+                Text(
+                  user.fullName,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
                 const SizedBox(height: FlowaSpacing.xs),
                 Text(
                   user.email ?? FlowaConstants.appName,
@@ -56,21 +62,39 @@ class _ProfilePageState extends State<ProfilePage> {
                   subtitle: const Text('Keep alerts useful, mute promotions'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const NotificationSettingsPage(),
-                      ),
+                    pushFlowaRoute<void>(
+                      context,
+                      const NotificationSettingsPage(),
                     );
+                  },
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.account_tree_outlined),
+                  title: const Text('Sub-Accounts'),
+                  subtitle: const Text('Family and business money control'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    pushFlowaRoute<void>(context, const SubAccountsPage());
+                  },
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.account_balance_wallet_outlined),
+                  title: const Text('Connected wallets'),
+                  subtitle: const Text('Link PayPal and external accounts'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    pushFlowaRoute<void>(context, const ConnectPayPalPage());
                   },
                 ),
                 const Spacer(),
                 FlowaPrimaryButton(
                   label: 'Open notification settings',
                   onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const NotificationSettingsPage(),
-                      ),
+                    pushFlowaRoute<void>(
+                      context,
+                      const NotificationSettingsPage(),
                     );
                   },
                 ),

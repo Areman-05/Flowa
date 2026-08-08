@@ -7,7 +7,9 @@ import '../../../design_system/components/flowa_visa_card.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/finance_entities.dart';
+import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
+import '../../../shared/widgets/flowa_more_sheet.dart';
 import '../../receive/presentation/receive_page.dart';
 import '../../send_money/presentation/send_money_page.dart';
 import '../../top_up/presentation/top_up_page.dart';
@@ -54,10 +56,8 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<void> _open<T extends Widget>(T page) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => page),
-    );
+  Future<void> _open(Widget page) async {
+    await pushFlowaRoute<void>(context, page);
   }
 
   @override
@@ -135,13 +135,7 @@ class _HomePageState extends State<HomePage> {
                 label: 'More',
                 icon: Icons.grid_view_rounded,
                 background: FlowaColors.actionMore,
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('More actions coming soon'),
-                    ),
-                  );
-                },
+                onTap: () => showFlowaMoreActionsSheet(context),
               ),
             ],
           ),
