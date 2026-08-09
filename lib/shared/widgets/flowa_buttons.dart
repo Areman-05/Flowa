@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../design_system/components/flowa_motion.dart';
 import '../../design_system/tokens/flowa_colors.dart';
 import '../../design_system/tokens/flowa_spacing.dart';
 
@@ -83,9 +84,8 @@ class FlowaQuickAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return FlowaPressable(
       onTap: onTap,
-      borderRadius: FlowaRadii.mdAll,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
