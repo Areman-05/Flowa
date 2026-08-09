@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/extensions/finance_labels.dart';
 import '../../../core/utils/flowa_services.dart';
 import '../../../design_system/components/flowa_icon_picker.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
@@ -97,7 +98,7 @@ class _SubAccountsPageState extends State<SubAccountsPage> {
                         ),
                         title: Text(item.name),
                         subtitle: Text(
-                          '${item.purpose.name} · ${item.accessLevel.name} access\n'
+                          '${item.purpose.label} · ${item.accessLevel.label} access\n'
                           '${item.accountNumber}',
                         ),
                         isThreeLine: true,
