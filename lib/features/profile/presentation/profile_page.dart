@@ -7,7 +7,9 @@ import '../../../domain/entities/finance_entities.dart';
 import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
 import '../../notifications/presentation/notification_settings_page.dart';
+import '../../settings/presentation/app_settings_page.dart';
 import '../../sub_accounts/presentation/sub_accounts_page.dart';
+import '../../support/presentation/support_center_page.dart';
 import '../../wallets/presentation/connect_paypal_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -88,14 +90,31 @@ class _ProfilePageState extends State<ProfilePage> {
                     pushFlowaRoute<void>(context, const ConnectPayPalPage());
                   },
                 ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.settings_outlined),
+                  title: const Text('Settings'),
+                  subtitle: const Text('Privacy defaults and app lock'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    pushFlowaRoute<void>(context, const AppSettingsPage());
+                  },
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.support_agent_outlined),
+                  title: const Text('Support'),
+                  subtitle: const Text('Find help when a payment fails'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    pushFlowaRoute<void>(context, const SupportCenterPage());
+                  },
+                ),
                 const Spacer(),
                 FlowaPrimaryButton(
-                  label: 'Open notification settings',
+                  label: 'Open support center',
                   onPressed: () {
-                    pushFlowaRoute<void>(
-                      context,
-                      const NotificationSettingsPage(),
-                    );
+                    pushFlowaRoute<void>(context, const SupportCenterPage());
                   },
                 ),
               ],
