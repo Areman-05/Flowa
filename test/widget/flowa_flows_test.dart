@@ -1,4 +1,6 @@
 import 'package:flowa/app/flowa_app.dart';
+import 'package:flowa/core/utils/flowa_services.dart';
+import 'package:flowa/data/repositories/in_memory_preferences_repository.dart';
 import 'package:flowa/features/notifications/presentation/notification_settings_page.dart';
 import 'package:flowa/features/top_up/presentation/top_up_page.dart';
 import 'package:flowa/shared/widgets/flowa_dialogs.dart';
@@ -6,6 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  setUp(() async {
+    final prefs = InMemoryPreferencesRepository();
+    await prefs.completeOnboarding();
+    FlowaServices.resetToMocks(preferences: prefs);
+  });
+
   testWidgets('home loads account and recent merchants', (tester) async {
     await tester.pumpWidget(const FlowaApp());
     await tester.pumpAndSettle();
@@ -45,6 +53,7 @@ void main() {
     await tester.pumpWidget(
       const MaterialApp(home: NotificationSettingsPage()),
     );
+    await tester.pumpAndSettle();
 
     final marketing = find.widgetWithText(
       SwitchListTile,
