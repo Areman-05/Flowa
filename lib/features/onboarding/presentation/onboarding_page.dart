@@ -1,0 +1,143 @@
+import 'package:flutter/material.dart';
+
+import '../../../core/constants/flowa_constants.dart';
+import '../../../core/utils/flowa_services.dart';
+import '../../../design_system/tokens/flowa_colors.dart';
+import '../../../design_system/tokens/flowa_spacing.dart';
+import '../../../shared/widgets/flowa_buttons.dart';
+
+class OnboardingPage extends StatefulWidget {
+  const OnboardingPage({required this.onFinished, super.key});
+
+  final VoidCallback onFinished;
+
+  @override
+  State<OnboardingPage> createState() => _OnboardingPageState();
+}
+
+class _OnboardingPageState extends State<OnboardingPage> {
+  final _controller = PageController();
+  int _index = 0;
+
+  static const _slides = [
+    (
+      title: 'Clarity first',
+      body: 'See your balance, recent activity, and next actions in one glance.',
+      icon: Icons.visibility_outlined,
+    ),
+    (
+      title: 'Send is not Top-Up',
+      body: 'Distinct flows and confirmations help you avoid costly mistakes.',
+      icon: Icons.verified_user_outlined,
+    ),
+    (
+      title: 'Stay in control',
+      body: 'Sub-accounts, smart alerts, and AI guidance keep money organized.',
+      icon: Icons.account_tree_outlined,
+    ),
+  ];
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _finish() async {
+    await FlowaServices.preferencesRepository.completeOnboarding();
+    widget.onFinished();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: FlowaColors.background,
+      body: SafeArea(
+        child: Padding(
+          padding: FlowaSpacing.screenPadding,
+          child: Column(
+            children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: _finish,
+                  child: const Text('Skip'),
+                ),
+              ),
+              Expanded(
+                child: PageView.builder(
+                  controller: _controller,
+                  itemCount: _slides.length,
+                  onPageChanged: (value) => setState(() => _index = value),
+                  itemBuilder: (context, index) {
+                    final item = _slides[index];
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                          radius: 48,
+                          backgroundColor: FlowaColors.primarySoft,
+                          child: Icon(
+                            item.icon,
+                            size: 40,
+                            color: FlowaColors.primary,
+                          ),
+                        ),
+                        const SizedBox(height: FlowaSpacing.xl),
+                        Text(
+                          item.title,
+                          style: Theme.of(context).textTheme.headlineMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: FlowaSpacing.sm),
+                        Text(
+                          item.body,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (var i = 0; i < _slides.length; i++)
+                    AnimatedContainer(
+                      duration: FlowaConstants.defaultAnimationDuration,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: i == _index ? 18 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: i == _index
+                            ? FlowaColors.primary
+                            : FlowaColors.border,
+                        borderRadius: BorderRadius.circular(FlowaRadii.pill),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: FlowaSpacing.xl),
+              FlowaPrimaryButton(
+                label: _index == _slides.length - 1
+                    ? 'Get started'
+                    : 'Continue',
+                onPressed: () async {
+                  if (_index == _slides.length - 1) {
+                    await _finish();
+                    return;
+                  }
+                  await _controller.nextPage(
+                    duration: FlowaConstants.defaultAnimationDuration,
+                    curve: Curves.easeOutCubic,
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
