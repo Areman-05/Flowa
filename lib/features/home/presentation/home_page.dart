@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/flowa_services.dart';
+import '../../../design_system/components/flowa_motion.dart';
 import '../../../design_system/components/flowa_transaction_tile.dart';
 import '../../../design_system/components/flowa_visa_card.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
@@ -13,6 +14,7 @@ import '../../../shared/widgets/flowa_more_sheet.dart';
 import '../../receive/presentation/receive_page.dart';
 import '../../send_money/presentation/send_money_page.dart';
 import '../../top_up/presentation/top_up_page.dart';
+import '../../transactions/presentation/transaction_detail_page.dart';
 
 /// Home dashboard with live account card and recent transactions.
 class HomePage extends StatefulWidget {
@@ -42,6 +44,7 @@ class _HomePageState extends State<HomePage> {
       FlowaServices.accountRepository.getPrimaryAccount(),
       FlowaServices.accountRepository.getCurrentUser(),
       FlowaServices.transactionRepository.getRecent(),
+      FlowaServices.preferencesRepository.isBalanceHiddenByDefault(),
     ]);
 
     if (!mounted) {
@@ -52,6 +55,8 @@ class _HomePageState extends State<HomePage> {
       _account = results[0] as Account;
       _user = results[1] as UserProfile;
       _recent = results[2] as List<TransactionItem>;
+      final hiddenByDefault = results[3] as bool;
+      _balanceVisible = !hiddenByDefault;
       _loading = false;
     });
   }
@@ -65,7 +70,7 @@ class _HomePageState extends State<HomePage> {
     final textTheme = Theme.of(context).textTheme;
 
     if (_loading || _account == null || _user == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const SafeArea(child: FlowaHomeSkeleton());
     }
 
     return SafeArea(
@@ -151,7 +156,15 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           const SizedBox(height: FlowaSpacing.sm),
-          FlowaTransactionList(items: _recent),
+          FlowaTransactionList(
+            items: _recent,
+            onItemTap: (item) {
+              pushFlowaRoute<void>(
+                context,
+                TransactionDetailPage(item: item),
+              );
+            },
+          ),
         ],
       ),
     );
