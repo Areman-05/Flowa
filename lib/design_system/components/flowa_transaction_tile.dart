@@ -64,11 +64,13 @@ class FlowaTransactionList extends StatelessWidget {
     super.key,
     this.shrinkWrap = true,
     this.physics,
+    this.onItemTap,
   });
 
   final List<TransactionItem> items;
   final bool shrinkWrap;
   final ScrollPhysics? physics;
+  final ValueChanged<TransactionItem>? onItemTap;
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +87,12 @@ class FlowaTransactionList extends StatelessWidget {
       itemCount: items.length,
       separatorBuilder: (_, _) => const Divider(height: FlowaSpacing.sm),
       itemBuilder: (context, index) {
-        return FlowaTransactionTile(item: items[index]);
+        final item = items[index];
+        return FlowaTransactionTile(
+          key: ValueKey(item.id),
+          item: item,
+          onTap: onItemTap == null ? null : () => onItemTap!(item),
+        );
       },
     );
   }
