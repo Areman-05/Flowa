@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/utils/debouncer.dart';
+import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/flowa_services.dart';
 import '../../../design_system/components/flowa_transaction_tile.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/finance_entities.dart';
+import '../../../shared/navigation/flowa_routes.dart';
+import '../domain/transaction_filters.dart';
+import 'transaction_detail_page.dart';
+import 'transaction_filter_bar.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -13,13 +19,23 @@ class TransactionsPage extends StatefulWidget {
 }
 
 class _TransactionsPageState extends State<TransactionsPage> {
-  List<TransactionItem> _items = const [];
+  List<TransactionItem> _all = const [];
+  List<TransactionItem> _visible = const [];
   bool _loading = true;
+  TransactionFilter _filter = TransactionFilter.all;
+  String _query = '';
+  final _debouncer = Debouncer();
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _debouncer.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -28,13 +44,25 @@ class _TransactionsPageState extends State<TransactionsPage> {
       return;
     }
     setState(() {
-      _items = items;
+      _all = items;
       _loading = false;
+      _apply();
     });
+  }
+
+  void _apply() {
+    _visible = TransactionFilters.apply(
+      items: _all,
+      filter: _filter,
+      query: _query,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final outgoing = TransactionFilters.totalOutgoing(_visible);
+    final incoming = TransactionFilters.totalIncoming(_visible);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Transactions')),
       body: SafeArea(
@@ -45,14 +73,47 @@ class _TransactionsPageState extends State<TransactionsPage> {
                 child: ListView(
                   padding: FlowaSpacing.screenPadding,
                   children: [
+                    TextField(
+                      onChanged: (value) {
+                        _debouncer.run(() {
+                          setState(() {
+                            _query = value;
+                            _apply();
+                          });
+                        });
+                      },
+                      decoration: const InputDecoration(
+                        hintText: 'Search merchant or category',
+                        prefixIcon: Icon(Icons.search),
+                      ),
+                    ),
+                    const SizedBox(height: FlowaSpacing.md),
+                    TransactionFilterBar(
+                      value: _filter,
+                      onChanged: (value) {
+                        setState(() {
+                          _filter = value;
+                          _apply();
+                        });
+                      },
+                    ),
+                    const SizedBox(height: FlowaSpacing.md),
                     Text(
-                      '${_items.length} movements',
+                      '${_visible.length} movements · '
+                      'Out ${FlowaFormatters.currency(outgoing)} · '
+                      'In ${FlowaFormatters.currency(incoming)}',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: FlowaSpacing.md),
                     FlowaTransactionList(
-                      items: _items,
+                      items: _visible,
                       physics: const NeverScrollableScrollPhysics(),
+                      onItemTap: (item) {
+                        pushFlowaRoute<void>(
+                          context,
+                          TransactionDetailPage(item: item),
+                        );
+                      },
                     ),
                   ],
                 ),
