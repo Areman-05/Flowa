@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/flowa_services.dart';
 import '../../../design_system/components/flowa_amount_chips.dart';
 import '../../../design_system/components/flowa_visa_card.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/finance_entities.dart';
+import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
 import '../../../shared/widgets/flowa_dialogs.dart';
+import '../../transfers/presentation/transfer_success_page.dart';
 
 /// Top-Up flow — gold source card + confirmation to avoid Send confusion.
 class TopUpPage extends StatefulWidget {
@@ -72,14 +73,14 @@ class _TopUpPageState extends State<TopUpPage> {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Top-up ${FlowaFormatters.currency(_amount)} to ${_numberController.text}',
-        ),
+    await pushFlowaRoute<void>(
+      context,
+      TransferSuccessPage(
+        title: 'Top-Up successful',
+        amount: _amount,
+        subtitle: 'Recharged ${_numberController.text}',
       ),
     );
-    Navigator.of(context).pop();
   }
 
   @override

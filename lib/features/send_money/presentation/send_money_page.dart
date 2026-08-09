@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/flowa_services.dart';
 import '../../../design_system/components/flowa_visa_card.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/finance_entities.dart';
+import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
+import '../../transfers/presentation/transfer_success_page.dart';
 
 /// Send Money flow — visually distinct from Top-Up (purple source card).
 class SendMoneyPage extends StatefulWidget {
@@ -62,14 +63,14 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Sent ${FlowaFormatters.currency(amount)} to ${_accountNameController.text}',
-        ),
+    await pushFlowaRoute<void>(
+      context,
+      TransferSuccessPage(
+        title: 'Money sent',
+        amount: amount,
+        subtitle: 'Delivered to ${_accountNameController.text}',
       ),
     );
-    Navigator.of(context).pop();
   }
 
   @override
