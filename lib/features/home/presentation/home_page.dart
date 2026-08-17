@@ -11,6 +11,8 @@ import '../../../domain/entities/finance_entities.dart';
 import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
 import '../../../shared/widgets/flowa_more_sheet.dart';
+import '../../insights/domain/spending_snapshot.dart';
+import '../../insights/presentation/insights_page.dart';
 import '../../notifications/presentation/notification_inbox_page.dart';
 import '../../receive/presentation/receive_page.dart';
 import '../../send_money/presentation/send_money_page.dart';
@@ -31,6 +33,13 @@ class _HomePageState extends State<HomePage> {
   Account? _account;
   UserProfile? _user;
   List<TransactionItem> _recent = const [];
+  SpendingSnapshot _snapshot = const SpendingSnapshot(
+    incoming: 0,
+    outgoing: 0,
+    net: 0,
+    topMerchant: '—',
+    transactionCount: 0,
+  );
   bool _loading = true;
   bool _balanceVisible = false;
   int _unread = 0;
@@ -47,6 +56,7 @@ class _HomePageState extends State<HomePage> {
       FlowaServices.accountRepository.getCurrentUser(),
       FlowaServices.transactionRepository.getRecent(),
       FlowaServices.preferencesRepository.isBalanceHiddenByDefault(),
+      FlowaServices.transactionRepository.getAll(),
       FlowaServices.inboxRepository.unreadCount(),
     ]);
 
@@ -60,7 +70,8 @@ class _HomePageState extends State<HomePage> {
       _recent = results[2] as List<TransactionItem>;
       final hiddenByDefault = results[3] as bool;
       _balanceVisible = !hiddenByDefault;
-      _unread = results[4] as int;
+      _snapshot = SpendingInsights.from(results[4] as List<TransactionItem>);
+      _unread = results[5] as int;
       _loading = false;
     });
   }
@@ -121,6 +132,11 @@ class _HomePageState extends State<HomePage> {
             onToggleVisibility: () {
               setState(() => _balanceVisible = !_balanceVisible);
             },
+          ),
+          const SizedBox(height: FlowaSpacing.md),
+          GestureDetector(
+            onTap: () => _open(const InsightsPage()),
+            child: HomeSpendingStrip(snapshot: _snapshot),
           ),
           const SizedBox(height: FlowaSpacing.xl),
           Row(

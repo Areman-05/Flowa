@@ -19,6 +19,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('John Doe'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Apple'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Apple'), findsWidgets);
     expect(find.text('Send'), findsOneWidget);
     expect(find.text('Top-Up'), findsOneWidget);
