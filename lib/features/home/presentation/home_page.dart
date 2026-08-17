@@ -11,6 +11,7 @@ import '../../../domain/entities/finance_entities.dart';
 import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
 import '../../../shared/widgets/flowa_more_sheet.dart';
+import '../../notifications/presentation/notification_inbox_page.dart';
 import '../../receive/presentation/receive_page.dart';
 import '../../send_money/presentation/send_money_page.dart';
 import '../../top_up/presentation/top_up_page.dart';
@@ -32,6 +33,7 @@ class _HomePageState extends State<HomePage> {
   List<TransactionItem> _recent = const [];
   bool _loading = true;
   bool _balanceVisible = false;
+  int _unread = 0;
 
   @override
   void initState() {
@@ -45,6 +47,7 @@ class _HomePageState extends State<HomePage> {
       FlowaServices.accountRepository.getCurrentUser(),
       FlowaServices.transactionRepository.getRecent(),
       FlowaServices.preferencesRepository.isBalanceHiddenByDefault(),
+      FlowaServices.inboxRepository.unreadCount(),
     ]);
 
     if (!mounted) {
@@ -57,6 +60,7 @@ class _HomePageState extends State<HomePage> {
       _recent = results[2] as List<TransactionItem>;
       final hiddenByDefault = results[3] as bool;
       _balanceVisible = !hiddenByDefault;
+      _unread = results[4] as int;
       _loading = false;
     });
   }
@@ -98,10 +102,14 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               IconButton.outlined(
-                onPressed: () {},
-                icon: const Badge(
+                onPressed: () async {
+                  await _open(const NotificationInboxPage());
+                  await _load();
+                },
+                icon: Badge(
+                  isLabelVisible: _unread > 0,
                   smallSize: 8,
-                  child: Icon(Icons.notifications_none_rounded),
+                  child: const Icon(Icons.notifications_none_rounded),
                 ),
               ),
             ],
