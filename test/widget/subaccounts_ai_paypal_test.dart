@@ -62,7 +62,7 @@ void main() {
     expect(find.textContaining('Support is available'), findsOneWidget);
   });
 
-  testWidgets('more sheet exposes sub-accounts and PayPal', (tester) async {
+  testWidgets('more sheet exposes sub-accounts and extra tools', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Builder(
@@ -82,6 +82,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Sub-Accounts'), findsOneWidget);
-    expect(find.text('Connect PayPal'), findsOneWidget);
+    expect(find.text('Wallets'), findsOneWidget);
+    expect(find.text('Insights'), findsOneWidget);
   });
 }
