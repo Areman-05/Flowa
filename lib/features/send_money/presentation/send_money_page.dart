@@ -8,7 +8,7 @@ import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/finance_entities.dart';
 import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
-import '../../transfers/presentation/transfer_success_page.dart';
+import 'send_review_page.dart';
 
 /// Send Money flow — visually distinct from Top-Up (purple source card).
 class SendMoneyPage extends StatefulWidget {
@@ -55,7 +55,9 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
         _accountNameController.text.isEmpty ||
         amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Fill recipient details and a valid amount.')),
+        const SnackBar(
+          content: Text('Fill recipient details and a valid amount.'),
+        ),
       );
       return;
     }
@@ -65,10 +67,11 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
     }
     await pushFlowaRoute<void>(
       context,
-      TransferSuccessPage(
-        title: 'Money sent',
+      SendReviewPage(
+        recipientName: _accountNameController.text,
+        accountNumber: _accountNumberController.text,
         amount: amount,
-        subtitle: 'Delivered to ${_accountNameController.text}',
+        note: _noteController.text,
       ),
     );
   }
@@ -104,6 +107,24 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: FlowaSpacing.sm),
+                  Wrap(
+                    spacing: FlowaSpacing.sm,
+                    runSpacing: FlowaSpacing.sm,
+                    children: [
+                      for (final recipient in RecentRecipients.items)
+                        ActionChip(
+                          label: Text(recipient.name),
+                          onPressed: () {
+                            setState(() {
+                              _accountNameController.text = recipient.name;
+                              _accountNumberController.text =
+                                  recipient.accountNumber;
+                            });
+                          },
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: FlowaSpacing.sm),
                   TextField(
                     controller: _accountNumberController,
                     keyboardType: TextInputType.number,
@@ -133,8 +154,9 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                   const SizedBox(height: FlowaSpacing.sm),
                   TextField(
                     controller: _amountController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(
                         RegExp(r'^\d+\.?\d{0,2}'),
@@ -146,16 +168,13 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                     ),
                   ),
                   const SizedBox(height: FlowaSpacing.xxl),
-                  FlowaPrimaryButton(
-                    label: 'Continue',
-                    onPressed: _submit,
-                  ),
+                  FlowaPrimaryButton(label: 'Continue', onPressed: _submit),
                   const SizedBox(height: FlowaSpacing.sm),
                   Text(
                     'This screen is for bank transfers, not mobile top-ups.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: FlowaColors.textSecondary,
-                        ),
+                      color: FlowaColors.textSecondary,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],
