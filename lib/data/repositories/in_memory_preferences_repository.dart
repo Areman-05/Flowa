@@ -9,6 +9,8 @@ class InMemoryPreferencesRepository implements PreferencesRepository {
     transactionNotifications: true,
     marketingNotifications: false,
   );
+  bool _pinEnabled = false;
+  String _pinCode = '';
 
   @override
   Future<bool> isOnboardingComplete() async => _onboardingComplete;
@@ -37,9 +39,27 @@ class InMemoryPreferencesRepository implements PreferencesRepository {
     _notifications = value;
   }
 
+  @override
+  Future<bool> isPinEnabled() async => _pinEnabled;
+
+  @override
+  Future<void> setPinEnabled(bool value) async {
+    _pinEnabled = value;
+  }
+
+  @override
+  Future<String> getPinCode() async => _pinCode;
+
+  @override
+  Future<void> setPinCode(String value) async {
+    _pinCode = value;
+  }
+
   void reset() {
     _onboardingComplete = false;
     _balanceHiddenByDefault = true;
+    _pinEnabled = false;
+    _pinCode = '';
     _notifications = const NotificationPreferences(
       allowNotifications: true,
       transactionNotifications: true,

@@ -37,4 +37,16 @@ class LocalPreferencesRepository implements PreferencesRepository {
     await _source.setTransactionNotifications(value.transactionNotifications);
     await _source.setMarketingNotifications(value.marketingNotifications);
   }
+
+  @override
+  Future<bool> isPinEnabled() async => _source.pinEnabled;
+
+  @override
+  Future<void> setPinEnabled(bool value) => _source.setPinEnabled(value);
+
+  @override
+  Future<String> getPinCode() async => _source.pinCode;
+
+  @override
+  Future<void> setPinCode(String value) => _source.setPinCode(value);
 }

@@ -11,6 +11,14 @@ abstract class PreferencesRepository {
   Future<NotificationPreferences> getNotificationPreferences();
 
   Future<void> saveNotificationPreferences(NotificationPreferences value);
+
+  Future<bool> isPinEnabled();
+
+  Future<void> setPinEnabled(bool value);
+
+  Future<String> getPinCode();
+
+  Future<void> setPinCode(String value);
 }
 
 class NotificationPreferences {

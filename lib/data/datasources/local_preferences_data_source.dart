@@ -7,6 +7,8 @@ abstract final class PreferenceKeys {
   static const allowNotifications = 'allow_notifications';
   static const transactionNotifications = 'transaction_notifications';
   static const marketingNotifications = 'marketing_notifications';
+  static const pinEnabled = 'pin_enabled';
+  static const pinCode = 'pin_code';
 }
 
 /// Thin wrapper over [SharedPreferences] for app settings.
@@ -49,4 +51,14 @@ class LocalPreferencesDataSource {
 
   Future<void> setMarketingNotifications(bool value) =>
       _prefs.setBool(PreferenceKeys.marketingNotifications, value);
+
+  bool get pinEnabled => _prefs.getBool(PreferenceKeys.pinEnabled) ?? false;
+
+  Future<void> setPinEnabled(bool value) =>
+      _prefs.setBool(PreferenceKeys.pinEnabled, value);
+
+  String get pinCode => _prefs.getString(PreferenceKeys.pinCode) ?? '';
+
+  Future<void> setPinCode(String value) =>
+      _prefs.setString(PreferenceKeys.pinCode, value);
 }
