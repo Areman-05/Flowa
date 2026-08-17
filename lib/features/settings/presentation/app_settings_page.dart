@@ -4,6 +4,7 @@ import '../../../core/utils/flowa_services.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
+import '../../lock/presentation/pin_lock_pages.dart';
 import '../../notifications/presentation/notification_settings_page.dart';
 
 class AppSettingsPage extends StatefulWidget {
@@ -24,8 +25,8 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
   }
 
   Future<void> _load() async {
-    final hidden =
-        await FlowaServices.preferencesRepository.isBalanceHiddenByDefault();
+    final hidden = await FlowaServices.preferencesRepository
+        .isBalanceHiddenByDefault();
     if (!mounted) {
       return;
     }
@@ -69,12 +70,10 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                 ListTile(
                   contentPadding: FlowaSpacing.screenPadding,
                   title: const Text('App lock'),
-                  subtitle: const Text('PIN / biometrics coming soon'),
+                  subtitle: const Text('Require a 4-digit PIN on launch'),
                   trailing: const Icon(Icons.lock_outline),
-                  onTap: () => pushFlowaRoute<void>(
-                    context,
-                    const AppLockPlaceholderPage(),
-                  ),
+                  onTap: () =>
+                      pushFlowaRoute<void>(context, const PinSetupPage()),
                 ),
                 Padding(
                   padding: FlowaSpacing.screenPadding,
@@ -94,33 +93,6 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                 ),
               ],
             ),
-    );
-  }
-}
-
-class AppLockPlaceholderPage extends StatelessWidget {
-  const AppLockPlaceholderPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('App lock')),
-      body: const Padding(
-        padding: FlowaSpacing.screenPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Protect Flowa with a PIN or biometrics.',
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: FlowaSpacing.sm),
-            Text(
-              'This placeholder keeps the security entry point ready for a later commit.',
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
