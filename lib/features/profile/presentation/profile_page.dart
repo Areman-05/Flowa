@@ -10,7 +10,7 @@ import '../../notifications/presentation/notification_settings_page.dart';
 import '../../settings/presentation/app_settings_page.dart';
 import '../../sub_accounts/presentation/sub_accounts_page.dart';
 import '../../support/presentation/support_center_page.dart';
-import '../../wallets/presentation/connect_paypal_page.dart';
+import '../../wallets/presentation/wallets_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -87,7 +87,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   subtitle: const Text('Link PayPal and external accounts'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
-                    pushFlowaRoute<void>(context, const ConnectPayPalPage());
+                    pushFlowaRoute<void>(context, const WalletsPage());
                   },
                 ),
                 ListTile(
