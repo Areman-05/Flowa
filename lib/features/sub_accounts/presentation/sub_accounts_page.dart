@@ -6,9 +6,11 @@ import '../../../design_system/components/flowa_icon_picker.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/finance_entities.dart';
+import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
 import '../../../shared/widgets/flowa_states.dart';
 import 'create_sub_account_page.dart';
+import 'sub_account_detail_page.dart';
 
 class SubAccountsPage extends StatefulWidget {
   const SubAccountsPage({super.key});
@@ -102,6 +104,12 @@ class _SubAccountsPageState extends State<SubAccountsPage> {
                           '${item.accountNumber}',
                         ),
                         isThreeLine: true,
+                        onTap: () {
+                          pushFlowaRoute<void>(
+                            context,
+                            SubAccountDetailPage(account: item),
+                          );
+                        },
                       );
                     },
                   ),
