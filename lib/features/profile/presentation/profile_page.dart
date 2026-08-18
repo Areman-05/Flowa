@@ -6,6 +6,7 @@ import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/finance_entities.dart';
 import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
+import 'profile_edit_page.dart';
 import '../../notifications/presentation/notification_settings_page.dart';
 import '../../settings/presentation/app_settings_page.dart';
 import '../../sub_accounts/presentation/sub_accounts_page.dart';
@@ -55,6 +56,19 @@ class _ProfilePageState extends State<ProfilePage> {
                 Text(
                   user.email ?? FlowaConstants.appName,
                   style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: FlowaSpacing.sm),
+                FlowaSecondaryButton(
+                  label: 'Edit profile',
+                  onPressed: () async {
+                    final updated = await pushFlowaRoute<bool>(
+                      context,
+                      ProfileEditPage(user: user),
+                    );
+                    if (updated == true) {
+                      await _load();
+                    }
+                  },
                 ),
                 const SizedBox(height: FlowaSpacing.xl),
                 ListTile(
