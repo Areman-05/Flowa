@@ -5,4 +5,6 @@ abstract class AccountRepository {
   Future<Account> getPrimaryAccount();
 
   Future<UserProfile> getCurrentUser();
+
+  Future<void> updateDisplayName(String fullName);
 }
