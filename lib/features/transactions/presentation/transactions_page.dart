@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/utils/debouncer.dart';
 import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/flowa_services.dart';
+import '../../../core/utils/transaction_export.dart';
 import '../../../design_system/components/flowa_transaction_tile.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/finance_entities.dart';
 import '../../../shared/navigation/flowa_routes.dart';
+import '../../../shared/widgets/flowa_states.dart';
 import '../domain/transaction_filters.dart';
 import 'transaction_detail_page.dart';
 import 'transaction_filter_bar.dart';
@@ -58,13 +61,35 @@ class _TransactionsPageState extends State<TransactionsPage> {
     );
   }
 
+  Future<void> _export() async {
+    final csv = TransactionExport.toCsv(_visible);
+    await Clipboard.setData(ClipboardData(text: csv));
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Exported ${_visible.length} movements to clipboard.'),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final outgoing = TransactionFilters.totalOutgoing(_visible);
     final incoming = TransactionFilters.totalIncoming(_visible);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Transactions')),
+      appBar: AppBar(
+        title: const Text('Transactions'),
+        actions: [
+          IconButton(
+            tooltip: 'Export CSV',
+            onPressed: _visible.isEmpty ? null : _export,
+            icon: const Icon(Icons.download_outlined),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: _loading
             ? const Center(child: CircularProgressIndicator())
@@ -83,7 +108,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                         });
                       },
                       decoration: const InputDecoration(
-                        hintText: 'Search merchant or category',
+                        hintText: 'Search merchant, category, or amount',
                         prefixIcon: Icon(Icons.search),
                       ),
                     ),
@@ -105,16 +130,25 @@ class _TransactionsPageState extends State<TransactionsPage> {
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: FlowaSpacing.md),
-                    FlowaTransactionList(
-                      items: _visible,
-                      physics: const NeverScrollableScrollPhysics(),
-                      onItemTap: (item) {
-                        pushFlowaRoute<void>(
-                          context,
-                          TransactionDetailPage(item: item),
-                        );
-                      },
-                    ),
+                    if (_visible.isEmpty)
+                      FlowaEmptyState(
+                        title: 'No matches',
+                        message: _query.isEmpty
+                            ? 'Try another filter to see more movements.'
+                            : 'Nothing matched "$_query". Try another merchant or amount.',
+                        icon: Icons.search_off_outlined,
+                      )
+                    else
+                      FlowaTransactionList(
+                        items: _visible,
+                        physics: const NeverScrollableScrollPhysics(),
+                        onItemTap: (item) {
+                          pushFlowaRoute<void>(
+                            context,
+                            TransactionDetailPage(item: item),
+                          );
+                        },
+                      ),
                   ],
                 ),
               ),
