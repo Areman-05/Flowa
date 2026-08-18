@@ -96,13 +96,27 @@ class FlowaHomeSkeleton extends StatelessWidget {
   }
 }
 
+class FlowaListSkeleton extends StatelessWidget {
+  const FlowaListSkeleton({super.key, this.itemCount = 4});
+
+  final int itemCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (var i = 0; i < itemCount; i++) ...[
+          if (i > 0) const SizedBox(height: FlowaSpacing.sm),
+          const FlowaSkeleton(height: 72),
+        ],
+      ],
+    );
+  }
+}
+
 /// Scale-on-press wrapper for quick action tiles.
 class FlowaPressable extends StatefulWidget {
-  const FlowaPressable({
-    required this.child,
-    required this.onTap,
-    super.key,
-  });
+  const FlowaPressable({required this.child, required this.onTap, super.key});
 
   final Widget child;
   final VoidCallback onTap;
