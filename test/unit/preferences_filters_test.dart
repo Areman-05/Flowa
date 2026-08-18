@@ -54,6 +54,16 @@ void main() {
       expect(TransactionFilters.totalOutgoing(items), 10);
       expect(TransactionFilters.totalIncoming(items), 20);
     });
+
+    test('searches by amount', () {
+      final found = TransactionFilters.apply(
+        items: items,
+        filter: TransactionFilter.all,
+        query: '10',
+      );
+      expect(found, hasLength(1));
+      expect(found.first.merchant, 'Apple');
+    });
   });
 
   group('InMemoryPreferencesRepository', () {

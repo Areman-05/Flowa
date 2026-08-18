@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('MockAccountRepository', () {
-    const repository = MockAccountRepository();
+    final repository = MockAccountRepository();
 
     test('returns primary Visa account', () async {
       final account = await repository.getPrimaryAccount();
@@ -43,7 +43,10 @@ void main() {
     test('keeps Send and Top-Up visually/logically distinct', () {
       expect(MoneyFlowKind.send.title, 'Send Money');
       expect(MoneyFlowKind.topUp.title, 'Top-Up');
-      expect(MoneyFlowKind.send.clarification, isNot(MoneyFlowKind.topUp.clarification));
+      expect(
+        MoneyFlowKind.send.clarification,
+        isNot(MoneyFlowKind.topUp.clarification),
+      );
       expect(MoneyFlowKind.topUp.requiresDestructiveConfirmation, isTrue);
       expect(MoneyFlowKind.send.requiresDestructiveConfirmation, isFalse);
     });
