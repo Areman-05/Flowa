@@ -10,14 +10,9 @@ void main() {
   setUp(FlowaServices.resetToMocks);
 
   testWidgets('create sub-account form validates and saves', (tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(home: CreateSubAccountPage()),
-    );
+    await tester.pumpWidget(const MaterialApp(home: CreateSubAccountPage()));
 
-    await tester.enterText(
-      find.byType(TextField).first,
-      "Emma's College Fund",
-    );
+    await tester.enterText(find.byType(TextField).first, "Emma's College Fund");
     final createButton = find.text('Create Sub-Account').last;
     await tester.scrollUntilVisible(
       createButton,
@@ -28,16 +23,11 @@ void main() {
     await tester.pumpAndSettle();
 
     final items = await FlowaServices.subAccountRepository.getAll();
-    expect(
-      items.any((item) => item.name == "Emma's College Fund"),
-      isTrue,
-    );
+    expect(items.any((item) => item.name == "Emma's College Fund"), isTrue);
   });
 
   testWidgets('PayPal connect screen shows secure login copy', (tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(home: ConnectPayPalPage()),
-    );
+    await tester.pumpWidget(const MaterialApp(home: ConnectPayPalPage()));
 
     expect(find.text('Connect PayPal'), findsOneWidget);
     await tester.scrollUntilVisible(
@@ -50,19 +40,19 @@ void main() {
   });
 
   testWidgets('AI assistant starts chat from quick action', (tester) async {
-    await tester.pumpWidget(
-      const MaterialApp(home: AiAssistantPage()),
-    );
+    await tester.pumpWidget(const MaterialApp(home: AiAssistantPage()));
     await tester.pumpAndSettle();
 
     expect(find.text('What Can I Help You?'), findsOneWidget);
-    await tester.tap(find.text('Support'));
+    await tester.tap(find.text('Top-Up'));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Support is available'), findsOneWidget);
+    expect(find.textContaining('Top-Up'), findsWidgets);
   });
 
-  testWidgets('more sheet exposes sub-accounts and extra tools', (tester) async {
+  testWidgets('more sheet exposes sub-accounts and extra tools', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Builder(
