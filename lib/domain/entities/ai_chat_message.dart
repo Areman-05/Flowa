@@ -1,9 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum AiMessageSender {
-  user,
-  assistant,
-}
+enum AiMessageSender { user, assistant, typing }
 
 class AiChatMessage extends Equatable {
   const AiChatMessage({
@@ -21,6 +18,8 @@ class AiChatMessage extends Equatable {
   final List<double> quickAmounts;
 
   bool get isUser => sender == AiMessageSender.user;
+
+  bool get isTyping => sender == AiMessageSender.typing;
 
   @override
   List<Object?> get props => [id, sender, text, sentAt, quickAmounts];
