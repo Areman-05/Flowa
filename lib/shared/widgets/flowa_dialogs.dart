@@ -48,6 +48,48 @@ Future<bool> showFlowaConfirmationDialog({
   return result ?? false;
 }
 
+Future<bool> showFlowaPreviewDialog({
+  required BuildContext context,
+  required String title,
+  required String message,
+  required String confirmLabel,
+  String cancelLabel = 'Cancel',
+}) async {
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return Dialog(
+        shape: const RoundedRectangleBorder(borderRadius: FlowaRadii.lgAll),
+        insetPadding: const EdgeInsets.symmetric(horizontal: FlowaSpacing.xl),
+        child: Padding(
+          padding: const EdgeInsets.all(FlowaSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: Theme.of(context).textTheme.headlineMedium),
+              const SizedBox(height: FlowaSpacing.sm),
+              Text(message, style: Theme.of(context).textTheme.bodyMedium),
+              const SizedBox(height: FlowaSpacing.xl),
+              FlowaPrimaryButton(
+                label: confirmLabel,
+                onPressed: () => Navigator.of(context).pop(true),
+              ),
+              const SizedBox(height: FlowaSpacing.sm),
+              FlowaSecondaryButton(
+                label: cancelLabel,
+                onPressed: () => Navigator.of(context).pop(false),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+
+  return result ?? false;
+}
+
 /// Compact warning banner (e.g. limit exceeded).
 class FlowaInlineAlert extends StatelessWidget {
   const FlowaInlineAlert({
@@ -77,16 +119,13 @@ class FlowaInlineAlert extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: FlowaColors.textPrimary,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: FlowaColors.textPrimary),
             ),
           ),
           if (actionLabel != null)
-            TextButton(
-              onPressed: onAction,
-              child: Text(actionLabel!),
-            ),
+            TextButton(onPressed: onAction, child: Text(actionLabel!)),
         ],
       ),
     );
