@@ -45,11 +45,19 @@ class MockAiAssistantService {
         text: text,
         sentAt: DateTime.now(),
       ),
+      AiChatMessage(
+        id: 'typing-$_counter',
+        sender: AiMessageSender.typing,
+        text: 'Typing…',
+        sentAt: DateTime.now(),
+      ),
     ];
+
+    await Future<void>.delayed(const Duration(milliseconds: 450));
 
     _counter += 1;
     _messages = [
-      ..._messages,
+      ..._messages.where((message) => !message.isTyping),
       _replyFor(text, id: 'ai-$_counter'),
     ];
     return messages;
