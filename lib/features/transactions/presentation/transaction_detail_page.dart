@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/utils/flowa_formatters.dart';
+import '../../../core/utils/transaction_export.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/finance_entities.dart';
 import '../../../shared/navigation/flowa_routes.dart';
+import '../../../shared/widgets/flowa_buttons.dart';
 import '../../support/presentation/support_center_page.dart';
 
 class TransactionDetailPage extends StatelessWidget {
@@ -12,10 +15,22 @@ class TransactionDetailPage extends StatelessWidget {
 
   final TransactionItem item;
 
+  Future<void> _shareReceipt(BuildContext context) async {
+    final receipt = TransactionExport.receiptFor(item);
+    await Clipboard.setData(ClipboardData(text: receipt));
+    if (!context.mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Receipt copied to clipboard.')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final amountColor =
-        item.isIncome ? FlowaColors.income : FlowaColors.textPrimary;
+    final amountColor = item.isIncome
+        ? FlowaColors.income
+        : FlowaColors.textPrimary;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Transaction details')),
@@ -39,9 +54,9 @@ class TransactionDetailPage extends StatelessWidget {
                   const SizedBox(height: FlowaSpacing.sm),
                   Text(
                     FlowaFormatters.signedCurrency(item.signedAmount),
-                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                          color: amountColor,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.displayLarge?.copyWith(color: amountColor),
                   ),
                   const SizedBox(height: FlowaSpacing.xs),
                   Text(
@@ -58,6 +73,11 @@ class TransactionDetailPage extends StatelessWidget {
               value: item.isIncome ? 'Incoming' : 'Outgoing',
             ),
             _DetailRow(label: 'Reference', value: item.id),
+            const SizedBox(height: FlowaSpacing.md),
+            FlowaSecondaryButton(
+              label: 'Share receipt',
+              onPressed: () => _shareReceipt(context),
+            ),
             const SizedBox(height: FlowaSpacing.xl),
             ListTile(
               contentPadding: EdgeInsets.zero,
@@ -65,10 +85,8 @@ class TransactionDetailPage extends StatelessWidget {
               title: const Text('Need help with this payment?'),
               subtitle: const Text('Open Support if something looks wrong'),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => pushFlowaRoute<void>(
-                context,
-                const SupportCenterPage(),
-              ),
+              onTap: () =>
+                  pushFlowaRoute<void>(context, const SupportCenterPage()),
             ),
           ],
         ),
