@@ -19,6 +19,7 @@ class WalletsPage extends StatefulWidget {
 class _WalletsPageState extends State<WalletsPage> {
   List<LinkedWallet> _wallets = const [];
   bool _loading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -27,18 +28,45 @@ class _WalletsPageState extends State<WalletsPage> {
   }
 
   Future<void> _load() async {
-    final wallets = await FlowaServices.walletRepository.getWallets();
-    if (!mounted) {
-      return;
-    }
     setState(() {
-      _wallets = wallets;
-      _loading = false;
+      _loading = true;
+      _error = null;
     });
+    try {
+      final wallets = await FlowaServices.walletRepository.getWallets();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _wallets = wallets;
+        _loading = false;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _loading = false;
+        _error = error.toString();
+      });
+    }
   }
 
   Future<void> _connect() async {
     await pushFlowaRoute<void>(context, const ConnectPayPalPage());
+    await _load();
+  }
+
+  Future<void> _disconnect(LinkedWallet wallet) async {
+    await FlowaServices.walletRepository.disconnect(wallet.id);
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Disconnected ${wallet.displayName ?? 'wallet'}.'),
+      ),
+    );
     await _load();
   }
 
@@ -48,6 +76,8 @@ class _WalletsPageState extends State<WalletsPage> {
       appBar: AppBar(title: const Text('Wallets')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
+          : _error != null
+          ? FlowaErrorState(message: _error!, onRetry: _load)
           : _wallets.isEmpty
           ? FlowaEmptyState(
               title: 'No wallets linked',
@@ -74,11 +104,16 @@ class _WalletsPageState extends State<WalletsPage> {
                           ? wallet.email ?? 'Connected'
                           : 'Not connected',
                     ),
-                    trailing: Text(
-                      wallet.isConnected ? 'Linked' : 'Connect',
-                      style: const TextStyle(color: FlowaColors.primary),
-                    ),
-                    onTap: _connect,
+                    trailing: wallet.isConnected
+                        ? TextButton(
+                            onPressed: () => _disconnect(wallet),
+                            child: const Text('Disconnect'),
+                          )
+                        : const Text(
+                            'Connect',
+                            style: TextStyle(color: FlowaColors.primary),
+                          ),
+                    onTap: wallet.isConnected ? null : _connect,
                   ),
                 const SizedBox(height: FlowaSpacing.xl),
                 FlowaPrimaryButton(
