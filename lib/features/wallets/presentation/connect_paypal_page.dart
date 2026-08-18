@@ -27,6 +27,12 @@ class _ConnectPayPalPageState extends State<ConnectPayPalPage> {
     super.dispose();
   }
 
+  void _placeholder(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
   Future<void> _connect() async {
     final emailError = FlowaValidators.email(_emailController.text);
     final passwordError = FlowaValidators.requiredLabel(
@@ -85,9 +91,9 @@ class _ConnectPayPalPageState extends State<ConnectPayPalPage> {
               'PayPal',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: const Color(0xFF003087),
-                    fontWeight: FontWeight.w800,
-                  ),
+                color: const Color(0xFF003087),
+                fontWeight: FontWeight.w800,
+              ),
             ),
             const SizedBox(height: FlowaSpacing.xxl),
             TextField(
@@ -114,16 +120,18 @@ class _ConnectPayPalPageState extends State<ConnectPayPalPage> {
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton(
-                onPressed: () {},
+                onPressed: () => _placeholder(
+                  'Password reset opens on PayPal in a full release.',
+                ),
                 child: const Text('Forgot password?'),
               ),
             ),
             if (_error != null) ...[
               Text(
                 _error!,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: FlowaColors.danger,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: FlowaColors.danger),
               ),
               const SizedBox(height: FlowaSpacing.sm),
             ],
@@ -146,7 +154,9 @@ class _ConnectPayPalPageState extends State<ConnectPayPalPage> {
             const SizedBox(height: FlowaSpacing.md),
             FlowaSecondaryButton(
               label: 'Create Account',
-              onPressed: () {},
+              onPressed: () => _placeholder(
+                'PayPal account creation stays on PayPal for this demo.',
+              ),
             ),
             const SizedBox(height: FlowaSpacing.xl),
             Row(
