@@ -49,4 +49,24 @@ class LocalPreferencesRepository implements PreferencesRepository {
 
   @override
   Future<void> setPinCode(String value) => _source.setPinCode(value);
+
+  @override
+  Future<double> getMonthlyBudgetLimit() async => _source.monthlyBudgetLimit;
+
+  @override
+  Future<void> setMonthlyBudgetLimit(double value) =>
+      _source.setMonthlyBudgetLimit(value);
+
+  @override
+  Future<bool> isBudgetEnabled() async => _source.budgetEnabled;
+
+  @override
+  Future<void> setBudgetEnabled(bool value) => _source.setBudgetEnabled(value);
+
+  @override
+  Future<bool> isBiometricEnabled() async => _source.biometricEnabled;
+
+  @override
+  Future<void> setBiometricEnabled(bool value) =>
+      _source.setBiometricEnabled(value);
 }

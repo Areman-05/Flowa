@@ -19,6 +19,18 @@ abstract class PreferencesRepository {
   Future<String> getPinCode();
 
   Future<void> setPinCode(String value);
+
+  Future<double> getMonthlyBudgetLimit();
+
+  Future<void> setMonthlyBudgetLimit(double value);
+
+  Future<bool> isBudgetEnabled();
+
+  Future<void> setBudgetEnabled(bool value);
+
+  Future<bool> isBiometricEnabled();
+
+  Future<void> setBiometricEnabled(bool value);
 }
 
 class NotificationPreferences {

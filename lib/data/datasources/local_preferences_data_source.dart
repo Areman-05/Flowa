@@ -9,6 +9,9 @@ abstract final class PreferenceKeys {
   static const marketingNotifications = 'marketing_notifications';
   static const pinEnabled = 'pin_enabled';
   static const pinCode = 'pin_code';
+  static const monthlyBudgetLimit = 'monthly_budget_limit';
+  static const budgetEnabled = 'budget_enabled';
+  static const biometricEnabled = 'biometric_enabled';
 }
 
 /// Thin wrapper over [SharedPreferences] for app settings.
@@ -61,4 +64,22 @@ class LocalPreferencesDataSource {
 
   Future<void> setPinCode(String value) =>
       _prefs.setString(PreferenceKeys.pinCode, value);
+
+  double get monthlyBudgetLimit =>
+      _prefs.getDouble(PreferenceKeys.monthlyBudgetLimit) ?? 500;
+
+  Future<void> setMonthlyBudgetLimit(double value) =>
+      _prefs.setDouble(PreferenceKeys.monthlyBudgetLimit, value);
+
+  bool get budgetEnabled =>
+      _prefs.getBool(PreferenceKeys.budgetEnabled) ?? false;
+
+  Future<void> setBudgetEnabled(bool value) =>
+      _prefs.setBool(PreferenceKeys.budgetEnabled, value);
+
+  bool get biometricEnabled =>
+      _prefs.getBool(PreferenceKeys.biometricEnabled) ?? false;
+
+  Future<void> setBiometricEnabled(bool value) =>
+      _prefs.setBool(PreferenceKeys.biometricEnabled, value);
 }

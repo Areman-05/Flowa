@@ -11,6 +11,9 @@ class InMemoryPreferencesRepository implements PreferencesRepository {
   );
   bool _pinEnabled = false;
   String _pinCode = '';
+  double _monthlyBudgetLimit = 500;
+  bool _budgetEnabled = false;
+  bool _biometricEnabled = false;
 
   @override
   Future<bool> isOnboardingComplete() async => _onboardingComplete;
@@ -55,11 +58,38 @@ class InMemoryPreferencesRepository implements PreferencesRepository {
     _pinCode = value;
   }
 
+  @override
+  Future<double> getMonthlyBudgetLimit() async => _monthlyBudgetLimit;
+
+  @override
+  Future<void> setMonthlyBudgetLimit(double value) async {
+    _monthlyBudgetLimit = value;
+  }
+
+  @override
+  Future<bool> isBudgetEnabled() async => _budgetEnabled;
+
+  @override
+  Future<void> setBudgetEnabled(bool value) async {
+    _budgetEnabled = value;
+  }
+
+  @override
+  Future<bool> isBiometricEnabled() async => _biometricEnabled;
+
+  @override
+  Future<void> setBiometricEnabled(bool value) async {
+    _biometricEnabled = value;
+  }
+
   void reset() {
     _onboardingComplete = false;
     _balanceHiddenByDefault = true;
     _pinEnabled = false;
     _pinCode = '';
+    _monthlyBudgetLimit = 500;
+    _budgetEnabled = false;
+    _biometricEnabled = false;
     _notifications = const NotificationPreferences(
       allowNotifications: true,
       transactionNotifications: true,
