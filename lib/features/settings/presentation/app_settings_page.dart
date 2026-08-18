@@ -16,6 +16,8 @@ class AppSettingsPage extends StatefulWidget {
 
 class _AppSettingsPageState extends State<AppSettingsPage> {
   bool _balanceHidden = true;
+  bool _budgetEnabled = false;
+  double _budgetLimit = 500;
   bool _loading = true;
 
   @override
@@ -27,11 +29,17 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
   Future<void> _load() async {
     final hidden = await FlowaServices.preferencesRepository
         .isBalanceHiddenByDefault();
+    final budgetEnabled = await FlowaServices.preferencesRepository
+        .isBudgetEnabled();
+    final budgetLimit = await FlowaServices.preferencesRepository
+        .getMonthlyBudgetLimit();
     if (!mounted) {
       return;
     }
     setState(() {
       _balanceHidden = hidden;
+      _budgetEnabled = budgetEnabled;
+      _budgetLimit = budgetLimit;
       _loading = false;
     });
   }
@@ -57,6 +65,66 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                         .setBalanceHiddenByDefault(value);
                   },
                 ),
+                SwitchListTile(
+                  contentPadding: FlowaSpacing.screenPadding,
+                  title: const Text('Monthly budget target'),
+                  subtitle: const Text(
+                    'Track spending against a cap in Insights',
+                  ),
+                  value: _budgetEnabled,
+                  onChanged: (value) async {
+                    setState(() => _budgetEnabled = value);
+                    await FlowaServices.preferencesRepository.setBudgetEnabled(
+                      value,
+                    );
+                  },
+                ),
+                if (_budgetEnabled)
+                  ListTile(
+                    contentPadding: FlowaSpacing.screenPadding,
+                    title: const Text('Budget limit'),
+                    subtitle: Text('\$${_budgetLimit.toStringAsFixed(0)}'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () async {
+                      final controller = TextEditingController(
+                        text: _budgetLimit.toStringAsFixed(0),
+                      );
+                      final next = await showDialog<double>(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Monthly budget'),
+                            content: TextField(
+                              controller: controller,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                prefixText: '\$ ',
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  final value =
+                                      double.tryParse(controller.text) ?? 0;
+                                  Navigator.pop(context, value);
+                                },
+                                child: const Text('Save'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      if (next != null && next > 0) {
+                        setState(() => _budgetLimit = next);
+                        await FlowaServices.preferencesRepository
+                            .setMonthlyBudgetLimit(next);
+                      }
+                    },
+                  ),
                 const Divider(height: 1),
                 ListTile(
                   contentPadding: FlowaSpacing.screenPadding,
@@ -80,7 +148,6 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                   child: FlowaSecondaryButton(
                     label: 'Replay onboarding',
                     onPressed: () async {
-                      // Kept simple: mark incomplete and ask user to restart app.
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
