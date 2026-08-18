@@ -123,6 +123,7 @@ class PinSetupPage extends StatefulWidget {
 class _PinSetupPageState extends State<PinSetupPage> {
   final _controller = TextEditingController();
   bool _enabled = false;
+  bool _biometric = false;
   bool _loading = true;
   String? _error;
 
@@ -135,11 +136,14 @@ class _PinSetupPageState extends State<PinSetupPage> {
   Future<void> _load() async {
     final enabled = await FlowaServices.preferencesRepository.isPinEnabled();
     final code = await FlowaServices.preferencesRepository.getPinCode();
+    final biometric = await FlowaServices.preferencesRepository
+        .isBiometricEnabled();
     if (!mounted) {
       return;
     }
     setState(() {
       _enabled = enabled;
+      _biometric = biometric;
       _controller.text = code;
       _loading = false;
     });
@@ -167,6 +171,7 @@ class _PinSetupPageState extends State<PinSetupPage> {
     }
     await FlowaServices.preferencesRepository.setPinCode(_controller.text);
     await FlowaServices.preferencesRepository.setPinEnabled(true);
+    await FlowaServices.preferencesRepository.setBiometricEnabled(_biometric);
     if (!mounted) {
       return;
     }
@@ -188,6 +193,17 @@ class _PinSetupPageState extends State<PinSetupPage> {
                   subtitle: const Text('Protects the app after onboarding'),
                   value: _enabled,
                   onChanged: (value) => setState(() => _enabled = value),
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Biometric unlock'),
+                  subtitle: const Text(
+                    'Face ID / fingerprint placeholder for a future release',
+                  ),
+                  value: _biometric,
+                  onChanged: _enabled
+                      ? (value) => setState(() => _biometric = value)
+                      : null,
                 ),
                 if (_enabled) ...[
                   const SizedBox(height: FlowaSpacing.md),
