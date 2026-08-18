@@ -5,8 +5,10 @@ import '../../../design_system/components/flowa_amount_chips.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/ai_chat_message.dart';
+import '../../../shared/navigation/flowa_routes.dart';
 import '../../receive/presentation/receive_page.dart';
 import '../../send_money/presentation/send_money_page.dart';
+import '../../support/presentation/support_center_page.dart';
 import '../../top_up/presentation/top_up_page.dart';
 
 class AiAssistantPage extends StatefulWidget {
@@ -66,19 +68,29 @@ class _AiAssistantPageState extends State<AiAssistantPage> {
 
   Future<void> _quickAction(String label) async {
     if (label == 'Send') {
-      await Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const SendMoneyPage()),
-      );
+      await Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => const SendMoneyPage()));
     } else if (label == 'Top-Up') {
-      await Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const TopUpPage()),
-      );
+      await Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => const TopUpPage()));
     } else if (label == 'Receive') {
-      await Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => const ReceivePage()),
-      );
+      await Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => const ReceivePage()));
+    } else if (label == 'Support') {
+      await pushFlowaRoute<void>(context, const SupportCenterPage());
     }
     await _send(label);
+  }
+
+  void _micPlaceholder() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Voice input is coming soon — type for now.'),
+      ),
+    );
   }
 
   @override
@@ -92,129 +104,145 @@ class _AiAssistantPageState extends State<AiAssistantPage> {
           padding: FlowaSpacing.screenPadding,
           child: Column(
             children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: _startNewChat,
-                icon: const Icon(Icons.auto_awesome, size: 18),
-                label: const Text('Start a New Chat'),
-              ),
-            ),
-            if (!_chatStarted) ...[
-              const Spacer(),
-              Icon(
-                Icons.auto_awesome,
-                size: 48,
-                color: FlowaColors.primary.withValues(alpha: 0.9),
-              ),
-              const SizedBox(height: FlowaSpacing.md),
-              Text(
-                'What Can I Help You?',
-                style: textTheme.headlineMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: FlowaSpacing.lg),
-              Wrap(
-                spacing: FlowaSpacing.sm,
-                runSpacing: FlowaSpacing.sm,
-                alignment: WrapAlignment.center,
-                children: [
-                  _AiChip(
-                    label: 'Send',
-                    icon: Icons.send_outlined,
-                    onTap: () => _quickAction('Send'),
-                  ),
-                  _AiChip(
-                    label: 'Receive',
-                    icon: Icons.call_received,
-                    onTap: () => _quickAction('Receive'),
-                  ),
-                  _AiChip(
-                    label: 'Top-Up',
-                    icon: Icons.phone_android,
-                    onTap: () => _quickAction('Top-Up'),
-                  ),
-                  _AiChip(
-                    label: 'Support',
-                    icon: Icons.support_agent,
-                    onTap: () => _quickAction('Support'),
-                  ),
-                  _AiChip(
-                    label: 'More',
-                    icon: Icons.more_horiz,
-                    onTap: () => _quickAction('More'),
-                  ),
-                ],
-              ),
-              const Spacer(),
-            ] else
-              Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount: _messages.length,
-                  itemBuilder: (context, index) {
-                    final message = _messages[index];
-                    return _ChatBubble(
-                      message: message,
-                      onAmountSelected: (amount) {
-                        _send('\$${amount.toStringAsFixed(0)}');
-                      },
-                    );
-                  },
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: _startNewChat,
+                  icon: const Icon(Icons.auto_awesome, size: 18),
+                  label: const Text('Start a New Chat'),
                 ),
               ),
-            TextField(
-              controller: _controller,
-              textInputAction: TextInputAction.send,
-              onSubmitted: _send,
-              decoration: InputDecoration(
-                hintText: _chatStarted
-                    ? 'Ask Anything'
-                    : 'Tell me what do you want',
-                suffixIcon: Row(
-                  mainAxisSize: MainAxisSize.min,
+              if (!_chatStarted) ...[
+                const Spacer(),
+                Icon(
+                  Icons.auto_awesome,
+                  size: 48,
+                  color: FlowaColors.primary.withValues(alpha: 0.9),
+                ),
+                const SizedBox(height: FlowaSpacing.md),
+                Text(
+                  'What Can I Help You?',
+                  style: textTheme.headlineMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: FlowaSpacing.lg),
+                Wrap(
+                  spacing: FlowaSpacing.sm,
+                  runSpacing: FlowaSpacing.sm,
+                  alignment: WrapAlignment.center,
                   children: [
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.mic_none_rounded),
+                    _AiChip(
+                      label: 'Send',
+                      icon: Icons.send_outlined,
+                      onTap: () => _quickAction('Send'),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(right: FlowaSpacing.xs),
-                      child: CircleAvatar(
-                        backgroundColor: FlowaColors.primary,
-                        child: IconButton(
-                          onPressed: () => _send(_controller.text),
-                          icon: const Icon(
-                            Icons.send_rounded,
-                            color: FlowaColors.textOnPrimary,
-                            size: 18,
-                          ),
-                        ),
-                      ),
+                    _AiChip(
+                      label: 'Receive',
+                      icon: Icons.call_received,
+                      onTap: () => _quickAction('Receive'),
+                    ),
+                    _AiChip(
+                      label: 'Top-Up',
+                      icon: Icons.phone_android,
+                      onTap: () => _quickAction('Top-Up'),
+                    ),
+                    _AiChip(
+                      label: 'Support',
+                      icon: Icons.support_agent,
+                      onTap: () => _quickAction('Support'),
+                    ),
+                    _AiChip(
+                      label: 'More',
+                      icon: Icons.more_horiz,
+                      onTap: () => _quickAction('More'),
                     ),
                   ],
                 ),
+                const Spacer(),
+              ] else
+                Expanded(
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final message = _messages[index];
+                      return _ChatBubble(
+                        message: message,
+                        onAmountSelected: (amount) {
+                          _send('\$${amount.toStringAsFixed(0)}');
+                        },
+                      );
+                    },
+                  ),
+                ),
+              TextField(
+                controller: _controller,
+                textInputAction: TextInputAction.send,
+                onSubmitted: _send,
+                decoration: InputDecoration(
+                  hintText: _chatStarted
+                      ? 'Ask Anything'
+                      : 'Tell me what do you want',
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: _micPlaceholder,
+                        icon: const Icon(Icons.mic_none_rounded),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(right: FlowaSpacing.xs),
+                        child: CircleAvatar(
+                          backgroundColor: FlowaColors.primary,
+                          child: IconButton(
+                            onPressed: () => _send(_controller.text),
+                            icon: const Icon(
+                              Icons.send_rounded,
+                              color: FlowaColors.textOnPrimary,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
 }
 
 class _ChatBubble extends StatelessWidget {
-  const _ChatBubble({
-    required this.message,
-    required this.onAmountSelected,
-  });
+  const _ChatBubble({required this.message, required this.onAmountSelected});
 
   final AiChatMessage message;
   final ValueChanged<double> onAmountSelected;
 
   @override
   Widget build(BuildContext context) {
+    if (message.isTyping) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: FlowaSpacing.sm),
+          padding: const EdgeInsets.symmetric(
+            horizontal: FlowaSpacing.md,
+            vertical: FlowaSpacing.sm,
+          ),
+          decoration: BoxDecoration(
+            color: FlowaColors.surface,
+            borderRadius: FlowaRadii.lgAll,
+            border: Border.all(color: FlowaColors.border),
+          ),
+          child: const Text('Assistant is typing…'),
+        ),
+      );
+    }
+
     final isUser = message.isUser;
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
@@ -235,10 +263,10 @@ class _ChatBubble extends StatelessWidget {
             Text(
               message.text,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: isUser
-                        ? FlowaColors.textOnPrimary
-                        : FlowaColors.textPrimary,
-                  ),
+                color: isUser
+                    ? FlowaColors.textOnPrimary
+                    : FlowaColors.textPrimary,
+              ),
             ),
             if (message.quickAmounts.isNotEmpty) ...[
               const SizedBox(height: FlowaSpacing.sm),
@@ -256,11 +284,7 @@ class _ChatBubble extends StatelessWidget {
 }
 
 class _AiChip extends StatelessWidget {
-  const _AiChip({
-    required this.label,
-    required this.icon,
-    required this.onTap,
-  });
+  const _AiChip({required this.label, required this.icon, required this.onTap});
 
   final String label;
   final IconData icon;
