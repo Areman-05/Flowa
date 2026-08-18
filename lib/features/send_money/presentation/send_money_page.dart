@@ -8,6 +8,7 @@ import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/finance_entities.dart';
 import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
+import 'scheduled_transfers_page.dart';
 import 'send_review_page.dart';
 
 /// Send Money flow — visually distinct from Top-Up (purple source card).
@@ -168,6 +169,18 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                     ),
                   ),
                   const SizedBox(height: FlowaSpacing.xxl),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () => pushFlowaRoute<void>(
+                        context,
+                        const ScheduledTransfersPage(),
+                      ),
+                      icon: const Icon(Icons.schedule_outlined),
+                      label: const Text('Scheduled transfers'),
+                    ),
+                  ),
+                  const SizedBox(height: FlowaSpacing.sm),
                   FlowaPrimaryButton(label: 'Continue', onPressed: _submit),
                   const SizedBox(height: FlowaSpacing.sm),
                   Text(
