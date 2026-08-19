@@ -83,7 +83,9 @@ class _InsightsPageState extends State<InsightsPage> {
               title: 'No activity yet',
               message: 'Insights appear after your first movements.',
             )
-          : ListView(
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: ListView(
               padding: FlowaSpacing.screenPadding,
               children: [
                 Wrap(
@@ -146,6 +148,35 @@ class _InsightsPageState extends State<InsightsPage> {
                     '${FlowaFormatters.currency(budget.monthlyLimit)} spent',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
+                  if (budget.progressFor(snapshot.outgoing) >= 0.8)
+                    Padding(
+                      padding: const EdgeInsets.only(top: FlowaSpacing.sm),
+                      child: Material(
+                        color: FlowaColors.warningSoft,
+                        borderRadius: FlowaRadii.smAll,
+                        child: Padding(
+                          padding: FlowaSpacing.cardPadding,
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.warning_amber_rounded,
+                                color: FlowaColors.warning,
+                                size: 20,
+                              ),
+                              const SizedBox(width: FlowaSpacing.sm),
+                              Expanded(
+                                child: Text(
+                                  budget.isOverBudget(snapshot.outgoing)
+                                      ? 'You exceeded your monthly budget.'
+                                      : 'You are approaching your budget limit.',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
                 const SizedBox(height: FlowaSpacing.xl),
                 Text(
@@ -185,6 +216,7 @@ class _InsightsPageState extends State<InsightsPage> {
                 ),
               ],
             ),
+          ),
     );
   }
 }
