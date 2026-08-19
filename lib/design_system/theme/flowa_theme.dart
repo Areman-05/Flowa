@@ -5,7 +5,7 @@ import '../tokens/flowa_colors.dart';
 import '../tokens/flowa_spacing.dart';
 import '../tokens/flowa_typography.dart';
 
-/// Builds the light [ThemeData] consumed by Flowa.
+/// Builds the [ThemeData] variants consumed by Flowa.
 abstract final class FlowaTheme {
   static ThemeData light() {
     final colorScheme = ColorScheme.fromSeed(
@@ -18,26 +18,82 @@ abstract final class FlowaTheme {
       error: FlowaColors.danger,
     );
 
+    return _build(
+      colorScheme: colorScheme,
+      brightness: Brightness.light,
+      scaffoldBg: FlowaColors.background,
+      surfaceColor: FlowaColors.surface,
+      textPrimary: FlowaColors.textPrimary,
+      textOnPrimary: FlowaColors.textOnPrimary,
+      borderColor: FlowaColors.border,
+      surfaceMuted: FlowaColors.surfaceMuted,
+      overlayStyle: SystemUiOverlayStyle.dark,
+    );
+  }
+
+  static ThemeData dark() {
+    const darkBg = Color(0xFF0F1117);
+    const darkSurface = Color(0xFF1A1D27);
+    const darkBorder = Color(0xFF2A2D37);
+    const darkMuted = Color(0xFF22252F);
+    const darkText = Color(0xFFE5E7EB);
+    const darkTextOn = Color(0xFFFFFFFF);
+
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: FlowaColors.primary,
+      brightness: Brightness.dark,
+      primary: FlowaColors.primary,
+      onPrimary: darkTextOn,
+      secondary: FlowaColors.primarySoft,
+      surface: darkSurface,
+      onSurface: darkText,
+      error: FlowaColors.danger,
+    );
+
+    return _build(
+      colorScheme: colorScheme,
+      brightness: Brightness.dark,
+      scaffoldBg: darkBg,
+      surfaceColor: darkSurface,
+      textPrimary: darkText,
+      textOnPrimary: darkTextOn,
+      borderColor: darkBorder,
+      surfaceMuted: darkMuted,
+      overlayStyle: SystemUiOverlayStyle.light,
+    );
+  }
+
+  static ThemeData _build({
+    required ColorScheme colorScheme,
+    required Brightness brightness,
+    required Color scaffoldBg,
+    required Color surfaceColor,
+    required Color textPrimary,
+    required Color textOnPrimary,
+    required Color borderColor,
+    required Color surfaceMuted,
+    required SystemUiOverlayStyle overlayStyle,
+  }) {
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.light,
+      brightness: brightness,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: FlowaColors.background,
+      scaffoldBackgroundColor: scaffoldBg,
       textTheme: FlowaTypography.textTheme,
       fontFamily: FlowaTypography.fontFamily,
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
-        backgroundColor: FlowaColors.surface,
-        foregroundColor: FlowaColors.textPrimary,
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
+        backgroundColor: surfaceColor,
+        foregroundColor: textPrimary,
+        systemOverlayStyle: overlayStyle,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: 0,
           backgroundColor: FlowaColors.primary,
-          foregroundColor: FlowaColors.textOnPrimary,
+          foregroundColor: textOnPrimary,
           minimumSize: const Size.fromHeight(56),
           shape: const RoundedRectangleBorder(borderRadius: FlowaRadii.mdAll),
           textStyle: FlowaTypography.textTheme.labelLarge,
@@ -46,22 +102,22 @@ abstract final class FlowaTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: FlowaColors.primary,
-          foregroundColor: FlowaColors.textOnPrimary,
+          foregroundColor: textOnPrimary,
           minimumSize: const Size.fromHeight(56),
           shape: const RoundedRectangleBorder(borderRadius: FlowaRadii.mdAll),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: FlowaColors.textPrimary,
+          foregroundColor: textPrimary,
           minimumSize: const Size.fromHeight(56),
-          side: const BorderSide(color: FlowaColors.border),
+          side: BorderSide(color: borderColor),
           shape: const RoundedRectangleBorder(borderRadius: FlowaRadii.mdAll),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: FlowaColors.surfaceMuted,
+        fillColor: surfaceMuted,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: FlowaSpacing.md,
           vertical: FlowaSpacing.md,
@@ -80,35 +136,35 @@ abstract final class FlowaTheme {
         ),
         hintStyle: FlowaTypography.textTheme.bodyMedium,
       ),
-      dividerTheme: const DividerThemeData(
-        color: FlowaColors.border,
+      dividerTheme: DividerThemeData(
+        color: borderColor,
         thickness: 1,
         space: 1,
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
-          return FlowaColors.surface;
+          return surfaceColor;
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return FlowaColors.primary;
           }
-          return FlowaColors.border;
+          return borderColor;
         }),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: FlowaColors.surface,
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: surfaceColor,
         selectedItemColor: FlowaColors.primary,
-        unselectedItemColor: FlowaColors.textTertiary,
+        unselectedItemColor: textPrimary.withValues(alpha: 0.45),
         type: BottomNavigationBarType.fixed,
         elevation: 8,
         showUnselectedLabels: true,
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: FlowaColors.textPrimary,
+        backgroundColor: textPrimary,
         contentTextStyle: FlowaTypography.textTheme.bodyMedium?.copyWith(
-          color: FlowaColors.textOnPrimary,
+          color: textOnPrimary,
         ),
         shape: const RoundedRectangleBorder(borderRadius: FlowaRadii.smAll),
       ),
