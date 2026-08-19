@@ -48,6 +48,8 @@ class _SupportCenterPageState extends State<SupportCenterPage> {
                 ),
               ),
               const SizedBox(height: FlowaSpacing.md),
+              const _ContactSection(),
+              const SizedBox(height: FlowaSpacing.md),
               Expanded(
                 child: items.isEmpty
                     ? const FlowaEmptyState(
@@ -116,6 +118,49 @@ class _SupportCenterPageState extends State<SupportCenterPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ContactSection extends StatelessWidget {
+  const _ContactSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Email support@flowa.app')),
+              );
+            },
+            icon: const Icon(Icons.email_outlined),
+            label: const Text('Contact us'),
+            style: OutlinedButton.styleFrom(
+              minimumSize: Size.zero,
+              padding: const EdgeInsets.symmetric(vertical: FlowaSpacing.sm),
+            ),
+          ),
+        ),
+        const SizedBox(width: FlowaSpacing.sm),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Thanks for your feedback!')),
+              );
+            },
+            icon: const Icon(Icons.star_outline),
+            label: const Text('Rate app'),
+            style: OutlinedButton.styleFrom(
+              minimumSize: Size.zero,
+              padding: const EdgeInsets.symmetric(vertical: FlowaSpacing.sm),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
