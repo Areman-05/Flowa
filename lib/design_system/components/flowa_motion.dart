@@ -114,6 +114,83 @@ class FlowaListSkeleton extends StatelessWidget {
   }
 }
 
+/// Staggered fade+slide entrance for list items.
+class FlowaStaggeredList extends StatelessWidget {
+  const FlowaStaggeredList({
+    required this.itemCount,
+    required this.itemBuilder,
+    super.key,
+    this.staggerDelay = const Duration(milliseconds: 60),
+  });
+
+  final int itemCount;
+  final Widget Function(BuildContext, int) itemBuilder;
+  final Duration staggerDelay;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: List.generate(itemCount, (index) {
+        return _StaggeredItem(
+          delay: staggerDelay * index,
+          child: itemBuilder(context, index),
+        );
+      }),
+    );
+  }
+}
+
+class _StaggeredItem extends StatefulWidget {
+  const _StaggeredItem({required this.delay, required this.child});
+
+  final Duration delay;
+  final Widget child;
+
+  @override
+  State<_StaggeredItem> createState() => _StaggeredItemState();
+}
+
+class _StaggeredItemState extends State<_StaggeredItem>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _opacity;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: FlowaConstants.defaultAnimationDuration,
+    );
+    _opacity = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    Future.delayed(widget.delay, () {
+      if (mounted) {
+        _controller.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _opacity,
+      child: SlideTransition(position: _slide, child: widget.child),
+    );
+  }
+}
+
 /// Scale-on-press wrapper for quick action tiles.
 class FlowaPressable extends StatefulWidget {
   const FlowaPressable({required this.child, required this.onTap, super.key});
