@@ -11,7 +11,16 @@ abstract final class FlowaFormatters {
 
   static final DateFormat _transactionStamp = DateFormat('MMM d · hh:mm a');
 
-  static String currency(double amount) => _currency.format(amount);
+  static String currency(double amount, {String? locale}) {
+    if (locale != null) {
+      return NumberFormat.currency(
+        locale: locale,
+        symbol: FlowaConstants.currencySymbol,
+        decimalDigits: 2,
+      ).format(amount);
+    }
+    return _currency.format(amount);
+  }
 
   static String signedCurrency(double signedAmount) {
     final absolute = currency(signedAmount.abs());
