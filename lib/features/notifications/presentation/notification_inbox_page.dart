@@ -75,14 +75,16 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
           ),
         ],
       ),
-      body: _loading
+      body: RefreshIndicator(
+        onRefresh: _load,
+        child: _loading
           ? const Center(child: CircularProgressIndicator())
           : _items.isEmpty
-          ? const FlowaEmptyState(
+          ? ListView(children: const [FlowaEmptyState(
               title: 'No alerts',
               message: 'Transaction and security alerts will show up here.',
               icon: Icons.notifications_none_rounded,
-            )
+            )])
           : ListView.separated(
               padding: FlowaSpacing.screenPadding,
               itemCount: _items.length,
@@ -125,6 +127,7 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
                 );
               },
             ),
+      ),
     );
   }
 }
