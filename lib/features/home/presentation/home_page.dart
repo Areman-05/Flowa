@@ -19,12 +19,14 @@ import '../../receive/presentation/receive_page.dart';
 import '../../send_money/presentation/send_money_page.dart';
 import '../../top_up/presentation/top_up_page.dart';
 import '../../transactions/presentation/transaction_detail_page.dart';
+import 'card_details_sheet.dart';
 
 /// Home dashboard with live account card and recent transactions.
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, this.onSeeAllTransactions});
+  const HomePage({super.key, this.onSeeAllTransactions, this.onBadgeRefresh});
 
   final VoidCallback? onSeeAllTransactions;
+  final VoidCallback? onBadgeRefresh;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -155,16 +157,19 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
             const SizedBox(height: FlowaSpacing.lg),
-            FlowaVisaCard(
-              account: _account!,
-              balanceVisible: _balanceVisible,
-              isFrozen: _cardFrozen,
-              onToggleVisibility: () {
-                setState(() => _balanceVisible = !_balanceVisible);
-              },
-              onToggleFreeze: () {
-                setState(() => _cardFrozen = !_cardFrozen);
-              },
+            GestureDetector(
+              onLongPress: () => showCardDetailsSheet(context, _account!),
+              child: FlowaVisaCard(
+                account: _account!,
+                balanceVisible: _balanceVisible,
+                isFrozen: _cardFrozen,
+                onToggleVisibility: () {
+                  setState(() => _balanceVisible = !_balanceVisible);
+                },
+                onToggleFreeze: () {
+                  setState(() => _cardFrozen = !_cardFrozen);
+                },
+              ),
             ),
             const SizedBox(height: FlowaSpacing.md),
             GestureDetector(
