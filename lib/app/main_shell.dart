@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/utils/flowa_services.dart';
 import '../design_system/tokens/flowa_colors.dart';
 import '../features/ai_assistant/presentation/ai_assistant_page.dart';
 import '../features/home/presentation/home_page.dart';
@@ -16,15 +17,33 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _index = 0;
+  int _unread = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshBadge();
+  }
 
   void _openTransactionsTab() {
     setState(() => _index = 1);
   }
 
+  Future<void> _refreshBadge() async {
+    final count = await FlowaServices.inboxRepository.unreadCount();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _unread = count);
+  }
+
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      HomePage(onSeeAllTransactions: _openTransactionsTab),
+      HomePage(
+        onSeeAllTransactions: _openTransactionsTab,
+        onBadgeRefresh: _refreshBadge,
+      ),
       const TransactionsPage(),
       const AiAssistantPage(),
       const ProfilePage(),
@@ -38,27 +57,36 @@ class _MainShellState extends State<MainShell> {
         indicatorColor: FlowaColors.primarySoft,
         onDestinationSelected: (value) {
           setState(() => _index = value);
+          _refreshBadge();
         },
-        destinations: const [
-          NavigationDestination(
+        destinations: [
+          const NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home_rounded),
             label: 'Home',
             tooltip: 'Home dashboard',
           ),
           NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long_rounded),
+            icon: Badge(
+              isLabelVisible: _unread > 0,
+              smallSize: 8,
+              child: const Icon(Icons.receipt_long_outlined),
+            ),
+            selectedIcon: Badge(
+              isLabelVisible: _unread > 0,
+              smallSize: 8,
+              child: const Icon(Icons.receipt_long_rounded),
+            ),
             label: 'Transaction',
             tooltip: 'Transaction history',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.auto_awesome_outlined),
             selectedIcon: Icon(Icons.auto_awesome),
             label: 'AI',
             tooltip: 'AI assistant',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person_rounded),
             label: 'Profile',
