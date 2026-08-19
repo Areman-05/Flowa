@@ -19,6 +19,17 @@ abstract final class TransactionExport {
         'Reference: ${item.id}';
   }
 
+  static String toPdfPlaceholder(List<TransactionItem> items) {
+    final buffer = StringBuffer('FLOWA STATEMENT\n');
+    buffer.writeln('Generated: ${DateTime.now().toIso8601String()}\n');
+    buffer.writeln(header);
+    for (final item in items) {
+      buffer.writeln(_rowFor(item));
+    }
+    buffer.writeln('\nTotal items: ${items.length}');
+    return buffer.toString();
+  }
+
   static String _rowFor(TransactionItem item) {
     final date = FlowaFormatters.transactionStamp(item.occurredAt);
     final direction = item.isIncome ? 'Incoming' : 'Outgoing';

@@ -61,6 +61,19 @@ class _TransactionsPageState extends State<TransactionsPage> {
     );
   }
 
+  Future<void> _exportPdf() async {
+    final text = TransactionExport.toPdfPlaceholder(_visible);
+    await Clipboard.setData(ClipboardData(text: text));
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Statement copied. PDF generation coming soon.'),
+      ),
+    );
+  }
+
   Future<void> _export() async {
     final csv = TransactionExport.toCsv(_visible);
     await Clipboard.setData(ClipboardData(text: csv));
@@ -83,10 +96,20 @@ class _TransactionsPageState extends State<TransactionsPage> {
       appBar: AppBar(
         title: const Text('Transactions'),
         actions: [
-          IconButton(
-            tooltip: 'Export CSV',
-            onPressed: _visible.isEmpty ? null : _export,
+          PopupMenuButton<String>(
             icon: const Icon(Icons.download_outlined),
+            enabled: _visible.isNotEmpty,
+            onSelected: (value) {
+              if (value == 'csv') {
+                _export();
+              } else if (value == 'pdf') {
+                _exportPdf();
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'csv', child: Text('Copy as CSV')),
+              PopupMenuItem(value: 'pdf', child: Text('Export statement')),
+            ],
           ),
         ],
       ),
