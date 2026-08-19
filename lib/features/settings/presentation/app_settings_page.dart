@@ -6,6 +6,7 @@ import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
 import '../../lock/presentation/pin_lock_pages.dart';
 import '../../notifications/presentation/notification_settings_page.dart';
+import 'about_page.dart';
 
 class AppSettingsPage extends StatefulWidget {
   const AppSettingsPage({super.key});
@@ -18,6 +19,7 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
   bool _balanceHidden = true;
   bool _budgetEnabled = false;
   double _budgetLimit = 500;
+  bool _darkMode = false;
   bool _loading = true;
 
   @override
@@ -27,12 +29,14 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
   }
 
   Future<void> _load() async {
-    final hidden = await FlowaServices.preferencesRepository
-        .isBalanceHiddenByDefault();
-    final budgetEnabled = await FlowaServices.preferencesRepository
-        .isBudgetEnabled();
-    final budgetLimit = await FlowaServices.preferencesRepository
-        .getMonthlyBudgetLimit();
+    final hidden =
+        await FlowaServices.preferencesRepository.isBalanceHiddenByDefault();
+    final budgetEnabled =
+        await FlowaServices.preferencesRepository.isBudgetEnabled();
+    final budgetLimit =
+        await FlowaServices.preferencesRepository.getMonthlyBudgetLimit();
+    final dark =
+        await FlowaServices.preferencesRepository.isDarkModeEnabled();
     if (!mounted) {
       return;
     }
@@ -40,6 +44,7 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
       _balanceHidden = hidden;
       _budgetEnabled = budgetEnabled;
       _budgetLimit = budgetLimit;
+      _darkMode = dark;
       _loading = false;
     });
   }
@@ -67,6 +72,17 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                 ),
                 SwitchListTile(
                   contentPadding: FlowaSpacing.screenPadding,
+                  title: const Text('Dark mode'),
+                  subtitle: const Text('Switch to dark colour scheme'),
+                  value: _darkMode,
+                  onChanged: (value) async {
+                    setState(() => _darkMode = value);
+                    await FlowaServices.preferencesRepository
+                        .setDarkModeEnabled(value);
+                  },
+                ),
+                SwitchListTile(
+                  contentPadding: FlowaSpacing.screenPadding,
                   title: const Text('Monthly budget target'),
                   subtitle: const Text(
                     'Track spending against a cap in Insights',
@@ -74,9 +90,8 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                   value: _budgetEnabled,
                   onChanged: (value) async {
                     setState(() => _budgetEnabled = value);
-                    await FlowaServices.preferencesRepository.setBudgetEnabled(
-                      value,
-                    );
+                    await FlowaServices.preferencesRepository
+                        .setBudgetEnabled(value);
                   },
                 ),
                 if (_budgetEnabled)
@@ -142,6 +157,14 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                   trailing: const Icon(Icons.lock_outline),
                   onTap: () =>
                       pushFlowaRoute<void>(context, const PinSetupPage()),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  contentPadding: FlowaSpacing.screenPadding,
+                  title: const Text('About Flowa'),
+                  trailing: const Icon(Icons.info_outline),
+                  onTap: () =>
+                      pushFlowaRoute<void>(context, const AboutPage()),
                 ),
                 Padding(
                   padding: FlowaSpacing.screenPadding,

@@ -7,7 +7,7 @@ import '../features/lock/presentation/pin_lock_pages.dart';
 import '../features/onboarding/presentation/onboarding_page.dart';
 import 'main_shell.dart';
 
-/// Application root widget with onboarding and optional PIN gates.
+/// Application root widget with onboarding, optional PIN, and dark mode.
 class FlowaApp extends StatefulWidget {
   const FlowaApp({super.key});
 
@@ -20,6 +20,7 @@ class _FlowaAppState extends State<FlowaApp> {
   bool _onboardingComplete = false;
   bool _pinEnabled = false;
   bool _unlocked = false;
+  bool _darkMode = false;
 
   @override
   void initState() {
@@ -28,9 +29,11 @@ class _FlowaAppState extends State<FlowaApp> {
   }
 
   Future<void> _bootstrap() async {
-    final complete = await FlowaServices.preferencesRepository
-        .isOnboardingComplete();
+    final complete =
+        await FlowaServices.preferencesRepository.isOnboardingComplete();
     final pinEnabled = await FlowaServices.preferencesRepository.isPinEnabled();
+    final dark =
+        await FlowaServices.preferencesRepository.isDarkModeEnabled();
     if (!mounted) {
       return;
     }
@@ -38,6 +41,7 @@ class _FlowaAppState extends State<FlowaApp> {
       _onboardingComplete = complete;
       _pinEnabled = pinEnabled;
       _unlocked = !pinEnabled;
+      _darkMode = dark;
       _loading = false;
     });
   }
@@ -57,7 +61,9 @@ class _FlowaAppState extends State<FlowaApp> {
         },
       );
     } else if (_pinEnabled && !_unlocked) {
-      home = PinUnlockPage(onUnlocked: () => setState(() => _unlocked = true));
+      home = PinUnlockPage(
+        onUnlocked: () => setState(() => _unlocked = true),
+      );
     } else {
       home = const MainShell();
     }
@@ -66,6 +72,8 @@ class _FlowaAppState extends State<FlowaApp> {
       title: FlowaConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: FlowaTheme.light(),
+      darkTheme: FlowaTheme.dark(),
+      themeMode: _darkMode ? ThemeMode.dark : ThemeMode.light,
       home: home,
     );
   }
