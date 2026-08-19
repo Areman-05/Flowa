@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/constants/flowa_constants.dart';
 import '../../../core/utils/flowa_services.dart';
@@ -61,14 +62,21 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: _finish,
-                  child: const Text('Skip'),
+                  child: AnimatedOpacity(
+                    opacity: _index == _slides.length - 1 ? 0 : 1,
+                    duration: FlowaConstants.defaultAnimationDuration,
+                    child: const Text('Skip'),
+                  ),
                 ),
               ),
               Expanded(
                 child: PageView.builder(
                   controller: _controller,
                   itemCount: _slides.length,
-                  onPageChanged: (value) => setState(() => _index = value),
+                  onPageChanged: (value) {
+                    setState(() => _index = value);
+                    HapticFeedback.selectionClick();
+                  },
                   itemBuilder: (context, index) {
                     final item = _slides[index];
                     return Column(
