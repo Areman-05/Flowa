@@ -12,6 +12,7 @@ abstract final class PreferenceKeys {
   static const monthlyBudgetLimit = 'monthly_budget_limit';
   static const budgetEnabled = 'budget_enabled';
   static const biometricEnabled = 'biometric_enabled';
+  static const darkModeEnabled = 'dark_mode_enabled';
 }
 
 /// Thin wrapper over [SharedPreferences] for app settings.
@@ -82,4 +83,10 @@ class LocalPreferencesDataSource {
 
   Future<void> setBiometricEnabled(bool value) =>
       _prefs.setBool(PreferenceKeys.biometricEnabled, value);
+
+  bool get darkModeEnabled =>
+      _prefs.getBool(PreferenceKeys.darkModeEnabled) ?? false;
+
+  Future<void> setDarkModeEnabled(bool value) =>
+      _prefs.setBool(PreferenceKeys.darkModeEnabled, value);
 }

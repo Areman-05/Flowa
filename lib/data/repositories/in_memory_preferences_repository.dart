@@ -14,6 +14,7 @@ class InMemoryPreferencesRepository implements PreferencesRepository {
   double _monthlyBudgetLimit = 500;
   bool _budgetEnabled = false;
   bool _biometricEnabled = false;
+  bool _darkModeEnabled = false;
 
   @override
   Future<bool> isOnboardingComplete() async => _onboardingComplete;
@@ -82,6 +83,14 @@ class InMemoryPreferencesRepository implements PreferencesRepository {
     _biometricEnabled = value;
   }
 
+  @override
+  Future<bool> isDarkModeEnabled() async => _darkModeEnabled;
+
+  @override
+  Future<void> setDarkModeEnabled(bool value) async {
+    _darkModeEnabled = value;
+  }
+
   void reset() {
     _onboardingComplete = false;
     _balanceHiddenByDefault = true;
@@ -90,6 +99,7 @@ class InMemoryPreferencesRepository implements PreferencesRepository {
     _monthlyBudgetLimit = 500;
     _budgetEnabled = false;
     _biometricEnabled = false;
+    _darkModeEnabled = false;
     _notifications = const NotificationPreferences(
       allowNotifications: true,
       transactionNotifications: true,

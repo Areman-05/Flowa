@@ -69,4 +69,11 @@ class LocalPreferencesRepository implements PreferencesRepository {
   @override
   Future<void> setBiometricEnabled(bool value) =>
       _source.setBiometricEnabled(value);
+
+  @override
+  Future<bool> isDarkModeEnabled() async => _source.darkModeEnabled;
+
+  @override
+  Future<void> setDarkModeEnabled(bool value) =>
+      _source.setDarkModeEnabled(value);
 }

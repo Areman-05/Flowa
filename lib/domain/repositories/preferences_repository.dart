@@ -31,6 +31,10 @@ abstract class PreferencesRepository {
   Future<bool> isBiometricEnabled();
 
   Future<void> setBiometricEnabled(bool value);
+
+  Future<bool> isDarkModeEnabled();
+
+  Future<void> setDarkModeEnabled(bool value);
 }
 
 class NotificationPreferences {
