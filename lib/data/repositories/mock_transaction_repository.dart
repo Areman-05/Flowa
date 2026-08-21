@@ -1,13 +1,15 @@
 import '../../domain/entities/finance_entities.dart';
 import '../../domain/repositories/transaction_repository.dart';
-import '../datasources/mock_finance_data.dart';
 
 class MockTransactionRepository implements TransactionRepository {
-  const MockTransactionRepository();
+  MockTransactionRepository({List<TransactionItem>? seed})
+      : _items = List<TransactionItem>.from(seed ?? const []);
+
+  final List<TransactionItem> _items;
 
   @override
   Future<List<TransactionItem>> getAll() async {
-    final items = List<TransactionItem>.from(MockFinanceData.transactions)
+    final items = List<TransactionItem>.from(_items)
       ..sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
     return items;
   }
@@ -19,5 +21,11 @@ class MockTransactionRepository implements TransactionRepository {
       return all;
     }
     return all.take(limit).toList(growable: false);
+  }
+
+  @override
+  Future<TransactionItem> add(TransactionItem item) async {
+    _items.insert(0, item);
+    return item;
   }
 }

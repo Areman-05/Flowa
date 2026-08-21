@@ -1,87 +1,41 @@
 import '../../domain/entities/finance_entities.dart';
 
-/// Deterministic seed data for local/mock development.
+/// Empty defaults + helpers to bootstrap a real local user account.
 abstract final class MockFinanceData {
-  static const Account primaryAccount = Account(
+  static const Account emptyPrimaryAccount = Account(
     id: 'acc-primary',
-    displayName: 'Main Visa',
-    maskedNumber: '**** **** **** 6457',
-    availableBalance: 2150,
-    expiryLabel: '12/28',
+    displayName: 'Cuenta principal',
+    maskedNumber: '**** **** **** 0000',
+    availableBalance: 0,
+    expiryLabel: '12/30',
   );
 
-  static const UserProfile currentUser = UserProfile(
-    id: 'user-1',
-    fullName: 'John Doe',
-    email: 'john@gmail.com',
+  static const UserProfile guestUser = UserProfile(
+    id: 'user-guest',
+    fullName: 'Invitado',
   );
 
-  static final List<SubAccount> subAccounts = [
-    const SubAccount(
-      id: 'sub-1',
-      name: "Emma's College Fund",
-      accountNumber: '1476 5849 5748 0101',
-      purpose: AccountKind.family,
-      accessLevel: AccessLevel.limited,
-      iconKey: 'school',
-      linkedEmail: 'emma@family.com',
-    ),
-    const SubAccount(
-      id: 'sub-2',
-      name: "Mega's World",
-      accountNumber: '1476 5849 5748 0102',
-      purpose: AccountKind.business,
-      accessLevel: AccessLevel.full,
-    ),
-  ];
+  static final List<SubAccount> subAccounts = <SubAccount>[];
 
-  static final List<TransactionItem> transactions = [
-    TransactionItem(
-      id: 'tx-1',
-      merchant: 'Apple',
-      amount: 343.81,
-      occurredAt: DateTime(2026, 3, 1, 15, 43),
-      direction: TransactionDirection.debit,
-      category: 'Shopping',
-    ),
-    TransactionItem(
-      id: 'tx-2',
-      merchant: 'Spotify',
-      amount: 14.99,
-      occurredAt: DateTime(2026, 3, 1, 12, 18),
-      direction: TransactionDirection.debit,
-      category: 'Entertainment',
-    ),
-    TransactionItem(
-      id: 'tx-3',
-      merchant: 'Dribbble Pro',
-      amount: 42.41,
-      occurredAt: DateTime(2026, 2, 28, 9, 5),
-      direction: TransactionDirection.debit,
-      category: 'Subscriptions',
-    ),
-    TransactionItem(
-      id: 'tx-4',
-      merchant: 'PayPal Payment',
-      amount: 255,
-      occurredAt: DateTime(2026, 2, 27, 16, 22),
-      direction: TransactionDirection.credit,
-      category: 'Transfer',
-    ),
-    TransactionItem(
-      id: 'tx-5',
-      merchant: 'Amazon',
-      amount: 67.2,
-      occurredAt: DateTime(2026, 2, 26, 11, 10),
-      direction: TransactionDirection.debit,
-      category: 'Shopping',
-    ),
-    TransactionItem(
-      id: 'tx-6',
-      merchant: 'Salary Top-Up',
-      amount: 1800,
-      occurredAt: DateTime(2026, 2, 25, 8),
-      direction: TransactionDirection.credit,
-    ),
-  ];
+  static final List<TransactionItem> transactions = <TransactionItem>[];
+
+  static Account accountForUser(UserProfile user) {
+    final seed = user.id.hashCode.abs() % 10000;
+    final lastFour = seed.toString().padLeft(4, '0');
+    return Account(
+      id: 'acc-${user.id}',
+      displayName: 'Cuenta principal',
+      maskedNumber: '**** **** **** $lastFour',
+      availableBalance: 0,
+      expiryLabel: '12/30',
+    );
+  }
+
+  static UserProfile profileFromAuth({
+    required String id,
+    required String fullName,
+    required String email,
+  }) {
+    return UserProfile(id: id, fullName: fullName, email: email);
+  }
 }

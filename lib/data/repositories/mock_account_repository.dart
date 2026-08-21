@@ -3,12 +3,22 @@ import '../../domain/repositories/account_repository.dart';
 import '../datasources/mock_finance_data.dart';
 
 class MockAccountRepository implements AccountRepository {
-  MockAccountRepository() : _user = MockFinanceData.currentUser;
+  MockAccountRepository({
+    Account? account,
+    UserProfile? user,
+  })  : _account = account ?? MockFinanceData.emptyPrimaryAccount,
+        _user = user ?? MockFinanceData.guestUser;
 
+  Account _account;
   UserProfile _user;
 
+  void bootstrapUser(UserProfile user) {
+    _user = user;
+    _account = MockFinanceData.accountForUser(user);
+  }
+
   @override
-  Future<Account> getPrimaryAccount() async => MockFinanceData.primaryAccount;
+  Future<Account> getPrimaryAccount() async => _account;
 
   @override
   Future<UserProfile> getCurrentUser() async => _user;
@@ -20,6 +30,13 @@ class MockAccountRepository implements AccountRepository {
       fullName: fullName,
       avatarUrl: _user.avatarUrl,
       email: _user.email,
+    );
+  }
+
+  @override
+  Future<void> applyBalanceDelta(double delta) async {
+    _account = _account.copyWith(
+      availableBalance: _account.availableBalance + delta,
     );
   }
 }

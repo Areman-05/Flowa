@@ -3,43 +3,9 @@ import '../../domain/repositories/inbox_repository.dart';
 
 class MockInboxRepository implements InboxRepository {
   MockInboxRepository({List<InboxNotification>? seed})
-    : _items = List<InboxNotification>.from(seed ?? _defaults);
+    : _items = List<InboxNotification>.from(seed ?? const []);
 
   final List<InboxNotification> _items;
-
-  static final List<InboxNotification> _defaults = [
-    InboxNotification(
-      id: 'n1',
-      title: 'Money request from Emma',
-      body: 'Emma asked for \$25.00 for dinner. Review before you send.',
-      kind: InboxNotificationKind.moneyRequest,
-      createdAt: DateTime(2026, 3, 1, 18, 12),
-      actionLabel: 'Review',
-    ),
-    InboxNotification(
-      id: 'n2',
-      title: 'Apple payment processed',
-      body: '\$343.81 left your Main Visa account.',
-      kind: InboxNotificationKind.transaction,
-      createdAt: DateTime(2026, 3, 1, 15, 43),
-    ),
-    InboxNotification(
-      id: 'n3',
-      title: 'New device sign-in',
-      body: 'A login was detected. Confirm this was you.',
-      kind: InboxNotificationKind.security,
-      createdAt: DateTime(2026, 2, 28, 9, 4),
-      actionLabel: 'Review',
-    ),
-    InboxNotification(
-      id: 'n4',
-      title: 'Cashback offer',
-      body: 'Promotional offer — muted by default in settings.',
-      kind: InboxNotificationKind.promotion,
-      createdAt: DateTime(2026, 2, 27, 12),
-      isRead: true,
-    ),
-  ];
 
   @override
   Future<List<InboxNotification>> getAll() async {

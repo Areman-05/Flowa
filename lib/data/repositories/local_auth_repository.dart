@@ -1,0 +1,88 @@
+import '../../domain/entities/auth_user.dart';
+import '../../domain/repositories/auth_repository.dart';
+import '../datasources/local_auth_data_source.dart';
+
+class LocalAuthRepository implements AuthRepository {
+  LocalAuthRepository(this._source);
+
+  final LocalAuthDataSource _source;
+
+  @override
+  Future<bool> isLoggedIn() async => _source.isLoggedIn;
+
+  @override
+  Future<AuthUser?> currentUser() async {
+    if (!_source.hasRegisteredAccount) {
+      return null;
+    }
+    final id = _source.userId;
+    final name = _source.userName;
+    final email = _source.userEmail;
+    if (id == null || name == null || email == null) {
+      return null;
+    }
+    return AuthUser(id: id, fullName: name, email: email);
+  }
+
+  @override
+  Future<AuthUser> register({
+    required String fullName,
+    required String email,
+    required String password,
+  }) async {
+    final trimmedName = fullName.trim();
+    final trimmedEmail = email.trim().toLowerCase();
+    if (trimmedName.isEmpty) {
+      throw AuthException('El nombre es obligatorio');
+    }
+    if (!_isValidEmail(trimmedEmail)) {
+      throw AuthException('Introduce un email válido');
+    }
+    if (password.length < 4) {
+      throw AuthException('La contraseña debe tener al menos 4 caracteres');
+    }
+    if (_source.hasRegisteredAccount &&
+        _source.userEmail == trimmedEmail) {
+      throw AuthException('Ya existe una cuenta con este email');
+    }
+
+    final id = 'user-${DateTime.now().millisecondsSinceEpoch}';
+    await _source.saveRegisteredUser(
+      id: id,
+      fullName: trimmedName,
+      email: trimmedEmail,
+      password: password,
+    );
+    return AuthUser(id: id, fullName: trimmedName, email: trimmedEmail);
+  }
+
+  @override
+  Future<AuthUser> login({
+    required String email,
+    required String password,
+  }) async {
+    final trimmedEmail = email.trim().toLowerCase();
+    if (!_source.hasRegisteredAccount) {
+      throw AuthException('No hay ninguna cuenta. Regístrate primero.');
+    }
+    if (_source.userEmail != trimmedEmail) {
+      throw AuthException('Email o contraseña incorrectos');
+    }
+    if (!_source.verifyPassword(password)) {
+      throw AuthException('Email o contraseña incorrectos');
+    }
+    await _source.setLoggedIn(true);
+    final user = await currentUser();
+    if (user == null) {
+      throw AuthException('No se pudo cargar el usuario');
+    }
+    return user;
+  }
+
+  @override
+  Future<void> logout() => _source.clearSession();
+
+  static bool _isValidEmail(String email) {
+    return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email);
+  }
+}

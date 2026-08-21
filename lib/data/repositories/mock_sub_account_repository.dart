@@ -1,10 +1,9 @@
 import '../../domain/entities/finance_entities.dart';
 import '../../domain/repositories/sub_account_repository.dart';
-import '../datasources/mock_finance_data.dart';
 
 class MockSubAccountRepository implements SubAccountRepository {
   MockSubAccountRepository({List<SubAccount>? seed})
-      : _items = List<SubAccount>.from(seed ?? MockFinanceData.subAccounts);
+      : _items = List<SubAccount>.from(seed ?? const []);
 
   final List<SubAccount> _items;
   int _sequence = 100;
