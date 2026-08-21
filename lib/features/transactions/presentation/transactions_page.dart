@@ -94,7 +94,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transactions'),
+        title: const Text('Movimientos'),
         actions: [
           PopupMenuButton<String>(
             icon: const Icon(Icons.download_outlined),
@@ -107,8 +107,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
               }
             },
             itemBuilder: (context) => const [
-              PopupMenuItem(value: 'csv', child: Text('Copy as CSV')),
-              PopupMenuItem(value: 'pdf', child: Text('Export statement')),
+              PopupMenuItem(value: 'csv', child: Text('Copiar como CSV')),
+              PopupMenuItem(value: 'pdf', child: Text('Exportar extracto')),
             ],
           ),
         ],
@@ -131,7 +131,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                         });
                       },
                       decoration: const InputDecoration(
-                        hintText: 'Search merchant, category, or amount',
+                        hintText: 'Buscar comercio, categoría o importe',
                         prefixIcon: Icon(Icons.search),
                       ),
                     ),

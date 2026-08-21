@@ -67,7 +67,7 @@ class _CreateSubAccountPageState extends State<CreateSubAccountPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Sub-Account')),
+      appBar: AppBar(title: const Text('Crear subcuenta')),
       body: SafeArea(
         child: ListView(
           padding: FlowaSpacing.screenPadding,

@@ -64,14 +64,14 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: const Text('Notificaciones'),
         actions: [
           TextButton(
             onPressed: () async {
               await FlowaServices.inboxRepository.markAllRead();
               await _load();
             },
-            child: const Text('Mark all'),
+            child: const Text('Marcar todas'),
           ),
         ],
       ),
@@ -81,8 +81,8 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
           ? const Center(child: CircularProgressIndicator())
           : _items.isEmpty
           ? ListView(children: const [FlowaEmptyState(
-              title: 'No alerts',
-              message: 'Transaction and security alerts will show up here.',
+              title: 'Sin alertas',
+              message: 'Aquí verás avisos de pagos y seguridad.',
               icon: Icons.notifications_none_rounded,
             )])
           : ListView.separated(

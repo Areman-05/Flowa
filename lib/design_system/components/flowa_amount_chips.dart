@@ -24,7 +24,7 @@ class FlowaAmountChips extends StatelessWidget {
       children: [
         for (final value in values)
           ChoiceChip(
-            label: Text('\$${value.toStringAsFixed(0)}'),
+            label: Text('€${value.toStringAsFixed(0)}'),
             selected: selected == value,
             onSelected: (_) => onSelected(value),
             selectedColor: FlowaColors.primarySoft,

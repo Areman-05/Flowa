@@ -34,7 +34,7 @@ class _SupportCenterPageState extends State<SupportCenterPage> {
   Widget build(BuildContext context) {
     final items = _filtered;
     return Scaffold(
-      appBar: AppBar(title: const Text('Support')),
+      appBar: AppBar(title: const Text('Soporte')),
       body: SafeArea(
         child: Padding(
           padding: FlowaSpacing.screenPadding,

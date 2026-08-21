@@ -22,18 +22,21 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   static const _slides = [
     (
-      title: 'Clarity first',
-      body: 'See your balance, recent activity, and next actions in one glance.',
+      title: 'Claridad primero',
+      body:
+          'Ve tu saldo, actividad reciente y próximas acciones de un vistazo.',
       icon: Icons.visibility_outlined,
     ),
     (
-      title: 'Send is not Top-Up',
-      body: 'Distinct flows and confirmations help you avoid costly mistakes.',
+      title: 'Enviar no es recargar',
+      body:
+          'Flujos distintos y confirmaciones te ayudan a evitar errores caros.',
       icon: Icons.verified_user_outlined,
     ),
     (
-      title: 'Stay in control',
-      body: 'Sub-accounts, smart alerts, and AI guidance keep money organized.',
+      title: 'Tú tienes el control',
+      body:
+          'Subcuentas, contactos, empresas y alertas para organizar tu dinero.',
       icon: Icons.account_tree_outlined,
     ),
   ];
@@ -65,7 +68,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   child: AnimatedOpacity(
                     opacity: _index == _slides.length - 1 ? 0 : 1,
                     duration: FlowaConstants.defaultAnimationDuration,
-                    child: const Text('Skip'),
+                    child: const Text('Saltar'),
                   ),
                 ),
               ),
@@ -129,8 +132,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
               const SizedBox(height: FlowaSpacing.xl),
               FlowaPrimaryButton(
                 label: _index == _slides.length - 1
-                    ? 'Get started'
-                    : 'Continue',
+                    ? 'Empezar'
+                    : 'Continuar',
                 onPressed: () async {
                   if (_index == _slides.length - 1) {
                     await _finish();

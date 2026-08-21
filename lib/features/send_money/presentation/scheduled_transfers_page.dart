@@ -38,13 +38,13 @@ class _ScheduledTransfersPageState extends State<ScheduledTransfersPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Scheduled transfers')),
+      appBar: AppBar(title: const Text('Transferencias programadas')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _items.isEmpty
           ? const FlowaEmptyState(
-              title: 'Nothing scheduled',
-              message: 'Queued bank transfers will appear here.',
+              title: 'Nada programado',
+              message: 'Las transferencias en cola aparecerán aquí.',
               icon: Icons.schedule_outlined,
             )
           : ListView.separated(

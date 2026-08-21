@@ -52,16 +52,16 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: const Text('Ajustes')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               children: [
                 SwitchListTile(
                   contentPadding: FlowaSpacing.screenPadding,
-                  title: const Text('Hide balance by default'),
+                  title: const Text('Ocultar saldo por defecto'),
                   subtitle: const Text(
-                    'Start Home with Available Balance masked',
+                    'Inicia Inicio con el saldo enmascarado',
                   ),
                   value: _balanceHidden,
                   onChanged: (value) async {
@@ -72,8 +72,8 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                 ),
                 SwitchListTile(
                   contentPadding: FlowaSpacing.screenPadding,
-                  title: const Text('Dark mode'),
-                  subtitle: const Text('Switch to dark colour scheme'),
+                  title: const Text('Modo oscuro'),
+                  subtitle: const Text('Usar el tema oscuro'),
                   value: _darkMode,
                   onChanged: (value) async {
                     setState(() => _darkMode = value);
@@ -83,9 +83,9 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                 ),
                 SwitchListTile(
                   contentPadding: FlowaSpacing.screenPadding,
-                  title: const Text('Monthly budget target'),
+                  title: const Text('Presupuesto mensual'),
                   subtitle: const Text(
-                    'Track spending against a cap in Insights',
+                    'Controla el gasto en Resumen',
                   ),
                   value: _budgetEnabled,
                   onChanged: (value) async {
@@ -97,8 +97,8 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                 if (_budgetEnabled)
                   ListTile(
                     contentPadding: FlowaSpacing.screenPadding,
-                    title: const Text('Budget limit'),
-                    subtitle: Text('\$${_budgetLimit.toStringAsFixed(0)}'),
+                    title: const Text('Límite de presupuesto'),
+                    subtitle: Text('€${_budgetLimit.toStringAsFixed(0)}'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () async {
                       final controller = TextEditingController(
@@ -108,18 +108,18 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                         context: context,
                         builder: (context) {
                           return AlertDialog(
-                            title: const Text('Monthly budget'),
+                            title: const Text('Presupuesto mensual'),
                             content: TextField(
                               controller: controller,
                               keyboardType: TextInputType.number,
                               decoration: const InputDecoration(
-                                prefixText: '\$ ',
+                                prefixText: '€ ',
                               ),
                             ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context),
-                                child: const Text('Cancel'),
+                                child: const Text('Cancelar'),
                               ),
                               TextButton(
                                 onPressed: () {
@@ -127,7 +127,7 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                                       double.tryParse(controller.text) ?? 0;
                                   Navigator.pop(context, value);
                                 },
-                                child: const Text('Save'),
+                                child: const Text('Guardar'),
                               ),
                             ],
                           );
@@ -143,7 +143,7 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                 const Divider(height: 1),
                 ListTile(
                   contentPadding: FlowaSpacing.screenPadding,
-                  title: const Text('Notification preferences'),
+                  title: const Text('Preferencias de notificación'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => pushFlowaRoute<void>(
                     context,
@@ -152,8 +152,8 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                 ),
                 ListTile(
                   contentPadding: FlowaSpacing.screenPadding,
-                  title: const Text('App lock'),
-                  subtitle: const Text('Require a 4-digit PIN on launch'),
+                  title: const Text('Bloqueo de la app'),
+                  subtitle: const Text('Pedir PIN de 4 dígitos al abrir'),
                   trailing: const Icon(Icons.lock_outline),
                   onTap: () =>
                       pushFlowaRoute<void>(context, const PinSetupPage()),
@@ -161,7 +161,7 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                 const Divider(height: 1),
                 ListTile(
                   contentPadding: FlowaSpacing.screenPadding,
-                  title: const Text('About Flowa'),
+                  title: const Text('Acerca de Flowa'),
                   trailing: const Icon(Icons.info_outline),
                   onTap: () =>
                       pushFlowaRoute<void>(context, const AboutPage()),
@@ -169,12 +169,12 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                 Padding(
                   padding: FlowaSpacing.screenPadding,
                   child: FlowaSecondaryButton(
-                    label: 'Replay onboarding',
+                    label: 'Repetir bienvenida',
                     onPressed: () async {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
-                            'Onboarding will show again on next cold start after reset.',
+                            'La bienvenida volverá en el próximo arranque tras reiniciar preferencias.',
                           ),
                         ),
                       );

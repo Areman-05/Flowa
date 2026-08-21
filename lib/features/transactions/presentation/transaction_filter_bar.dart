@@ -43,9 +43,9 @@ class TransactionFilterBar extends StatelessWidget {
 
   String _label(TransactionFilter filter) {
     return switch (filter) {
-      TransactionFilter.all => 'All',
-      TransactionFilter.income => 'Income',
-      TransactionFilter.expense => 'Expense',
+      TransactionFilter.all => 'Todos',
+      TransactionFilter.income => 'Ingresos',
+      TransactionFilter.expense => 'Gastos',
     };
   }
 }

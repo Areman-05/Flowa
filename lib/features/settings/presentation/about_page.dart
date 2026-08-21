@@ -10,7 +10,7 @@ class AboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('About')),
+      appBar: AppBar(title: const Text('Acerca de')),
       body: ListView(
         padding: FlowaSpacing.screenPadding,
         children: [

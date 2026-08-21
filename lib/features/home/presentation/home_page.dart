@@ -181,25 +181,25 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 FlowaQuickAction(
-                  label: 'Send',
+                  label: 'Enviar',
                   icon: Icons.account_balance_wallet_outlined,
                   background: FlowaColors.actionSend,
                   onTap: () => _open(const SendMoneyPage()),
                 ),
                 FlowaQuickAction(
-                  label: 'Receive',
+                  label: 'Recibir',
                   icon: Icons.payments_outlined,
                   background: FlowaColors.actionReceive,
                   onTap: () => _open(const ReceivePage()),
                 ),
                 FlowaQuickAction(
-                  label: 'Top-Up',
+                  label: 'Recargar',
                   icon: Icons.point_of_sale_outlined,
                   background: FlowaColors.actionTopUp,
                   onTap: () => _open(const TopUpPage()),
                 ),
                 FlowaQuickAction(
-                  label: 'More',
+                  label: 'Más',
                   icon: Icons.grid_view_rounded,
                   background: FlowaColors.actionMore,
                   onTap: () => showFlowaMoreActionsSheet(context),
@@ -209,11 +209,11 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: FlowaSpacing.xl),
             Row(
               children: [
-                Text('Recent Transaction', style: textTheme.titleMedium),
+                Text('Movimientos recientes', style: textTheme.titleMedium),
                 const Spacer(),
                 TextButton(
                   onPressed: widget.onSeeAllTransactions,
-                  child: const Text('See all >'),
+                  child: const Text('Ver todos >'),
                 ),
               ],
             ),

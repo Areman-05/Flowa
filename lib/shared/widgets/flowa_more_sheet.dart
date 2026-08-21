@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../design_system/tokens/flowa_colors.dart';
 import '../../design_system/tokens/flowa_spacing.dart';
+import '../../features/contacts/presentation/contacts_page.dart';
 import '../../features/insights/presentation/insights_page.dart';
 import '../../features/sub_accounts/presentation/sub_accounts_page.dart';
 import '../../features/wallets/presentation/wallets_page.dart';
@@ -23,16 +24,29 @@ Future<void> showFlowaMoreActionsSheet(BuildContext context) {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('More', style: Theme.of(context).textTheme.titleLarge),
+                Text('Más', style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: FlowaSpacing.sm),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const CircleAvatar(
+                    backgroundColor: FlowaColors.actionSend,
+                    child: Icon(Icons.groups_outlined),
+                  ),
+                  title: const Text('Contactos'),
+                  subtitle: const Text('Personas y empresas destinatarias'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await pushFlowaRoute<void>(context, const ContactsPage());
+                  },
+                ),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const CircleAvatar(
                     backgroundColor: FlowaColors.actionMore,
                     child: Icon(Icons.account_tree_outlined),
                   ),
-                  title: const Text('Sub-Accounts'),
-                  subtitle: const Text('Separate family and business money'),
+                  title: const Text('Subcuentas'),
+                  subtitle: const Text('Separa dinero familiar y de empresa'),
                   onTap: () async {
                     Navigator.pop(context);
                     await pushFlowaRoute<void>(
@@ -47,8 +61,8 @@ Future<void> showFlowaMoreActionsSheet(BuildContext context) {
                     backgroundColor: FlowaColors.primarySoft,
                     child: Icon(Icons.account_balance_wallet_outlined),
                   ),
-                  title: const Text('Wallets'),
-                  subtitle: const Text('Link PayPal and external wallets'),
+                  title: const Text('Monederos'),
+                  subtitle: const Text('Vincula PayPal y otros monederos'),
                   onTap: () async {
                     Navigator.pop(context);
                     await pushFlowaRoute<void>(context, const WalletsPage());
@@ -60,9 +74,9 @@ Future<void> showFlowaMoreActionsSheet(BuildContext context) {
                     backgroundColor: FlowaColors.actionReceive,
                     child: Icon(Icons.insights_outlined),
                   ),
-                  title: const Text('Insights'),
+                  title: const Text('Resumen'),
                   subtitle: const Text(
-                    'See money in, money out, and top spend',
+                    'Entradas, salidas y principales gastos',
                   ),
                   onTap: () async {
                     Navigator.pop(context);

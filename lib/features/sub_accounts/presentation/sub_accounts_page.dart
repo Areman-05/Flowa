@@ -61,7 +61,7 @@ class _SubAccountsPageState extends State<SubAccountsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sub-Accounts')),
+      appBar: AppBar(title: const Text('Subcuentas')),
       body: SafeArea(
         child: _loading
             ? const Center(child: CircularProgressIndicator())

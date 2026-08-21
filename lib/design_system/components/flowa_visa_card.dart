@@ -72,7 +72,7 @@ class FlowaVisaCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  'Account Number',
+                  'Número de cuenta',
                   style: textTheme.labelMedium?.copyWith(
                     color: fg.withValues(alpha: 0.85),
                   ),
@@ -81,7 +81,7 @@ class FlowaVisaCard extends StatelessWidget {
                 if (onToggleFreeze != null)
                   Semantics(
                     button: true,
-                    label: isFrozen ? 'Unfreeze card' : 'Freeze card',
+                    label: isFrozen ? 'Descongelar tarjeta' : 'Congelar tarjeta',
                     child: TextButton(
                       onPressed: onToggleFreeze,
                       style: TextButton.styleFrom(
@@ -90,7 +90,7 @@ class FlowaVisaCard extends StatelessWidget {
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
-                      child: Text(isFrozen ? 'Unfreeze' : 'Freeze'),
+                      child: Text(isFrozen ? 'Descongelar' : 'Congelar'),
                     ),
                   ),
                 Text(
@@ -111,13 +111,13 @@ class FlowaVisaCard extends StatelessWidget {
             if (isFrozen) ...[
               const SizedBox(height: FlowaSpacing.xs),
               Text(
-                'Card frozen — outgoing payments paused.',
+                'Tarjeta congelada — pagos salientes en pausa.',
                 style: textTheme.labelSmall?.copyWith(color: fg),
               ),
             ],
             const Spacer(),
             Text(
-              'Available Balance',
+              'Saldo disponible',
               style: textTheme.labelMedium?.copyWith(
                 color: fg.withValues(alpha: 0.85),
               ),

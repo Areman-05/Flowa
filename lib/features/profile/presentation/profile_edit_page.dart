@@ -36,7 +36,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   Future<void> _save() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      setState(() => _error = 'Display name is required');
+      setState(() => _error = 'El nombre es obligatorio');
       return;
     }
     await FlowaServices.accountRepository.updateDisplayName(name);
@@ -49,14 +49,14 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit profile')),
+      appBar: AppBar(title: const Text('Editar perfil')),
       body: ListView(
         padding: FlowaSpacing.screenPadding,
         children: [
           TextField(
             controller: _nameController,
             decoration: InputDecoration(
-              labelText: 'Display name',
+              labelText: 'Nombre visible',
               errorText: _error,
             ),
           ),
@@ -66,11 +66,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             readOnly: true,
             decoration: const InputDecoration(
               labelText: 'Email',
-              helperText: 'Email changes are handled outside this demo.',
+              helperText: 'El email se gestiona al registrarte.',
             ),
           ),
           const SizedBox(height: FlowaSpacing.xl),
-          FlowaPrimaryButton(label: 'Save', onPressed: _save),
+          FlowaPrimaryButton(label: 'Guardar', onPressed: _save),
         ],
       ),
     );

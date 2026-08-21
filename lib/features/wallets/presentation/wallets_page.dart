@@ -73,7 +73,7 @@ class _WalletsPageState extends State<WalletsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Wallets')),
+      appBar: AppBar(title: const Text('Monederos')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
@@ -81,8 +81,8 @@ class _WalletsPageState extends State<WalletsPage> {
           : _wallets.isEmpty
           ? FlowaEmptyState(
               title: 'No wallets linked',
-              message: 'Connect PayPal to send and receive outside Flowa.',
-              actionLabel: 'Connect PayPal',
+              message: 'Conecta PayPal para enviar y recibir fuera de Flowa.',
+              actionLabel: 'Conectar PayPal',
               onAction: _connect,
             )
           : ListView(
@@ -117,7 +117,7 @@ class _WalletsPageState extends State<WalletsPage> {
                   ),
                 const SizedBox(height: FlowaSpacing.xl),
                 FlowaPrimaryButton(
-                  label: 'Connect PayPal',
+                  label: 'Conectar PayPal',
                   onPressed: _connect,
                 ),
               ],

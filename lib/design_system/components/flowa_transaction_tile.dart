@@ -77,7 +77,7 @@ class FlowaTransactionList extends StatelessWidget {
     if (items.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: FlowaSpacing.lg),
-        child: Text('No transactions yet.'),
+        child: Text('Aún no hay movimientos.'),
       );
     }
 

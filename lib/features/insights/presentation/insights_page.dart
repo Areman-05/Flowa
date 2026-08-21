@@ -71,7 +71,7 @@ class _InsightsPageState extends State<InsightsPage> {
     final snapshot = _snapshot;
     final budget = _budget;
     return Scaffold(
-      appBar: AppBar(title: const Text('Insights')),
+      appBar: AppBar(title: const Text('Resumen')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
@@ -80,8 +80,8 @@ class _InsightsPageState extends State<InsightsPage> {
           ? const SizedBox.shrink()
           : snapshot.transactionCount == 0
           ? const FlowaEmptyState(
-              title: 'No activity yet',
-              message: 'Insights appear after your first movements.',
+              title: 'Sin actividad aún',
+              message: 'El resumen aparece tras tus primeros movimientos.',
             )
           : RefreshIndicator(
               onRefresh: _load,
@@ -92,7 +92,7 @@ class _InsightsPageState extends State<InsightsPage> {
                   spacing: FlowaSpacing.sm,
                   children: [
                     ChoiceChip(
-                      label: const Text('All time'),
+                      label: const Text('Todo'),
                       selected: _month == null,
                       onSelected: (_) => _selectMonth(null),
                     ),
@@ -110,13 +110,13 @@ class _InsightsPageState extends State<InsightsPage> {
                 ),
                 const SizedBox(height: FlowaSpacing.md),
                 _InsightCard(
-                  label: 'Money in',
+                  label: 'Entradas',
                   value: FlowaFormatters.currency(snapshot.incoming),
                   color: FlowaColors.income,
                 ),
                 const SizedBox(height: FlowaSpacing.sm),
                 _InsightCard(
-                  label: 'Money out',
+                  label: 'Salidas',
                   value: FlowaFormatters.currency(snapshot.outgoing),
                   color: FlowaColors.textPrimary,
                 ),
@@ -281,7 +281,7 @@ class HomeSpendingStrip extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'This period',
+                  'Este periodo',
                   style: Theme.of(context).textTheme.labelMedium,
                 ),
                 const SizedBox(height: 4),

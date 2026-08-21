@@ -6,6 +6,7 @@ import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/finance_entities.dart';
 import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
+import '../../contacts/presentation/contacts_page.dart';
 import 'profile_edit_page.dart';
 import '../../notifications/presentation/notification_settings_page.dart';
 import '../../settings/presentation/app_settings_page.dart';
@@ -14,7 +15,9 @@ import '../../support/presentation/support_center_page.dart';
 import '../../wallets/presentation/wallets_page.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  const ProfilePage({super.key, this.onLogout});
+
+  final Future<void> Function()? onLogout;
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -37,12 +40,37 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() => _user = user);
   }
 
+  Future<void> _logout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Cerrar sesión'),
+          content: const Text('¿Seguro que quieres salir de Flowa?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Salir'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed == true) {
+      await widget.onLogout?.call();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = _user;
 
     return FlowaPage(
-      title: 'Profile',
+      title: 'Perfil',
       child: user == null
           ? const Center(child: CircularProgressIndicator())
           : Column(
@@ -59,7 +87,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(height: FlowaSpacing.sm),
                 FlowaSecondaryButton(
-                  label: 'Edit profile',
+                  label: 'Editar perfil',
                   onPressed: () async {
                     final updated = await pushFlowaRoute<bool>(
                       context,
@@ -73,9 +101,19 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: FlowaSpacing.xl),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.groups_outlined),
+                  title: const Text('Contactos'),
+                  subtitle: const Text('Personas y empresas'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    pushFlowaRoute<void>(context, const ContactsPage());
+                  },
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.notifications_outlined),
-                  title: const Text('Notification settings'),
-                  subtitle: const Text('Keep alerts useful, mute promotions'),
+                  title: const Text('Notificaciones'),
+                  subtitle: const Text('Alertas útiles, silenciar promos'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     pushFlowaRoute<void>(
@@ -87,8 +125,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.account_tree_outlined),
-                  title: const Text('Sub-Accounts'),
-                  subtitle: const Text('Family and business money control'),
+                  title: const Text('Subcuentas'),
+                  subtitle: const Text('Dinero familiar y de empresa'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     pushFlowaRoute<void>(context, const SubAccountsPage());
@@ -97,8 +135,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.account_balance_wallet_outlined),
-                  title: const Text('Connected wallets'),
-                  subtitle: const Text('Link PayPal and external accounts'),
+                  title: const Text('Monederos'),
+                  subtitle: const Text('Vincula PayPal y cuentas externas'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     pushFlowaRoute<void>(context, const WalletsPage());
@@ -107,8 +145,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.settings_outlined),
-                  title: const Text('Settings'),
-                  subtitle: const Text('Privacy defaults and app lock'),
+                  title: const Text('Ajustes'),
+                  subtitle: const Text('Privacidad y bloqueo de la app'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     pushFlowaRoute<void>(context, const AppSettingsPage());
@@ -117,19 +155,17 @@ class _ProfilePageState extends State<ProfilePage> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.support_agent_outlined),
-                  title: const Text('Support'),
-                  subtitle: const Text('Find help when a payment fails'),
+                  title: const Text('Soporte'),
+                  subtitle: const Text('Ayuda si un pago falla'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     pushFlowaRoute<void>(context, const SupportCenterPage());
                   },
                 ),
                 const Spacer(),
-                FlowaPrimaryButton(
-                  label: 'Open support center',
-                  onPressed: () {
-                    pushFlowaRoute<void>(context, const SupportCenterPage());
-                  },
+                FlowaSecondaryButton(
+                  label: 'Cerrar sesión',
+                  onPressed: widget.onLogout == null ? null : _logout,
                 ),
               ],
             ),

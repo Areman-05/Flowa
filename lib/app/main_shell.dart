@@ -7,9 +7,11 @@ import '../features/home/presentation/home_page.dart';
 import '../features/profile/presentation/profile_page.dart';
 import '../features/transactions/presentation/transactions_page.dart';
 
-/// Root shell with Home · Transaction · AI · Profile navigation.
+/// Root shell with Inicio · Movimientos · IA · Perfil navigation.
 class MainShell extends StatefulWidget {
-  const MainShell({super.key});
+  const MainShell({super.key, this.onLogout});
+
+  final Future<void> Function()? onLogout;
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -46,7 +48,7 @@ class _MainShellState extends State<MainShell> {
       ),
       const TransactionsPage(),
       const AiAssistantPage(),
-      const ProfilePage(),
+      ProfilePage(onLogout: widget.onLogout),
     ];
 
     return Scaffold(
@@ -63,8 +65,8 @@ class _MainShellState extends State<MainShell> {
           const NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home_rounded),
-            label: 'Home',
-            tooltip: 'Home dashboard',
+            label: 'Inicio',
+            tooltip: 'Inicio',
           ),
           NavigationDestination(
             icon: Badge(
@@ -77,20 +79,20 @@ class _MainShellState extends State<MainShell> {
               smallSize: 8,
               child: const Icon(Icons.receipt_long_rounded),
             ),
-            label: 'Transaction',
-            tooltip: 'Transaction history',
+            label: 'Movimientos',
+            tooltip: 'Historial de movimientos',
           ),
           const NavigationDestination(
             icon: Icon(Icons.auto_awesome_outlined),
             selectedIcon: Icon(Icons.auto_awesome),
-            label: 'AI',
-            tooltip: 'AI assistant',
+            label: 'IA',
+            tooltip: 'Asistente IA',
           ),
           const NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person_rounded),
-            label: 'Profile',
-            tooltip: 'Profile and settings',
+            label: 'Perfil',
+            tooltip: 'Perfil y ajustes',
           ),
         ],
       ),

@@ -61,10 +61,10 @@ class FlowaErrorState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FlowaEmptyState(
-      title: 'Something went wrong',
+      title: 'Algo salió mal',
       message: message,
       icon: Icons.error_outline,
-      actionLabel: onRetry == null ? null : 'Try again',
+      actionLabel: onRetry == null ? null : 'Reintentar',
       onAction: onRetry,
     );
   }
