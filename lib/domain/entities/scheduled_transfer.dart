@@ -21,9 +21,9 @@ class ScheduledTransfer extends Equatable {
   final ScheduledTransferFrequency frequency;
 
   String get frequencyLabel => switch (frequency) {
-    ScheduledTransferFrequency.once => 'One-time',
-    ScheduledTransferFrequency.weekly => 'Weekly',
-    ScheduledTransferFrequency.monthly => 'Monthly',
+    ScheduledTransferFrequency.once => 'Única',
+    ScheduledTransferFrequency.weekly => 'Semanal',
+    ScheduledTransferFrequency.monthly => 'Mensual',
   };
 
   @override

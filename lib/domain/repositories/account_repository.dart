@@ -7,4 +7,7 @@ abstract class AccountRepository {
   Future<UserProfile> getCurrentUser();
 
   Future<void> updateDisplayName(String fullName);
+
+  /// Adjusts available balance after send / receive / top-up.
+  Future<void> applyBalanceDelta(double delta);
 }

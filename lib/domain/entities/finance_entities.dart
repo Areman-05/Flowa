@@ -23,7 +23,7 @@ class Account extends Equatable {
     required this.expiryLabel,
     this.brand = 'VISA',
     this.kind = AccountKind.personal,
-    this.currencyCode = 'USD',
+    this.currencyCode = 'EUR',
   });
 
   final String id;
@@ -41,6 +41,28 @@ class Account extends Equatable {
       return digits;
     }
     return digits.substring(digits.length - 4);
+  }
+
+  Account copyWith({
+    String? id,
+    String? displayName,
+    String? maskedNumber,
+    double? availableBalance,
+    String? expiryLabel,
+    String? brand,
+    AccountKind? kind,
+    String? currencyCode,
+  }) {
+    return Account(
+      id: id ?? this.id,
+      displayName: displayName ?? this.displayName,
+      maskedNumber: maskedNumber ?? this.maskedNumber,
+      availableBalance: availableBalance ?? this.availableBalance,
+      expiryLabel: expiryLabel ?? this.expiryLabel,
+      brand: brand ?? this.brand,
+      kind: kind ?? this.kind,
+      currencyCode: currencyCode ?? this.currencyCode,
+    );
   }
 
   @override

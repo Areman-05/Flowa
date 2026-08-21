@@ -9,22 +9,22 @@ extension MoneyFlowKindX on MoneyFlowKind {
   String get title {
     switch (this) {
       case MoneyFlowKind.send:
-        return 'Send Money';
+        return 'Enviar dinero';
       case MoneyFlowKind.topUp:
-        return 'Top-Up';
+        return 'Recargar';
       case MoneyFlowKind.receive:
-        return 'Receive';
+        return 'Recibir';
     }
   }
 
   String get clarification {
     switch (this) {
       case MoneyFlowKind.send:
-        return 'Bank transfer to another account.';
+        return 'Transferencia bancaria a otra cuenta.';
       case MoneyFlowKind.topUp:
-        return 'Mobile/operator recharge only.';
+        return 'Solo recarga de móvil/operador.';
       case MoneyFlowKind.receive:
-        return 'Request or share your account to get paid.';
+        return 'Solicita o comparte tu cuenta para cobrar.';
     }
   }
 

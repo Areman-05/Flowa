@@ -5,4 +5,6 @@ abstract class TransactionRepository {
   Future<List<TransactionItem>> getRecent({int limit = 4});
 
   Future<List<TransactionItem>> getAll();
+
+  Future<TransactionItem> add(TransactionItem item);
 }
