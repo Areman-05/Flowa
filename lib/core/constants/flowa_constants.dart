@@ -2,10 +2,10 @@
 abstract final class FlowaConstants {
   static const String appName = 'Flowa';
   static const String appTagline =
-      'Clarity, control, and confidence for your money.';
+      'Claridad, control y confianza para tu dinero.';
 
-  static const String currencyCode = 'USD';
-  static const String currencySymbol = '\$';
+  static const String currencyCode = 'EUR';
+  static const String currencySymbol = '€';
 
   static const int maxRecentTransactions = 8;
   static const Duration defaultAnimationDuration = Duration(milliseconds: 280);

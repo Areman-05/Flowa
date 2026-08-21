@@ -4,8 +4,8 @@ extension AccountKindLabels on AccountKind {
   String get label {
     return switch (this) {
       AccountKind.personal => 'Personal',
-      AccountKind.family => 'Family',
-      AccountKind.business => 'Business',
+      AccountKind.family => 'Familiar',
+      AccountKind.business => 'Empresa',
     };
   }
 }
@@ -13,8 +13,8 @@ extension AccountKindLabels on AccountKind {
 extension AccessLevelLabels on AccessLevel {
   String get label {
     return switch (this) {
-      AccessLevel.limited => 'Limited',
-      AccessLevel.full => 'Full',
+      AccessLevel.limited => 'Limitado',
+      AccessLevel.full => 'Completo',
     };
   }
 }

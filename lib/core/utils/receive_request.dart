@@ -9,12 +9,12 @@ abstract final class ReceiveRequest {
     String? note,
   }) {
     final buffer = StringBuffer(
-      'Pay ${FlowaFormatters.currency(amount)} to ${account.displayName} '
+      'Paga ${FlowaFormatters.currency(amount)} a ${account.displayName} '
       '(${account.maskedNumber}).',
     );
     final trimmed = note?.trim();
     if (trimmed != null && trimmed.isNotEmpty) {
-      buffer.write(' Note: $trimmed.');
+      buffer.write(' Nota: $trimmed.');
     }
     return buffer.toString();
   }

@@ -2,14 +2,16 @@ import 'package:intl/intl.dart';
 
 import '../constants/flowa_constants.dart';
 
-/// Shared money and date formatting helpers.
+/// Shared money and date formatting helpers (es_ES / EUR).
 abstract final class FlowaFormatters {
   static final NumberFormat _currency = NumberFormat.currency(
+    locale: 'es_ES',
     symbol: FlowaConstants.currencySymbol,
     decimalDigits: 2,
   );
 
-  static final DateFormat _transactionStamp = DateFormat('MMM d · hh:mm a');
+  static final DateFormat _transactionStamp =
+      DateFormat('d MMM · HH:mm', 'es_ES');
 
   static String currency(double amount, {String? locale}) {
     if (locale != null) {
@@ -53,11 +55,11 @@ abstract final class FlowaGreeting {
   static String forDateTime(DateTime now) {
     final hour = now.hour;
     if (hour < 12) {
-      return 'Good Morning,';
+      return 'Buenos días,';
     }
     if (hour < 18) {
-      return 'Good Afternoon,';
+      return 'Buenas tardes,';
     }
-    return 'Good Evening,';
+    return 'Buenas noches,';
   }
 }
