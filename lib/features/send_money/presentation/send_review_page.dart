@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/utils/flowa_formatters.dart';
+import '../../../core/utils/flowa_services.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
+import '../../../domain/entities/finance_entities.dart';
 import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
 import '../../transfers/presentation/transfer_success_page.dart';
@@ -20,10 +22,36 @@ class SendReviewPage extends StatelessWidget {
   final double amount;
   final String? note;
 
+  Future<void> _confirm(BuildContext context) async {
+    await FlowaServices.transactionRepository.add(
+      TransactionItem(
+        id: 'tx-${DateTime.now().millisecondsSinceEpoch}',
+        merchant: recipientName,
+        amount: amount,
+        occurredAt: DateTime.now(),
+        direction: TransactionDirection.debit,
+        category: 'Transferencia',
+      ),
+    );
+    await FlowaServices.accountRepository.applyBalanceDelta(-amount);
+
+    if (!context.mounted) {
+      return;
+    }
+    await pushFlowaRoute<void>(
+      context,
+      TransferSuccessPage(
+        title: 'Dinero enviado',
+        amount: amount,
+        subtitle: 'Enviado a $recipientName',
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Review Send')),
+      appBar: AppBar(title: const Text('Revisar envío')),
       body: SafeArea(
         child: Padding(
           padding: FlowaSpacing.screenPadding,
@@ -31,35 +59,26 @@ class SendReviewPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Confirm this is a bank transfer, not a Top-Up.',
+                'Confirma que es una transferencia bancaria, no una recarga.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: FlowaSpacing.xl),
-              _ReviewRow(label: 'To', value: recipientName),
-              _ReviewRow(label: 'Account', value: accountNumber),
+              _ReviewRow(label: 'Para', value: recipientName),
+              _ReviewRow(label: 'Cuenta', value: accountNumber),
               _ReviewRow(
-                label: 'Amount',
+                label: 'Importe',
                 value: FlowaFormatters.currency(amount),
               ),
               if (note != null && note!.trim().isNotEmpty)
-                _ReviewRow(label: 'Note', value: note!.trim()),
+                _ReviewRow(label: 'Nota', value: note!.trim()),
               const Spacer(),
               FlowaPrimaryButton(
-                label: 'Send now',
-                onPressed: () {
-                  pushFlowaRoute<void>(
-                    context,
-                    TransferSuccessPage(
-                      title: 'Money sent',
-                      amount: amount,
-                      subtitle: 'Delivered to $recipientName',
-                    ),
-                  );
-                },
+                label: 'Enviar ahora',
+                onPressed: () => _confirm(context),
               ),
               const SizedBox(height: FlowaSpacing.sm),
               FlowaSecondaryButton(
-                label: 'Go back',
+                label: 'Volver',
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ],
@@ -93,19 +112,4 @@ class _ReviewRow extends StatelessWidget {
       ),
     );
   }
-}
-
-class RecentRecipient {
-  const RecentRecipient({required this.name, required this.accountNumber});
-
-  final String name;
-  final String accountNumber;
-}
-
-abstract final class RecentRecipients {
-  static const items = [
-    RecentRecipient(name: 'Emma Parker', accountNumber: '1476584951012345'),
-    RecentRecipient(name: 'Alex Chen', accountNumber: '5416247141794136'),
-    RecentRecipient(name: "Mega's World", accountNumber: '1476584957480102'),
-  ];
 }

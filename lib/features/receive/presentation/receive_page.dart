@@ -52,9 +52,9 @@ class _ReceivePageState extends State<ReceivePage> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Account number copied.')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Número de cuenta copiado.')),
+    );
   }
 
   Future<void> _shareRequest() async {
@@ -62,7 +62,7 @@ class _ReceivePageState extends State<ReceivePage> {
     final account = _account;
     if (amount <= 0 || account == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter an amount to request.')),
+        const SnackBar(content: Text('Introduce un importe para solicitar.')),
       );
       return;
     }
@@ -75,9 +75,9 @@ class _ReceivePageState extends State<ReceivePage> {
 
     final confirmed = await showFlowaPreviewDialog(
       context: context,
-      title: 'Preview request',
+      title: 'Vista previa',
       message: message,
-      confirmLabel: 'Share request',
+      confirmLabel: 'Copiar solicitud',
     );
     if (!confirmed || !mounted) {
       return;
@@ -91,7 +91,40 @@ class _ReceivePageState extends State<ReceivePage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Request ${FlowaFormatters.currency(amount)} copied to clipboard.',
+          'Solicitud de ${FlowaFormatters.currency(amount)} copiada.',
+        ),
+      ),
+    );
+  }
+
+  Future<void> _registerIncoming() async {
+    final amount = double.tryParse(_amountController.text) ?? 0;
+    if (amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Introduce un importe válido.')),
+      );
+      return;
+    }
+    final note = _noteController.text.trim();
+    await FlowaServices.transactionRepository.add(
+      TransactionItem(
+        id: 'tx-${DateTime.now().millisecondsSinceEpoch}',
+        merchant: note.isEmpty ? 'Ingreso' : note,
+        amount: amount,
+        occurredAt: DateTime.now(),
+        direction: TransactionDirection.credit,
+        category: 'Ingreso',
+      ),
+    );
+    await FlowaServices.accountRepository.applyBalanceDelta(amount);
+    await _load();
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Ingreso de ${FlowaFormatters.currency(amount)} registrado.',
         ),
       ),
     );
@@ -102,7 +135,7 @@ class _ReceivePageState extends State<ReceivePage> {
     final account = _account;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Receive')),
+      appBar: AppBar(title: const Text('Recibir')),
       body: SafeArea(
         child: account == null
             ? const Padding(
@@ -122,7 +155,7 @@ class _ReceivePageState extends State<ReceivePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Your receive account',
+                          'Tu cuenta para recibir',
                           style: Theme.of(context).textTheme.labelMedium,
                         ),
                         const SizedBox(height: FlowaSpacing.xs),
@@ -132,14 +165,14 @@ class _ReceivePageState extends State<ReceivePage> {
                         ),
                         const SizedBox(height: FlowaSpacing.xs),
                         Text(
-                          'Share this account to get paid faster.',
+                          'Comparte esta cuenta para que te paguen más rápido.',
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         const SizedBox(height: FlowaSpacing.sm),
                         TextButton.icon(
                           onPressed: () => _copyAccountNumber(account),
                           icon: const Icon(Icons.copy_outlined, size: 18),
-                          label: const Text('Copy account number'),
+                          label: const Text('Copiar número de cuenta'),
                         ),
                       ],
                     ),
@@ -156,21 +189,26 @@ class _ReceivePageState extends State<ReceivePage> {
                       ),
                     ],
                     decoration: const InputDecoration(
-                      labelText: 'Request Amount',
-                      prefixText: '\$ ',
+                      labelText: 'Importe',
+                      prefixText: '€ ',
                     ),
                   ),
                   const SizedBox(height: FlowaSpacing.sm),
                   TextField(
                     controller: _noteController,
                     decoration: const InputDecoration(
-                      labelText: 'Note (optional)',
+                      labelText: 'Nota (opcional)',
                     ),
                   ),
                   const SizedBox(height: FlowaSpacing.xxl),
                   FlowaPrimaryButton(
-                    label: 'Create request',
+                    label: 'Crear solicitud',
                     onPressed: _shareRequest,
+                  ),
+                  const SizedBox(height: FlowaSpacing.sm),
+                  FlowaSecondaryButton(
+                    label: 'Registrar ingreso',
+                    onPressed: _registerIncoming,
                   ),
                 ],
               ),

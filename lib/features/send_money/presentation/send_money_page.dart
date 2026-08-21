@@ -6,8 +6,10 @@ import '../../../design_system/components/flowa_visa_card.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/finance_entities.dart';
+import '../../../domain/entities/payee_contact.dart';
 import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
+import '../../contacts/presentation/contacts_page.dart';
 import 'scheduled_transfers_page.dart';
 import 'send_review_page.dart';
 
@@ -21,6 +23,7 @@ class SendMoneyPage extends StatefulWidget {
 
 class _SendMoneyPageState extends State<SendMoneyPage> {
   Account? _account;
+  List<PayeeContact> _contacts = const [];
   bool _balanceVisible = true;
   final _accountNumberController = TextEditingController();
   final _accountNameController = TextEditingController();
@@ -34,11 +37,17 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
   }
 
   Future<void> _load() async {
-    final account = await FlowaServices.accountRepository.getPrimaryAccount();
+    final results = await Future.wait([
+      FlowaServices.accountRepository.getPrimaryAccount(),
+      FlowaServices.contactRepository.getAll(),
+    ]);
     if (!mounted) {
       return;
     }
-    setState(() => _account = account);
+    setState(() {
+      _account = results[0] as Account;
+      _contacts = results[1] as List<PayeeContact>;
+    });
   }
 
   @override
@@ -50,6 +59,21 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
     super.dispose();
   }
 
+  Future<void> _pickContact() async {
+    final contact = await pushFlowaRoute<PayeeContact>(
+      context,
+      const ContactsPage(selectMode: true),
+    );
+    if (contact == null || !mounted) {
+      return;
+    }
+    setState(() {
+      _accountNameController.text = contact.name;
+      _accountNumberController.text = contact.accountNumber;
+    });
+    await _load();
+  }
+
   Future<void> _submit() async {
     final amount = double.tryParse(_amountController.text) ?? 0;
     if (_accountNumberController.text.isEmpty ||
@@ -57,15 +81,12 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
         amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Fill recipient details and a valid amount.'),
+          content: Text('Completa el destinatario y un importe válido.'),
         ),
       );
       return;
     }
 
-    if (!mounted) {
-      return;
-    }
     await pushFlowaRoute<void>(
       context,
       SendReviewPage(
@@ -75,6 +96,7 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
         note: _noteController.text,
       ),
     );
+    await _load();
   }
 
   @override
@@ -82,7 +104,7 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
     final account = _account;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Send Money')),
+      appBar: AppBar(title: const Text('Enviar dinero')),
       body: SafeArea(
         child: account == null
             ? const Center(child: CircularProgressIndicator())
@@ -90,7 +112,7 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                 padding: FlowaSpacing.screenPadding,
                 children: [
                   Text(
-                    'Send Money From',
+                    'Enviar desde',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: FlowaSpacing.sm),
@@ -103,53 +125,76 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                     height: 160,
                   ),
                   const SizedBox(height: FlowaSpacing.xl),
-                  Text(
-                    'Send Money To',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: FlowaSpacing.sm),
-                  Wrap(
-                    spacing: FlowaSpacing.sm,
-                    runSpacing: FlowaSpacing.sm,
+                  Row(
                     children: [
-                      for (final recipient in RecentRecipients.items)
-                        ActionChip(
-                          label: Text(recipient.name),
-                          onPressed: () {
-                            setState(() {
-                              _accountNameController.text = recipient.name;
-                              _accountNumberController.text =
-                                  recipient.accountNumber;
-                            });
-                          },
+                      Expanded(
+                        child: Text(
+                          'Enviar a',
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
+                      ),
+                      TextButton.icon(
+                        onPressed: _pickContact,
+                        icon: const Icon(Icons.contacts_outlined, size: 18),
+                        label: const Text('Contactos'),
+                      ),
                     ],
                   ),
+                  const SizedBox(height: FlowaSpacing.sm),
+                  if (_contacts.isNotEmpty)
+                    Wrap(
+                      spacing: FlowaSpacing.sm,
+                      runSpacing: FlowaSpacing.sm,
+                      children: [
+                        for (final contact in _contacts.take(6))
+                          ActionChip(
+                            avatar: Icon(
+                              contact.kind == PayeeKind.business
+                                  ? Icons.apartment_outlined
+                                  : Icons.person_outline,
+                              size: 16,
+                            ),
+                            label: Text(contact.name),
+                            onPressed: () {
+                              setState(() {
+                                _accountNameController.text = contact.name;
+                                _accountNumberController.text =
+                                    contact.accountNumber;
+                              });
+                            },
+                          ),
+                      ],
+                    )
+                  else
+                    Text(
+                      'Aún no tienes contactos. Añade personas o empresas.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   const SizedBox(height: FlowaSpacing.sm),
                   TextField(
                     controller: _accountNumberController,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
-                      labelText: 'Account Number',
+                      labelText: 'Número de cuenta',
                     ),
                   ),
                   const SizedBox(height: FlowaSpacing.sm),
                   TextField(
                     controller: _accountNameController,
                     decoration: const InputDecoration(
-                      labelText: 'Account Name',
+                      labelText: 'Nombre del destinatario',
                     ),
                   ),
                   const SizedBox(height: FlowaSpacing.sm),
                   TextField(
                     controller: _noteController,
                     decoration: const InputDecoration(
-                      labelText: 'Note for Other',
+                      labelText: 'Nota (opcional)',
                     ),
                   ),
                   const SizedBox(height: FlowaSpacing.xl),
                   Text(
-                    'Send Money Amount',
+                    'Importe',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: FlowaSpacing.sm),
@@ -164,8 +209,8 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                       ),
                     ],
                     decoration: const InputDecoration(
-                      prefixText: '\$ ',
-                      hintText: '0.00',
+                      prefixText: '€ ',
+                      hintText: '0,00',
                     ),
                   ),
                   const SizedBox(height: FlowaSpacing.xxl),
@@ -177,17 +222,17 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                         const ScheduledTransfersPage(),
                       ),
                       icon: const Icon(Icons.schedule_outlined),
-                      label: const Text('Scheduled transfers'),
+                      label: const Text('Transferencias programadas'),
                     ),
                   ),
                   const SizedBox(height: FlowaSpacing.sm),
-                  FlowaPrimaryButton(label: 'Continue', onPressed: _submit),
+                  FlowaPrimaryButton(label: 'Continuar', onPressed: _submit),
                   const SizedBox(height: FlowaSpacing.sm),
                   Text(
-                    'This screen is for bank transfers, not mobile top-ups.',
+                    'Esta pantalla es para transferencias bancarias, no recargas.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: FlowaColors.textSecondary,
-                    ),
+                          color: FlowaColors.textSecondary,
+                        ),
                     textAlign: TextAlign.center,
                   ),
                 ],

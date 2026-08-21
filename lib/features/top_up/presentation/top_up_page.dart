@@ -24,8 +24,8 @@ class _TopUpPageState extends State<TopUpPage> {
   Account? _account;
   bool _balanceVisible = true;
   double? _selectedChip;
-  final _numberController = TextEditingController(text: '1475894586');
-  final _amountController = TextEditingController(text: '150.00');
+  final _numberController = TextEditingController();
+  final _amountController = TextEditingController();
   static const _maxLimit = 100;
 
   @override
@@ -56,29 +56,44 @@ class _TopUpPageState extends State<TopUpPage> {
   Future<void> _continue() async {
     if (_numberController.text.isEmpty || _amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a top-up number and amount.')),
+        const SnackBar(content: Text('Introduce un número e importe.')),
       );
       return;
     }
 
     final confirmed = await showFlowaConfirmationDialog(
       context: context,
-      title: 'Are you sure this is a Top-Up?',
+      title: '¿Confirmas que es una recarga?',
       message:
-          'You are topping up a phone/operator number, not sending money to a bank account. Confirm to avoid accidental transfers.',
-      confirmLabel: 'Top Up Now',
+          'Vas a recargar un número de teléfono/operador, no a enviar dinero a una cuenta bancaria.',
+      confirmLabel: 'Recargar ahora',
     );
 
     if (!confirmed || !mounted) {
       return;
     }
 
+    await FlowaServices.transactionRepository.add(
+      TransactionItem(
+        id: 'tx-${DateTime.now().millisecondsSinceEpoch}',
+        merchant: 'Recarga ${_numberController.text}',
+        amount: _amount,
+        occurredAt: DateTime.now(),
+        direction: TransactionDirection.debit,
+        category: 'Recarga',
+      ),
+    );
+    await FlowaServices.accountRepository.applyBalanceDelta(-_amount);
+
+    if (!mounted) {
+      return;
+    }
     await pushFlowaRoute<void>(
       context,
       TransferSuccessPage(
-        title: 'Top-Up successful',
+        title: 'Recarga realizada',
         amount: _amount,
-        subtitle: 'Recharged ${_numberController.text}',
+        subtitle: 'Recargado ${_numberController.text}',
       ),
     );
   }
@@ -88,7 +103,7 @@ class _TopUpPageState extends State<TopUpPage> {
     final account = _account;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Top-Up')),
+      appBar: AppBar(title: const Text('Recargar')),
       body: SafeArea(
         child: account == null
             ? const Center(child: CircularProgressIndicator())
@@ -96,7 +111,7 @@ class _TopUpPageState extends State<TopUpPage> {
                 padding: FlowaSpacing.screenPadding,
                 children: [
                   Text(
-                    'Top Up From',
+                    'Recargar desde',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: FlowaSpacing.sm),
@@ -111,7 +126,7 @@ class _TopUpPageState extends State<TopUpPage> {
                   ),
                   const SizedBox(height: FlowaSpacing.xl),
                   Text(
-                    'Top-up to',
+                    'Recargar a',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: FlowaSpacing.sm),
@@ -119,13 +134,13 @@ class _TopUpPageState extends State<TopUpPage> {
                     controller: _numberController,
                     keyboardType: TextInputType.phone,
                     decoration: const InputDecoration(
-                      labelText: 'Number',
+                      labelText: 'Número',
                       suffixIcon: Icon(Icons.contacts_outlined),
                     ),
                   ),
                   const SizedBox(height: FlowaSpacing.xl),
                   Text(
-                    'Top-up Amount',
+                    'Importe',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: FlowaSpacing.sm),
@@ -140,7 +155,7 @@ class _TopUpPageState extends State<TopUpPage> {
                     ],
                     onChanged: (_) => setState(() => _selectedChip = null),
                     decoration: const InputDecoration(
-                      prefixText: '\$ ',
+                      prefixText: '€ ',
                     ),
                   ),
                   const SizedBox(height: FlowaSpacing.md),
@@ -158,18 +173,18 @@ class _TopUpPageState extends State<TopUpPage> {
                     const SizedBox(height: FlowaSpacing.md),
                     const FlowaInlineAlert(
                       message:
-                          'This transaction is above your maximum limit. Learn more.',
-                      actionLabel: 'Learn more',
+                          'Esta operación supera tu límite máximo.',
+                      actionLabel: 'Más info',
                     ),
                   ],
                   const SizedBox(height: FlowaSpacing.xxl),
                   FlowaPrimaryButton(
-                    label: 'Continue',
+                    label: 'Continuar',
                     onPressed: _continue,
                   ),
                   const SizedBox(height: FlowaSpacing.sm),
                   Text(
-                    'Top-Up is for mobile/operator recharge only.',
+                    'La recarga es solo para móvil/operador.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: FlowaColors.textSecondary,
                         ),
