@@ -1,32 +1,58 @@
 import 'package:flowa/app/flowa_app.dart';
 import 'package:flowa/core/utils/flowa_services.dart';
+import 'package:flowa/data/repositories/in_memory_auth_repository.dart';
 import 'package:flowa/data/repositories/in_memory_preferences_repository.dart';
+import 'package:flowa/data/repositories/mock_transaction_repository.dart';
+import 'package:flowa/domain/entities/finance_entities.dart';
 import 'package:flowa/features/notifications/presentation/notification_settings_page.dart';
 import 'package:flowa/features/top_up/presentation/top_up_page.dart';
 import 'package:flowa/shared/widgets/flowa_dialogs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
+  setUpAll(() async {
+    await initializeDateFormatting('es_ES');
+  });
+
   setUp(() async {
     final prefs = InMemoryPreferencesRepository();
     await prefs.completeOnboarding();
-    FlowaServices.resetToMocks(preferences: prefs);
+    final auth = InMemoryAuthRepository();
+    await auth.register(
+      fullName: 'Ana López',
+      email: 'ana@mail.com',
+      password: '1234',
+    );
+    FlowaServices.resetToMocks(preferences: prefs, auth: auth);
+    FlowaServices.transactionRepository = MockTransactionRepository(
+      seed: [
+        TransactionItem(
+          id: 'tx-apple',
+          merchant: 'Apple',
+          amount: 14.99,
+          occurredAt: DateTime(2026, 3, 1),
+          direction: TransactionDirection.debit,
+          category: 'Shopping',
+        ),
+      ],
+    );
   });
 
   testWidgets('home loads account and recent merchants', (tester) async {
     await tester.pumpWidget(const FlowaApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('John Doe'), findsOneWidget);
+    expect(find.text('Ana López'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Apple'),
       200,
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('Apple'), findsWidgets);
-    expect(find.text('Send'), findsOneWidget);
-    expect(find.text('Top-Up'), findsOneWidget);
+    expect(find.text('Enviar'), findsOneWidget);
+    expect(find.text('Recargar'), findsOneWidget);
   });
 
   testWidgets('top-up page uses gold flow and confirmation copy', (tester) async {
@@ -36,21 +62,23 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    expect(find.text('Top-Up'), findsOneWidget);
-    expect(find.text('Top Up From'), findsOneWidget);
+    expect(find.text('Recargar'), findsOneWidget);
+    expect(find.text('Recargar desde'), findsOneWidget);
 
     await tester.scrollUntilVisible(
-      find.text('Continue'),
+      find.text('Continuar'),
       200,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('Continue'), findsOneWidget);
+    expect(find.text('Continuar'), findsOneWidget);
 
-    await tester.tap(find.text('Continue'));
+    await tester.enterText(find.byType(TextField).first, '600123456');
+    await tester.enterText(find.byType(TextField).at(1), '20');
+    await tester.tap(find.text('Continuar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Are you sure this is a Top-Up?'), findsOneWidget);
-    expect(find.text('Top Up Now'), findsOneWidget);
+    expect(find.text('¿Confirmas que es una recarga?'), findsOneWidget);
+    expect(find.text('Recargar ahora'), findsOneWidget);
     expect(find.text('No, Go Back'), findsOneWidget);
   });
 
@@ -82,9 +110,9 @@ void main() {
                 onPressed: () async {
                   confirmed = await showFlowaConfirmationDialog(
                     context: context,
-                    title: 'Are you sure this is a Top-Up?',
+                    title: '¿Confirmas que es una recarga?',
                     message: 'Check again.',
-                    confirmLabel: 'Top Up Now',
+                    confirmLabel: 'Recargar ahora',
                   );
                 },
                 child: const Text('Open'),

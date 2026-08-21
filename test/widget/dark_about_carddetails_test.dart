@@ -24,8 +24,8 @@ void main() {
   testWidgets('settings exposes dark mode toggle', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: AppSettingsPage()));
     await tester.pumpAndSettle();
-    expect(find.text('Dark mode'), findsOneWidget);
-    expect(find.text('About Flowa'), findsOneWidget);
+    expect(find.text('Modo oscuro'), findsOneWidget);
+    expect(find.text('Acerca de Flowa'), findsOneWidget);
   });
 
   testWidgets('support page shows contact section', (tester) async {

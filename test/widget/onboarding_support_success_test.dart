@@ -1,5 +1,6 @@
 import 'package:flowa/app/flowa_app.dart';
 import 'package:flowa/core/utils/flowa_services.dart';
+import 'package:flowa/data/repositories/in_memory_auth_repository.dart';
 import 'package:flowa/data/repositories/in_memory_preferences_repository.dart';
 import 'package:flowa/domain/entities/finance_entities.dart';
 import 'package:flowa/features/onboarding/presentation/onboarding_page.dart';
@@ -8,11 +9,22 @@ import 'package:flowa/features/transactions/presentation/transaction_detail_page
 import 'package:flowa/features/transfers/presentation/transfer_success_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
-  setUp(() {
+  setUpAll(() async {
+    await initializeDateFormatting('es_ES');
+  });
+
+  setUp(() async {
     final prefs = InMemoryPreferencesRepository();
-    FlowaServices.resetToMocks(preferences: prefs);
+    final auth = InMemoryAuthRepository();
+    await auth.register(
+      fullName: 'Ana López',
+      email: 'ana@mail.com',
+      password: '1234',
+    );
+    FlowaServices.resetToMocks(preferences: prefs, auth: auth);
   });
 
   testWidgets('onboarding appears until completed', (tester) async {
@@ -20,12 +32,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(OnboardingPage), findsOneWidget);
-    expect(find.text('Clarity first'), findsOneWidget);
+    expect(find.text('Claridad primero'), findsOneWidget);
 
-    await tester.tap(find.text('Skip'));
+    await tester.tap(find.text('Saltar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('John Doe'), findsOneWidget);
+    expect(find.text('Ana López'), findsOneWidget);
   });
 
   testWidgets('support center filters articles', (tester) async {

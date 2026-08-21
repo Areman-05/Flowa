@@ -99,8 +99,8 @@ void main() {
 
   group('finance labels', () {
     test('maps purpose and access enums', () {
-      expect(AccountKind.business.label, 'Business');
-      expect(AccessLevel.limited.label, 'Limited');
+      expect(AccountKind.business.label, 'Empresa');
+      expect(AccessLevel.limited.label, 'Limitado');
     });
   });
 }

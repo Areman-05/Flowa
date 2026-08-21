@@ -4,11 +4,17 @@ import 'package:flowa/data/repositories/mock_account_repository.dart';
 import 'package:flowa/data/repositories/mock_scheduled_transfer_repository.dart';
 import 'package:flowa/domain/entities/budget_goal.dart';
 import 'package:flowa/domain/entities/finance_entities.dart';
+import 'package:flowa/domain/entities/scheduled_transfer.dart';
 import 'package:flowa/features/insights/domain/spending_snapshot.dart';
 import 'package:flowa/features/transactions/domain/transaction_filters.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
+  setUpAll(() async {
+    await initializeDateFormatting('es_ES');
+  });
+
   group('ReceiveRequest', () {
     test('includes optional note in share copy', () {
       const account = Account(
@@ -24,7 +30,9 @@ void main() {
         note: 'Dinner',
       );
       expect(message, contains('Dinner'));
-      expect(message, contains('\$25.00'));
+      expect(message, contains('25,00\u00a0€'));
+      expect(message, startsWith('Paga '));
+      expect(message, contains('Nota:'));
     });
   });
 
@@ -98,13 +106,25 @@ void main() {
 
   group('MockScheduledTransferRepository', () {
     test('returns seeded scheduled transfers', () async {
-      final repo = MockScheduledTransferRepository();
+      final repo = MockScheduledTransferRepository(
+        seed: [
+          ScheduledTransfer(
+            id: 's1',
+            recipientName: 'Emma Parker',
+            accountNumber: '1476584951012345',
+            amount: 50,
+            scheduledFor: DateTime(2026, 4, 1),
+            frequency: ScheduledTransferFrequency.monthly,
+          ),
+        ],
+      );
       final items = await repo.getAll();
       expect(items, isNotEmpty);
       expect(
         items.any((item) => item.recipientName == 'Emma Parker'),
         isTrue,
       );
+      expect(items.first.frequencyLabel, 'Mensual');
     });
   });
 

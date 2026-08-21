@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:flowa/core/utils/deep_links.dart';
 import 'package:flowa/core/utils/transaction_export.dart';
@@ -9,6 +10,10 @@ import 'package:flowa/domain/entities/budget_goal.dart';
 import 'package:flowa/domain/entities/finance_entities.dart';
 
 void main() {
+  setUpAll(() async {
+    await initializeDateFormatting('es_ES');
+  });
+
   group('FlowaTheme', () {
     test('light theme uses light brightness', () {
       final theme = FlowaTheme.light();
@@ -65,8 +70,8 @@ void main() {
           id: 'tx1',
           merchant: 'Shop',
           amount: 30,
-          isIncome: false,
           occurredAt: DateTime(2026, 3, 1),
+          direction: TransactionDirection.debit,
         ),
       ];
       final text = TransactionExport.toPdfPlaceholder(items);

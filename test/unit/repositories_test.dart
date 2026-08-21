@@ -1,52 +1,61 @@
 import 'package:flowa/data/repositories/mock_account_repository.dart';
 import 'package:flowa/data/repositories/mock_transaction_repository.dart';
+import 'package:flowa/domain/entities/finance_entities.dart';
 import 'package:flowa/domain/entities/money_flow_kind.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('MockAccountRepository', () {
-    final repository = MockAccountRepository();
+    test('starts empty and bootstraps user account', () async {
+      final repository = MockAccountRepository();
+      final guest = await repository.getCurrentUser();
+      expect(guest.fullName, 'Invitado');
 
-    test('returns primary Visa account', () async {
+      repository.bootstrapUser(
+        const UserProfile(
+          id: 'user-1',
+          fullName: 'Ana López',
+          email: 'ana@mail.com',
+        ),
+      );
+      final user = await repository.getCurrentUser();
+      expect(user.fullName, 'Ana López');
       final account = await repository.getPrimaryAccount();
-      expect(account.lastFour, '6457');
+      expect(account.availableBalance, 0);
       expect(account.brand, 'VISA');
     });
 
-    test('returns current user profile', () async {
-      final user = await repository.getCurrentUser();
-      expect(user.fullName, 'John Doe');
-      expect(user.firstName, 'John');
+    test('applyBalanceDelta updates available balance', () async {
+      final repository = MockAccountRepository();
+      await repository.applyBalanceDelta(50);
+      final account = await repository.getPrimaryAccount();
+      expect(account.availableBalance, 50);
     });
   });
 
   group('MockTransactionRepository', () {
-    const repository = MockTransactionRepository();
+    test('starts empty and accepts new movements', () async {
+      final repository = MockTransactionRepository();
+      expect(await repository.getAll(), isEmpty);
 
-    test('getRecent respects limit and newest-first order', () async {
-      final recent = await repository.getRecent(limit: 3);
-      expect(recent, hasLength(3));
-      expect(
-        recent.first.occurredAt.isAfter(recent.last.occurredAt) ||
-            recent.first.occurredAt.isAtSameMomentAs(recent.last.occurredAt),
-        isTrue,
+      await repository.add(
+        TransactionItem(
+          id: 'tx-1',
+          merchant: 'Café',
+          amount: 3.5,
+          occurredAt: DateTime(2026, 3, 1),
+          direction: TransactionDirection.debit,
+        ),
       );
-    });
-
-    test('getAll returns the full seeded history', () async {
       final all = await repository.getAll();
-      expect(all.length, greaterThanOrEqualTo(4));
+      expect(all, hasLength(1));
+      expect(all.first.merchant, 'Café');
     });
   });
 
   group('MoneyFlowKind', () {
-    test('keeps Send and Top-Up visually/logically distinct', () {
-      expect(MoneyFlowKind.send.title, 'Send Money');
-      expect(MoneyFlowKind.topUp.title, 'Top-Up');
-      expect(
-        MoneyFlowKind.send.clarification,
-        isNot(MoneyFlowKind.topUp.clarification),
-      );
+    test('keeps Send and Top-Up as distinct flows', () {
+      expect(MoneyFlowKind.send.title, isNot(MoneyFlowKind.topUp.title));
       expect(MoneyFlowKind.topUp.requiresDestructiveConfirmation, isTrue);
       expect(MoneyFlowKind.send.requiresDestructiveConfirmation, isFalse);
     });

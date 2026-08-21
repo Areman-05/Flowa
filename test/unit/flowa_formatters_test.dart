@@ -4,12 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('FlowaFormatters', () {
     test('formats currency with two decimals', () {
-      expect(FlowaFormatters.currency(2150), r'$2,150.00');
+      expect(FlowaFormatters.currency(2150), '2.150,00\u00a0€');
     });
 
     test('signedCurrency prefixes income and expenses', () {
-      expect(FlowaFormatters.signedCurrency(255), r'+$255.00');
-      expect(FlowaFormatters.signedCurrency(-14.99), r'-$14.99');
+      expect(FlowaFormatters.signedCurrency(255), '+255,00\u00a0€');
+      expect(FlowaFormatters.signedCurrency(-14.99), '-14,99\u00a0€');
     });
 
     test('maskedBalance hides or reveals amount', () {
@@ -19,7 +19,7 @@ void main() {
       );
       expect(
         FlowaFormatters.maskedBalance(amount: 100, visible: true),
-        r'$100.00',
+        '100,00\u00a0€',
       );
     });
   });
@@ -28,18 +28,18 @@ void main() {
     test('returns morning before noon', () {
       expect(
         FlowaGreeting.forDateTime(DateTime(2026, 8, 7, 9)),
-        'Good Morning,',
+        'Buenos días,',
       );
     });
 
     test('returns afternoon and evening windows', () {
       expect(
         FlowaGreeting.forDateTime(DateTime(2026, 8, 7, 15)),
-        'Good Afternoon,',
+        'Buenas tardes,',
       );
       expect(
         FlowaGreeting.forDateTime(DateTime(2026, 8, 7, 20)),
-        'Good Evening,',
+        'Buenas noches,',
       );
     });
   });

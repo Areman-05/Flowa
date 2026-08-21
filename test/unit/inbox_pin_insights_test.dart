@@ -21,7 +21,26 @@ void main() {
 
   group('MockInboxRepository', () {
     test('counts unread and marks items read', () async {
-      final repo = MockInboxRepository();
+      final repo = MockInboxRepository(
+        seed: [
+          InboxNotification(
+            id: 'n1',
+            title: 'Money request from Emma',
+            body: 'Emma asked for 25 €',
+            kind: InboxNotificationKind.moneyRequest,
+            createdAt: DateTime(2026, 3, 1),
+            actionLabel: 'Review',
+          ),
+          InboxNotification(
+            id: 'n2',
+            title: 'Security tip',
+            body: 'Enable PIN',
+            kind: InboxNotificationKind.security,
+            createdAt: DateTime(2026, 3, 2),
+            isRead: true,
+          ),
+        ],
+      );
       expect(await repo.unreadCount(), greaterThan(0));
       await repo.markRead('n1');
       final items = await repo.getAll();

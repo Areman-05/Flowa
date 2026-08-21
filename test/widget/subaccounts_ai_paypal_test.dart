@@ -11,19 +11,23 @@ void main() {
 
   testWidgets('create sub-account form validates and saves', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: CreateSubAccountPage()));
+    await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField).first, "Emma's College Fund");
-    final createButton = find.text('Create Sub-Account').last;
+    await tester.enterText(find.byType(TextField).first, 'Emma College Fund');
+    await tester.pump();
+
+    // Page body ListView is the first vertical Scrollable; icon picker is nested.
+    final pageScrollable = find.byType(Scrollable).first;
     await tester.scrollUntilVisible(
-      createButton,
-      300,
-      scrollable: find.byType(Scrollable).first,
+      find.byType(FilledButton),
+      400,
+      scrollable: pageScrollable,
     );
-    await tester.tap(createButton);
+    await tester.tap(find.byType(FilledButton));
     await tester.pumpAndSettle();
 
     final items = await FlowaServices.subAccountRepository.getAll();
-    expect(items.any((item) => item.name == "Emma's College Fund"), isTrue);
+    expect(items.any((item) => item.name == 'Emma College Fund'), isTrue);
   });
 
   testWidgets('PayPal connect screen shows secure login copy', (tester) async {
@@ -45,6 +49,11 @@ void main() {
 
     expect(find.text('What Can I Help You?'), findsOneWidget);
     await tester.tap(find.text('Top-Up'));
+    await tester.pumpAndSettle();
+
+    // Quick action opens Top-Up (Recargar) flow first.
+    expect(find.text('Recargar'), findsOneWidget);
+    await tester.pageBack();
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Top-Up'), findsWidgets);
@@ -71,8 +80,9 @@ void main() {
     await tester.tap(find.text('Open more'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Sub-Accounts'), findsOneWidget);
-    expect(find.text('Wallets'), findsOneWidget);
-    expect(find.text('Insights'), findsOneWidget);
+    expect(find.text('Subcuentas'), findsOneWidget);
+    expect(find.text('Monederos'), findsOneWidget);
+    expect(find.text('Resumen'), findsOneWidget);
+    expect(find.text('Contactos'), findsOneWidget);
   });
 }
