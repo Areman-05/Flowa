@@ -2,7 +2,7 @@
 abstract final class FlowaConstants {
   static const String appName = 'Flowa';
   static const String appTagline =
-      'Claridad, control y confianza para tu dinero.';
+      'Claridad lunar para tu dinero.';
 
   static const String currencyCode = 'EUR';
   static const String currencySymbol = '€';

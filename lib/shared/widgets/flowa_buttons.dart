@@ -24,6 +24,11 @@ class FlowaPrimaryButton extends StatelessWidget {
       height: 56,
       child: FilledButton(
         onPressed: isLoading ? null : onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: FlowaColors.primary,
+          foregroundColor: FlowaColors.textOnPrimary,
+          disabledBackgroundColor: FlowaColors.border,
+        ),
         child: isLoading
             ? const SizedBox(
                 width: 22,

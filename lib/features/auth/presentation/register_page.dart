@@ -5,7 +5,8 @@ import '../../../data/datasources/mock_finance_data.dart';
 import '../../../data/repositories/mock_account_repository.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
-import '../../../shared/widgets/flowa_buttons.dart';
+import 'widgets/auth_controls.dart';
+import 'widgets/auth_shell.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({required this.onAuthenticated, super.key});
@@ -72,72 +73,89 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Crear cuenta')),
-      backgroundColor: FlowaColors.background,
-      body: SafeArea(
-        child: ListView(
-          padding: FlowaSpacing.screenPadding,
-          children: [
-            Text(
-              'Tu dinero, con tus datos',
-              style: Theme.of(context).textTheme.titleLarge,
+    return AuthShell(
+      showBack: true,
+      markSize: 72,
+      tagline: 'Empieza vacío. Tú decides qué entra.',
+      form: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(
+            controller: _nameController,
+            textCapitalization: TextCapitalization.words,
+            textInputAction: TextInputAction.next,
+            decoration: authFieldDecoration(
+              label: 'Nombre completo',
+              prefixIcon: const Icon(
+                Icons.person_outline_rounded,
+                color: FlowaColors.textTertiary,
+              ),
             ),
-            const SizedBox(height: FlowaSpacing.xs),
-            Text(
-              'Empiezas con la cuenta vacía. Tú añades contactos, empresas y movimientos.',
-              style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: FlowaSpacing.lg),
+          TextField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            decoration: authFieldDecoration(
+              label: 'Email',
+              prefixIcon: const Icon(
+                Icons.mail_outline_rounded,
+                color: FlowaColors.textTertiary,
+              ),
             ),
-            const SizedBox(height: FlowaSpacing.xl),
-            TextField(
-              controller: _nameController,
-              textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(labelText: 'Nombre completo'),
-            ),
-            const SizedBox(height: FlowaSpacing.sm),
-            TextField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(labelText: 'Email'),
-            ),
-            const SizedBox(height: FlowaSpacing.sm),
-            TextField(
-              controller: _passwordController,
-              obscureText: _obscure,
-              decoration: InputDecoration(
-                labelText: 'Contraseña',
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscure ? Icons.visibility_outlined : Icons.visibility_off,
-                  ),
-                  onPressed: () => setState(() => _obscure = !_obscure),
+          ),
+          const SizedBox(height: FlowaSpacing.lg),
+          TextField(
+            controller: _passwordController,
+            obscureText: _obscure,
+            textInputAction: TextInputAction.next,
+            decoration: authFieldDecoration(
+              label: 'Contraseña',
+              prefixIcon: const Icon(
+                Icons.lock_outline_rounded,
+                color: FlowaColors.textTertiary,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscure
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  color: FlowaColors.textTertiary,
                 ),
+                onPressed: () => setState(() => _obscure = !_obscure),
               ),
             ),
+          ),
+          const SizedBox(height: FlowaSpacing.lg),
+          TextField(
+            controller: _confirmController,
+            obscureText: _obscure,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _loading ? null : _submit(),
+            decoration: authFieldDecoration(
+              label: 'Confirmar contraseña',
+              prefixIcon: const Icon(
+                Icons.verified_user_outlined,
+                color: FlowaColors.textTertiary,
+              ),
+            ),
+          ),
+          if (_error != null) ...[
             const SizedBox(height: FlowaSpacing.sm),
-            TextField(
-              controller: _confirmController,
-              obscureText: _obscure,
-              decoration: const InputDecoration(
-                labelText: 'Confirmar contraseña',
-              ),
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: FlowaSpacing.sm),
-              Text(
-                _error!,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: FlowaColors.danger,
-                    ),
-              ),
-            ],
-            const SizedBox(height: FlowaSpacing.xl),
-            FlowaPrimaryButton(
-              label: _loading ? 'Creando…' : 'Registrarme',
-              onPressed: _loading ? null : _submit,
+            Text(
+              _error!,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: FlowaColors.danger,
+                  ),
             ),
           ],
-        ),
+        ],
+      ),
+      actions: AuthPrimaryButton(
+        label: _loading ? 'Creando…' : 'Crear cuenta',
+        loading: _loading,
+        onPressed: _loading ? null : _submit,
       ),
     );
   }

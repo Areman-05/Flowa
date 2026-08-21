@@ -1,88 +1,88 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'flowa_colors.dart';
 
-/// Typography scale for Flowa.
-///
-/// Uses the platform sans family for now; brand fonts can replace this later
-/// without changing call sites that use [FlowaTypography] / [ThemeData].
+/// Typography — Syne for display, Outfit for UI (premium fintech).
 abstract final class FlowaTypography {
-  static const String fontFamily = 'Roboto';
+  static String get fontFamily => GoogleFonts.outfit().fontFamily ?? 'Outfit';
+
+  static String get displayFamily => GoogleFonts.syne().fontFamily ?? 'Syne';
 
   static TextTheme get textTheme {
-    return const TextTheme(
-      displayLarge: TextStyle(
-        fontFamily: fontFamily,
+    final outfit = GoogleFonts.outfitTextTheme();
+    final syne = GoogleFonts.syneTextTheme();
+
+    return outfit.copyWith(
+      displayLarge: syne.displayLarge?.copyWith(
+        fontSize: 40,
+        fontWeight: FontWeight.w700,
+        height: 1.05,
+        letterSpacing: -1.2,
+        color: FlowaColors.textPrimary,
+      ),
+      displaySmall: syne.displaySmall?.copyWith(
         fontSize: 32,
+        fontWeight: FontWeight.w700,
+        height: 1.1,
+        letterSpacing: -0.8,
+        color: FlowaColors.textPrimary,
+      ),
+      headlineLarge: syne.headlineLarge?.copyWith(
+        fontSize: 24,
         fontWeight: FontWeight.w700,
         height: 1.2,
         color: FlowaColors.textPrimary,
       ),
-      headlineLarge: TextStyle(
-        fontFamily: fontFamily,
-        fontSize: 24,
-        fontWeight: FontWeight.w700,
-        height: 1.25,
-        color: FlowaColors.textPrimary,
-      ),
-      headlineMedium: TextStyle(
-        fontFamily: fontFamily,
+      headlineMedium: outfit.headlineMedium?.copyWith(
         fontSize: 20,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
         height: 1.3,
         color: FlowaColors.textPrimary,
       ),
-      titleLarge: TextStyle(
-        fontFamily: fontFamily,
+      titleLarge: outfit.titleLarge?.copyWith(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         height: 1.3,
         color: FlowaColors.textPrimary,
       ),
-      titleMedium: TextStyle(
-        fontFamily: fontFamily,
+      titleMedium: outfit.titleMedium?.copyWith(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         height: 1.35,
         color: FlowaColors.textPrimary,
       ),
-      bodyLarge: TextStyle(
-        fontFamily: fontFamily,
+      bodyLarge: outfit.bodyLarge?.copyWith(
         fontSize: 16,
         fontWeight: FontWeight.w400,
-        height: 1.4,
+        height: 1.45,
         color: FlowaColors.textPrimary,
       ),
-      bodyMedium: TextStyle(
-        fontFamily: fontFamily,
+      bodyMedium: outfit.bodyMedium?.copyWith(
         fontSize: 14,
         fontWeight: FontWeight.w400,
-        height: 1.4,
+        height: 1.45,
         color: FlowaColors.textSecondary,
       ),
-      bodySmall: TextStyle(
-        fontFamily: fontFamily,
+      bodySmall: outfit.bodySmall?.copyWith(
         fontSize: 12,
         fontWeight: FontWeight.w400,
         height: 1.35,
         color: FlowaColors.textTertiary,
       ),
-      labelLarge: TextStyle(
-        fontFamily: fontFamily,
+      labelLarge: outfit.labelLarge?.copyWith(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         height: 1.25,
         color: FlowaColors.textOnPrimary,
       ),
-      labelMedium: TextStyle(
-        fontFamily: fontFamily,
+      labelMedium: outfit.labelMedium?.copyWith(
         fontSize: 13,
         fontWeight: FontWeight.w500,
         height: 1.3,
         color: FlowaColors.textSecondary,
       ),
-      labelSmall: TextStyle(
-        fontFamily: fontFamily,
+      labelSmall: outfit.labelSmall?.copyWith(
         fontSize: 11,
         fontWeight: FontWeight.w500,
         height: 1.3,

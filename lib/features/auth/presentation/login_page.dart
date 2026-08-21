@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/constants/flowa_constants.dart';
 import '../../../core/utils/flowa_services.dart';
-import '../../../data/repositories/mock_account_repository.dart';
 import '../../../data/datasources/mock_finance_data.dart';
+import '../../../data/repositories/mock_account_repository.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
-import '../../../shared/widgets/flowa_buttons.dart';
 import 'register_page.dart';
+import 'widgets/auth_controls.dart';
+import 'widgets/auth_shell.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({required this.onAuthenticated, super.key});
@@ -64,78 +64,97 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: FlowaColors.background,
-      body: SafeArea(
-        child: ListView(
-          padding: FlowaSpacing.screenPadding,
-          children: [
-            const SizedBox(height: FlowaSpacing.xxl),
-            Text(
-              FlowaConstants.appName,
-              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                    color: FlowaColors.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
+    return AuthShell(
+      tagline: 'Claridad lunar para tu dinero.\nPremium. Preciso. Tuyo.',
+      form: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            autofillHints: const [AutofillHints.email],
+            textInputAction: TextInputAction.next,
+            decoration: authFieldDecoration(
+              label: 'Email',
+              prefixIcon: const Icon(
+                Icons.mail_outline_rounded,
+                color: FlowaColors.textTertiary,
+              ),
             ),
-            const SizedBox(height: FlowaSpacing.sm),
-            Text(
-              'Inicia sesión para gestionar tu dinero',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: FlowaSpacing.xl),
-            TextField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              autofillHints: const [AutofillHints.email],
-              decoration: const InputDecoration(labelText: 'Email'),
-            ),
-            const SizedBox(height: FlowaSpacing.sm),
-            TextField(
-              controller: _passwordController,
-              obscureText: _obscure,
-              autofillHints: const [AutofillHints.password],
-              decoration: InputDecoration(
-                labelText: 'Contraseña',
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscure ? Icons.visibility_outlined : Icons.visibility_off,
-                  ),
-                  onPressed: () => setState(() => _obscure = !_obscure),
+          ),
+          const SizedBox(height: FlowaSpacing.lg),
+          TextField(
+            controller: _passwordController,
+            obscureText: _obscure,
+            autofillHints: const [AutofillHints.password],
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _loading ? null : _submit(),
+            decoration: authFieldDecoration(
+              label: 'Contraseña',
+              prefixIcon: const Icon(
+                Icons.lock_outline_rounded,
+                color: FlowaColors.textTertiary,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscure
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  color: FlowaColors.textTertiary,
                 ),
+                onPressed: () => setState(() => _obscure = !_obscure),
               ),
             ),
-            if (_error != null) ...[
-              const SizedBox(height: FlowaSpacing.sm),
-              Text(
-                _error!,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: FlowaColors.danger,
-                    ),
-              ),
-            ],
-            const SizedBox(height: FlowaSpacing.xl),
-            FlowaPrimaryButton(
-              label: _loading ? 'Entrando…' : 'Entrar',
-              onPressed: _loading ? null : _submit,
-            ),
+          ),
+          if (_error != null) ...[
             const SizedBox(height: FlowaSpacing.sm),
-            FlowaSecondaryButton(
-              label: 'Crear cuenta',
-              onPressed: _loading
-                  ? null
-                  : () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => RegisterPage(
-                            onAuthenticated: widget.onAuthenticated,
-                          ),
-                        ),
-                      );
-                    },
+            Text(
+              _error!,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: FlowaColors.danger,
+                  ),
             ),
           ],
-        ),
+        ],
+      ),
+      actions: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AuthPrimaryButton(
+            label: _loading ? 'Entrando…' : 'Entrar',
+            loading: _loading,
+            onPressed: _loading ? null : _submit,
+          ),
+          const SizedBox(height: FlowaSpacing.sm),
+          TextButton(
+            onPressed: _loading
+                ? null
+                : () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => RegisterPage(
+                          onAuthenticated: widget.onAuthenticated,
+                        ),
+                      ),
+                    );
+                  },
+            child: Text.rich(
+              TextSpan(
+                style: Theme.of(context).textTheme.bodyMedium,
+                children: const [
+                  TextSpan(text: '¿Nuevo en Flowa? '),
+                  TextSpan(
+                    text: 'Crear cuenta',
+                    style: TextStyle(
+                      color: FlowaColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
