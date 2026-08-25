@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/utils/flowa_services.dart';
+import '../../../design_system/components/flowa_actions.dart';
 import '../../../design_system/components/flowa_amount_chips.dart';
+import '../../../design_system/components/flowa_icon.dart';
+import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
+import '../../../design_system/tokens/flowa_typography.dart';
 import '../../../domain/entities/ai_chat_message.dart';
 import '../../../shared/navigation/flowa_routes.dart';
 import '../../receive/presentation/receive_page.dart';
@@ -12,7 +16,9 @@ import '../../support/presentation/support_center_page.dart';
 import '../../top_up/presentation/top_up_page.dart';
 
 class AiAssistantPage extends StatefulWidget {
-  const AiAssistantPage({super.key});
+  const AiAssistantPage({super.key, this.embedded = false});
+
+  final bool embedded;
 
   @override
   State<AiAssistantPage> createState() => _AiAssistantPageState();
@@ -67,62 +73,74 @@ class _AiAssistantPageState extends State<AiAssistantPage> {
   }
 
   Future<void> _quickAction(String label) async {
-    if (label == 'Send') {
-      await Navigator.of(
-        context,
-      ).push(MaterialPageRoute<void>(builder: (_) => const SendMoneyPage()));
-    } else if (label == 'Top-Up') {
-      await Navigator.of(
-        context,
-      ).push(MaterialPageRoute<void>(builder: (_) => const TopUpPage()));
-    } else if (label == 'Receive') {
-      await Navigator.of(
-        context,
-      ).push(MaterialPageRoute<void>(builder: (_) => const ReceivePage()));
-    } else if (label == 'Support') {
+    if (label == 'Enviar') {
+      await pushFlowaRoute<void>(context, const SendMoneyPage());
+    } else if (label == 'Ingresar') {
+      await pushFlowaRoute<void>(context, const ReceivePage());
+    } else if (label == 'Recargar') {
+      await pushFlowaRoute<void>(context, const TopUpPage());
+    } else if (label == 'Soporte') {
       await pushFlowaRoute<void>(context, const SupportCenterPage());
     }
     await _send(label);
   }
 
-  void _micPlaceholder() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Voice input is coming soon — type for now.'),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Scaffold(
-      backgroundColor: FlowaColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: FlowaSpacing.screenPadding,
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: _startNewChat,
-                  icon: const Icon(Icons.auto_awesome, size: 18),
-                  label: const Text('Start a New Chat'),
+    return FlowaScreen(
+      title: 'Asistente',
+      embedded: widget.embedded,
+      actions: [
+        FlowaIconAction(
+          glyph: FlowaGlyph.spark,
+          tooltip: 'Nuevo chat',
+          onTap: _startNewChat,
+        ),
+      ],
+      footer: TextField(
+        controller: _controller,
+        textInputAction: TextInputAction.send,
+        onSubmitted: _send,
+        style: FlowaType.body(color: FlowaColors.bone),
+        decoration: InputDecoration(
+          hintText: _chatStarted ? 'Pregunta lo que quieras' : 'Dime qué necesitas',
+          suffixIcon: Padding(
+            padding: const EdgeInsets.only(right: 6),
+            child: FlowaPressScale(
+              onTap: () => _send(_controller.text),
+              scale: 0.92,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: FlowaColors.mint,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: const FlowaIcon(
+                  FlowaGlyph.arrowUp,
+                  size: 16,
+                  color: FlowaColors.mintInk,
                 ),
               ),
-              if (!_chatStarted) ...[
+            ),
+          ),
+        ),
+      ),
+      child: !_chatStarted
+          ? Column(
+              children: [
                 const Spacer(),
-                Icon(
-                  Icons.auto_awesome,
-                  size: 48,
-                  color: FlowaColors.primary.withValues(alpha: 0.9),
+                const FlowaIconOrb(
+                  glyph: FlowaGlyph.spark,
+                  size: 72,
+                  background: FlowaColors.mint,
+                  foreground: FlowaColors.mintInk,
                 ),
-                const SizedBox(height: FlowaSpacing.md),
+                const SizedBox(height: FlowaSpacing.lg),
                 Text(
-                  'What Can I Help You?',
-                  style: textTheme.headlineMedium,
+                  '¿En qué te ayudo?',
+                  style: FlowaType.editorialMd(),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: FlowaSpacing.lg),
@@ -132,86 +150,44 @@ class _AiAssistantPageState extends State<AiAssistantPage> {
                   alignment: WrapAlignment.center,
                   children: [
                     _AiChip(
-                      label: 'Send',
-                      icon: Icons.send_outlined,
-                      onTap: () => _quickAction('Send'),
+                      label: 'Enviar',
+                      glyph: FlowaGlyph.transfer,
+                      onTap: () => _quickAction('Enviar'),
                     ),
                     _AiChip(
-                      label: 'Receive',
-                      icon: Icons.call_received,
-                      onTap: () => _quickAction('Receive'),
+                      label: 'Ingresar',
+                      glyph: FlowaGlyph.arrowDown,
+                      onTap: () => _quickAction('Ingresar'),
                     ),
                     _AiChip(
-                      label: 'Top-Up',
-                      icon: Icons.phone_android,
-                      onTap: () => _quickAction('Top-Up'),
+                      label: 'Recargar',
+                      glyph: FlowaGlyph.card,
+                      onTap: () => _quickAction('Recargar'),
                     ),
                     _AiChip(
-                      label: 'Support',
-                      icon: Icons.support_agent,
-                      onTap: () => _quickAction('Support'),
-                    ),
-                    _AiChip(
-                      label: 'More',
-                      icon: Icons.more_horiz,
-                      onTap: () => _quickAction('More'),
+                      label: 'Soporte',
+                      glyph: FlowaGlyph.spark,
+                      onTap: () => _quickAction('Soporte'),
                     ),
                   ],
                 ),
                 const Spacer(),
-              ] else
-                Expanded(
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    itemCount: _messages.length,
-                    itemBuilder: (context, index) {
-                      final message = _messages[index];
-                      return _ChatBubble(
-                        message: message,
-                        onAmountSelected: (amount) {
-                          _send('\$${amount.toStringAsFixed(0)}');
-                        },
-                      );
-                    },
-                  ),
-                ),
-              TextField(
-                controller: _controller,
-                textInputAction: TextInputAction.send,
-                onSubmitted: _send,
-                decoration: InputDecoration(
-                  hintText: _chatStarted
-                      ? 'Ask Anything'
-                      : 'Tell me what do you want',
-                  suffixIcon: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        onPressed: _micPlaceholder,
-                        icon: const Icon(Icons.mic_none_rounded),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: FlowaSpacing.xs),
-                        child: CircleAvatar(
-                          backgroundColor: FlowaColors.primary,
-                          child: IconButton(
-                            onPressed: () => _send(_controller.text),
-                            icon: const Icon(
-                              Icons.send_rounded,
-                              color: FlowaColors.textOnPrimary,
-                              size: 18,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+              ],
+            )
+          : ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.only(bottom: FlowaSpacing.md),
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                final message = _messages[index];
+                return _ChatBubble(
+                  message: message,
+                  onAmountSelected: (amount) {
+                    _send('${amount.toStringAsFixed(0)} €');
+                  },
+                );
+              },
+            ),
     );
   }
 }
@@ -233,12 +209,11 @@ class _ChatBubble extends StatelessWidget {
             horizontal: FlowaSpacing.md,
             vertical: FlowaSpacing.sm,
           ),
-          decoration: BoxDecoration(
-            color: FlowaColors.surface,
+          decoration: const BoxDecoration(
+            color: FlowaColors.inkHigh,
             borderRadius: FlowaRadii.lgAll,
-            border: Border.all(color: FlowaColors.border),
           ),
-          child: const Text('Assistant is typing…'),
+          child: Text('Escribiendo…', style: FlowaType.bodySm()),
         ),
       );
     }
@@ -253,19 +228,16 @@ class _ChatBubble extends StatelessWidget {
           maxWidth: MediaQuery.sizeOf(context).width * 0.78,
         ),
         decoration: BoxDecoration(
-          color: isUser ? FlowaColors.primary : FlowaColors.surface,
+          color: isUser ? FlowaColors.mint : FlowaColors.inkHigh,
           borderRadius: FlowaRadii.lgAll,
-          border: isUser ? null : Border.all(color: FlowaColors.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               message.text,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: isUser
-                    ? FlowaColors.textOnPrimary
-                    : FlowaColors.textPrimary,
+              style: FlowaType.body(
+                color: isUser ? FlowaColors.mintInk : FlowaColors.bone,
               ),
             ),
             if (message.quickAmounts.isNotEmpty) ...[
@@ -284,37 +256,36 @@ class _ChatBubble extends StatelessWidget {
 }
 
 class _AiChip extends StatelessWidget {
-  const _AiChip({required this.label, required this.icon, required this.onTap});
+  const _AiChip({
+    required this.label,
+    required this.glyph,
+    required this.onTap,
+  });
 
   final String label;
-  final IconData icon;
+  final FlowaGlyph glyph;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: FlowaColors.surface,
-      borderRadius: FlowaRadii.mdAll,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: FlowaRadii.mdAll,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: FlowaSpacing.md,
-            vertical: FlowaSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: FlowaRadii.mdAll,
-            border: Border.all(color: FlowaColors.border),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 18, color: FlowaColors.primary),
-              const SizedBox(width: FlowaSpacing.xs),
-              Text(label),
-            ],
-          ),
+    return FlowaPressScale(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: FlowaSpacing.md,
+          vertical: FlowaSpacing.sm,
+        ),
+        decoration: const BoxDecoration(
+          color: FlowaColors.inkHigh,
+          borderRadius: FlowaRadii.pillAll,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FlowaIcon(glyph, size: 16, color: FlowaColors.mint),
+            const SizedBox(width: FlowaSpacing.xs),
+            Text(label, style: FlowaType.titleSm()),
+          ],
         ),
       ),
     );

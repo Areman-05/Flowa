@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../design_system/tokens/flowa_colors.dart';
-import '../../../design_system/tokens/flowa_spacing.dart';
+import '../../../design_system/components/flowa_actions.dart';
 import '../domain/transaction_filters.dart';
 
 class TransactionFilterBar extends StatelessWidget {
@@ -16,27 +15,16 @@ class TransactionFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: FlowaSpacing.sm,
+    return Row(
       children: [
-        for (final filter in TransactionFilter.values)
-          ChoiceChip(
-            label: Text(_label(filter)),
+        for (final filter in TransactionFilter.values) ...[
+          FlowaFilterChip(
+            label: _label(filter),
             selected: value == filter,
-            onSelected: (_) => onChanged(filter),
-            selectedColor: FlowaColors.primarySoft,
-            labelStyle: TextStyle(
-              color: value == filter
-                  ? FlowaColors.primary
-                  : FlowaColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-            side: BorderSide(
-              color:
-                  value == filter ? FlowaColors.primary : FlowaColors.border,
-            ),
-            showCheckmark: false,
+            onTap: () => onChanged(filter),
           ),
+          if (filter != TransactionFilter.values.last) const SizedBox(width: 8),
+        ],
       ],
     );
   }

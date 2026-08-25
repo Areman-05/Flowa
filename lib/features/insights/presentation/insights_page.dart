@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/flowa_services.dart';
+import '../../../design_system/components/flowa_actions.dart';
+import '../../../design_system/components/flowa_icon.dart';
+import '../../../design_system/components/flowa_primitives.dart';
+import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
+import '../../../design_system/tokens/flowa_typography.dart';
 import '../../../domain/entities/budget_goal.dart';
 import '../../../shared/widgets/flowa_states.dart';
 import '../domain/spending_snapshot.dart';
@@ -70,235 +75,215 @@ class _InsightsPageState extends State<InsightsPage> {
   Widget build(BuildContext context) {
     final snapshot = _snapshot;
     final budget = _budget;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Resumen')),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-          ? FlowaErrorState(message: _error!, onRetry: _load)
-          : snapshot == null || budget == null
-          ? const SizedBox.shrink()
-          : snapshot.transactionCount == 0
-          ? const FlowaEmptyState(
-              title: 'Sin actividad aún',
-              message: 'El resumen aparece tras tus primeros movimientos.',
-            )
-          : RefreshIndicator(
-              onRefresh: _load,
-              child: ListView(
-              padding: FlowaSpacing.screenPadding,
+
+    Widget body;
+    if (_loading) {
+      body = const Center(
+        child: CircularProgressIndicator(color: FlowaColors.mint),
+      );
+    } else if (_error != null) {
+      body = FlowaErrorState(message: _error!, onRetry: _load);
+    } else if (snapshot == null || budget == null) {
+      body = const SizedBox.shrink();
+    } else if (snapshot.transactionCount == 0) {
+      body = const FlowaEmptyState(
+        title: 'Sin actividad aún',
+        message: 'El resumen aparece tras tus primeros movimientos.',
+        glyph: FlowaGlyph.chart,
+      );
+    } else {
+      final maxCategory = snapshot.categories.isEmpty
+          ? 1.0
+          : snapshot.categories.first.amount;
+      body = RefreshIndicator(
+        onRefresh: _load,
+        color: FlowaColors.mint,
+        backgroundColor: FlowaColors.inkHigh,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          padding: const EdgeInsets.only(bottom: FlowaSpacing.navClearance),
+          children: [
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
-                Wrap(
-                  spacing: FlowaSpacing.sm,
-                  children: [
-                    ChoiceChip(
-                      label: const Text('Todo'),
-                      selected: _month == null,
-                      onSelected: (_) => _selectMonth(null),
-                    ),
-                    ChoiceChip(
-                      label: const Text('Mar 2026'),
-                      selected: _month?.month == 3 && _month?.year == 2026,
-                      onSelected: (_) => _selectMonth(DateTime(2026, 3)),
-                    ),
-                    ChoiceChip(
-                      label: const Text('Feb 2026'),
-                      selected: _month?.month == 2 && _month?.year == 2026,
-                      onSelected: (_) => _selectMonth(DateTime(2026, 2)),
-                    ),
-                  ],
+                FlowaFilterChip(
+                  label: 'Todo',
+                  selected: _month == null,
+                  onTap: () => _selectMonth(null),
                 ),
-                const SizedBox(height: FlowaSpacing.md),
-                _InsightCard(
-                  label: 'Entradas',
-                  value: FlowaFormatters.currency(snapshot.incoming),
-                  color: FlowaColors.income,
+                FlowaFilterChip(
+                  label: 'Mar 2026',
+                  selected: _month?.month == 3 && _month?.year == 2026,
+                  onTap: () => _selectMonth(DateTime(2026, 3)),
                 ),
-                const SizedBox(height: FlowaSpacing.sm),
-                _InsightCard(
-                  label: 'Salidas',
-                  value: FlowaFormatters.currency(snapshot.outgoing),
-                  color: FlowaColors.textPrimary,
-                ),
-                const SizedBox(height: FlowaSpacing.sm),
-                _InsightCard(
-                  label: 'Net',
-                  value: FlowaFormatters.signedCurrency(snapshot.net),
-                  color: snapshot.isPositive
-                      ? FlowaColors.success
-                      : FlowaColors.danger,
-                ),
-                if (budget.enabled) ...[
-                  const SizedBox(height: FlowaSpacing.xl),
-                  Text(
-                    'Monthly budget',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: FlowaSpacing.sm),
-                  LinearProgressIndicator(
-                    value: budget.progressFor(snapshot.outgoing),
-                    backgroundColor: FlowaColors.border,
-                    color: budget.isOverBudget(snapshot.outgoing)
-                        ? FlowaColors.danger
-                        : FlowaColors.primary,
-                  ),
-                  const SizedBox(height: FlowaSpacing.xs),
-                  Text(
-                    '${FlowaFormatters.currency(snapshot.outgoing)} of '
-                    '${FlowaFormatters.currency(budget.monthlyLimit)} spent',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  if (budget.progressFor(snapshot.outgoing) >= 0.8)
-                    Padding(
-                      padding: const EdgeInsets.only(top: FlowaSpacing.sm),
-                      child: Material(
-                        color: FlowaColors.warningSoft,
-                        borderRadius: FlowaRadii.smAll,
-                        child: Padding(
-                          padding: FlowaSpacing.cardPadding,
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.warning_amber_rounded,
-                                color: FlowaColors.warning,
-                                size: 20,
-                              ),
-                              const SizedBox(width: FlowaSpacing.sm),
-                              Expanded(
-                                child: Text(
-                                  budget.isOverBudget(snapshot.outgoing)
-                                      ? 'You exceeded your monthly budget.'
-                                      : 'You are approaching your budget limit.',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-                const SizedBox(height: FlowaSpacing.xl),
-                Text(
-                  'Top merchant',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: FlowaSpacing.xs),
-                Text(
-                  snapshot.topMerchant,
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                if (snapshot.categories.isNotEmpty) ...[
-                  const SizedBox(height: FlowaSpacing.xl),
-                  Text(
-                    'By category',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: FlowaSpacing.sm),
-                  for (final entry in snapshot.categories)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: FlowaSpacing.sm),
-                      child: Row(
-                        children: [
-                          Expanded(child: Text(entry.category)),
-                          Text(
-                            FlowaFormatters.currency(entry.amount),
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-                const SizedBox(height: FlowaSpacing.sm),
-                Text(
-                  '${snapshot.transactionCount} movements in this snapshot.',
-                  style: Theme.of(context).textTheme.bodyMedium,
+                FlowaFilterChip(
+                  label: 'Feb 2026',
+                  selected: _month?.month == 2 && _month?.year == 2026,
+                  onTap: () => _selectMonth(DateTime(2026, 2)),
                 ),
               ],
             ),
-          ),
-    );
+            const SizedBox(height: FlowaSpacing.lg),
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: _StatCard(
+                      label: 'Entradas',
+                      value: FlowaFormatters.compact(snapshot.incoming),
+                      mint: true,
+                    ),
+                  ),
+                  const SizedBox(width: FlowaSpacing.sm),
+                  Expanded(
+                    child: _StatCard(
+                      label: 'Salidas',
+                      value: FlowaFormatters.compact(snapshot.outgoing),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: FlowaSpacing.sm),
+            FlowaSurface(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Neto', style: FlowaType.micro()),
+                        const SizedBox(height: 4),
+                        Text(
+                          FlowaFormatters.signedCurrency(snapshot.net),
+                          style: FlowaType.figureMd(
+                            color: snapshot.isPositive
+                                ? FlowaColors.mint
+                                : FlowaColors.bone,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  FlowaIconOrb(
+                    glyph: snapshot.isPositive
+                        ? FlowaGlyph.arrowDown
+                        : FlowaGlyph.arrowUp,
+                    background: FlowaColors.mintTintedSurface,
+                    foreground: FlowaColors.mint,
+                  ),
+                ],
+              ),
+            ),
+            if (budget.enabled) ...[
+              const SizedBox(height: FlowaSpacing.xl),
+              const FlowaSectionHeader(label: 'Presupuesto'),
+              const SizedBox(height: FlowaSpacing.sm),
+              ClipRRect(
+                borderRadius: FlowaRadii.pillAll,
+                child: LinearProgressIndicator(
+                  minHeight: 8,
+                  value: budget.progressFor(snapshot.outgoing),
+                  backgroundColor: FlowaColors.inkHigh,
+                  color: budget.isOverBudget(snapshot.outgoing)
+                      ? FlowaColors.danger
+                      : FlowaColors.mint,
+                ),
+              ),
+              const SizedBox(height: FlowaSpacing.xs),
+              Text(
+                '${FlowaFormatters.compact(snapshot.outgoing)} de '
+                '${FlowaFormatters.compact(budget.monthlyLimit)}',
+                style: FlowaType.bodySm(),
+              ),
+            ],
+            const SizedBox(height: FlowaSpacing.xl),
+            const FlowaSectionHeader(label: 'Mayor gasto'),
+            const SizedBox(height: FlowaSpacing.xs),
+            Text(snapshot.topMerchant, style: FlowaType.editorialMd()),
+            if (snapshot.categories.isNotEmpty) ...[
+              const SizedBox(height: FlowaSpacing.xl),
+              const FlowaSectionHeader(label: 'Por categoría'),
+              const SizedBox(height: FlowaSpacing.sm),
+              for (final entry in snapshot.categories)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: FlowaSpacing.md),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(entry.category, style: FlowaType.titleSm()),
+                          ),
+                          Text(
+                            FlowaFormatters.compact(entry.amount),
+                            style: FlowaType.amountMd(),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: FlowaRadii.pillAll,
+                        child: LinearProgressIndicator(
+                          minHeight: 6,
+                          value: maxCategory == 0
+                              ? 0
+                              : (entry.amount / maxCategory).clamp(0, 1),
+                          backgroundColor: FlowaColors.inkHigh,
+                          color: FlowaColors.mint,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+            const SizedBox(height: FlowaSpacing.sm),
+            Text(
+              '${snapshot.transactionCount} movimientos en este periodo.',
+              style: FlowaType.bodySm(),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return FlowaScreen(title: 'Análisis', child: body);
   }
 }
 
-class _InsightCard extends StatelessWidget {
-  const _InsightCard({
+class _StatCard extends StatelessWidget {
+  const _StatCard({
     required this.label,
     required this.value,
-    required this.color,
+    this.mint = false,
   });
 
   final String label;
   final String value;
-  final Color color;
+  final bool mint;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: FlowaSpacing.cardPadding,
-      decoration: BoxDecoration(
-        color: FlowaColors.surface,
-        borderRadius: FlowaRadii.lgAll,
-        border: Border.all(color: FlowaColors.border),
-      ),
+    return FlowaSurface(
+      color: mint ? FlowaColors.mint : FlowaColors.inkHigh,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(height: FlowaSpacing.xs),
           Text(
-            value,
-            style: Theme.of(
-              context,
-            ).textTheme.headlineMedium?.copyWith(color: color),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class HomeSpendingStrip extends StatelessWidget {
-  const HomeSpendingStrip({required this.snapshot, super.key});
-
-  final SpendingSnapshot snapshot;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final focus = snapshot.topMerchant == '—'
-        ? 'Sin foco todavía'
-        : 'Mayor gasto: ${snapshot.topMerchant}';
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text.rich(
-            TextSpan(
-              style: textTheme.bodyLarge?.copyWith(
-                color: FlowaColors.textPrimary,
-                height: 1.45,
-              ),
-              children: [
-                const TextSpan(text: 'Este periodo has salido '),
-                TextSpan(
-                  text: FlowaFormatters.currency(snapshot.outgoing),
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-                TextSpan(
-                  text: '. Neto ${FlowaFormatters.signedCurrency(snapshot.net)}.',
-                ),
-              ],
+            label,
+            style: FlowaType.micro(
+              color: mint ? FlowaColors.mintInk : FlowaColors.boneFaint,
             ),
           ),
-          const SizedBox(height: FlowaSpacing.xs),
+          const SizedBox(height: FlowaSpacing.md),
           Text(
-            focus,
-            style: textTheme.bodyMedium?.copyWith(
-              color: FlowaColors.textSecondary,
+            value,
+            style: FlowaType.figureMd(
+              color: mint ? FlowaColors.mintInk : FlowaColors.bone,
             ),
           ),
         ],
