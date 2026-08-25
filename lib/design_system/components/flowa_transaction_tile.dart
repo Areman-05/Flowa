@@ -4,94 +4,171 @@ import '../../core/utils/flowa_formatters.dart';
 import '../../domain/entities/finance_entities.dart';
 import '../tokens/flowa_colors.dart';
 import '../tokens/flowa_spacing.dart';
+import '../tokens/flowa_typography.dart';
+import 'flowa_actions.dart';
+import 'flowa_icon.dart';
+import 'flowa_money_text.dart';
 
-/// Single row in Recent Transaction / full history lists.
 class FlowaTransactionTile extends StatelessWidget {
   const FlowaTransactionTile({
     required this.item,
     super.key,
     this.onTap,
+    this.masked = false,
   });
 
   final TransactionItem item;
   final VoidCallback? onTap;
+  final bool masked;
 
-  IconData get _fallbackIcon {
-    switch (item.merchant.toLowerCase()) {
-      case 'apple':
-        return Icons.apple;
-      case 'spotify':
-        return Icons.music_note_rounded;
-      case 'dribbble pro':
-        return Icons.sports_basketball_outlined;
-      case 'paypal payment':
-        return Icons.account_balance_wallet_outlined;
-      default:
-        return Icons.storefront_outlined;
+  static FlowaGlyph glyphFor(TransactionItem item) {
+    if (item.isIncome) {
+      return FlowaGlyph.arrowDown;
     }
+    return switch (item.category) {
+      'Software' => FlowaGlyph.chart,
+      'Espacio' => FlowaGlyph.home,
+      'Vivienda' => FlowaGlyph.home,
+      'Impuestos' => FlowaGlyph.vault,
+      'Alimentación' => FlowaGlyph.plus,
+      'Transporte' => FlowaGlyph.transfer,
+      'Ocio' => FlowaGlyph.card,
+      'Salud' => FlowaGlyph.person,
+      'Servicios' => FlowaGlyph.receipt,
+      'Material' => FlowaGlyph.more,
+      _ => FlowaGlyph.arrowUp,
+    };
   }
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final amountColor =
-        item.isIncome ? FlowaColors.income : FlowaColors.textPrimary;
-
-    return ListTile(
+    return FlowaPressScale(
       onTap: onTap,
-      contentPadding: EdgeInsets.zero,
-      leading: CircleAvatar(
-        backgroundColor: FlowaColors.surfaceMuted,
-        child: Icon(_fallbackIcon, color: FlowaColors.textPrimary, size: 22),
-      ),
-      title: Text(item.merchant, style: textTheme.titleMedium),
-      subtitle: Text(
-        FlowaFormatters.transactionStamp(item.occurredAt),
-        style: textTheme.bodySmall,
-      ),
-      trailing: Text(
-        FlowaFormatters.signedCurrency(item.signedAmount),
-        style: textTheme.titleMedium?.copyWith(color: amountColor),
+      scale: 0.985,
+      haptic: false,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            FlowaIconOrb(
+              glyph: glyphFor(item),
+              size: 48,
+              background: FlowaColors.inkHigh,
+              foreground: item.isIncome ? FlowaColors.mint : FlowaColors.bone,
+            ),
+            const SizedBox(width: FlowaSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.merchant,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: FlowaType.titleSm(),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    FlowaFormatters.transactionStamp(item.occurredAt),
+                    style: FlowaType.bodySm(),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: FlowaSpacing.sm),
+            FlowaAmountText(signedAmount: item.signedAmount, masked: masked),
+          ],
+        ),
       ),
     );
   }
 }
 
-/// Vertical list of transaction tiles with consistent separators.
 class FlowaTransactionList extends StatelessWidget {
   const FlowaTransactionList({
     required this.items,
     super.key,
-    this.shrinkWrap = true,
-    this.physics,
     this.onItemTap,
+    this.masked = false,
+    this.physics,
+    this.shrinkWrap = true,
   });
 
   final List<TransactionItem> items;
-  final bool shrinkWrap;
-  final ScrollPhysics? physics;
   final ValueChanged<TransactionItem>? onItemTap;
+  final bool masked;
+  final ScrollPhysics? physics;
+  final bool shrinkWrap;
 
   @override
   Widget build(BuildContext context) {
-    if (items.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: FlowaSpacing.lg),
-        child: Text('Aún no hay movimientos.'),
-      );
-    }
-
     return ListView.separated(
       shrinkWrap: shrinkWrap,
       physics: physics ?? const NeverScrollableScrollPhysics(),
       itemCount: items.length,
-      separatorBuilder: (_, _) => const Divider(height: FlowaSpacing.sm),
+      separatorBuilder: (_, __) => const SizedBox(height: 2),
       itemBuilder: (context, index) {
         final item = items[index];
         return FlowaTransactionTile(
-          key: ValueKey(item.id),
           item: item,
+          masked: masked,
           onTap: onItemTap == null ? null : () => onItemTap!(item),
+        );
+      },
+    );
+  }
+}
+
+class FlowaGroupedTransactionList extends StatelessWidget {
+  const FlowaGroupedTransactionList({
+    required this.items,
+    super.key,
+    this.onItemTap,
+    this.masked = false,
+    this.physics,
+    this.shrinkWrap = true,
+    this.bottomPadding = 0,
+  });
+
+  final List<TransactionItem> items;
+  final ValueChanged<TransactionItem>? onItemTap;
+  final bool masked;
+  final ScrollPhysics? physics;
+  final bool shrinkWrap;
+  final double bottomPadding;
+
+  @override
+  Widget build(BuildContext context) {
+    final groups = <String, List<TransactionItem>>{};
+    for (final item in items) {
+      groups
+          .putIfAbsent(FlowaFormatters.dayHeading(item.occurredAt), () => [])
+          .add(item);
+    }
+
+    final headers = groups.keys.toList();
+    return ListView.builder(
+      shrinkWrap: shrinkWrap,
+      physics: physics ?? const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.only(bottom: bottomPadding),
+      itemCount: headers.length,
+      itemBuilder: (context, index) {
+        final header = headers[index];
+        final rows = groups[header]!;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 4),
+              child: Text(header, style: FlowaType.micro()),
+            ),
+            for (final item in rows)
+              FlowaTransactionTile(
+                item: item,
+                masked: masked,
+                onTap: onItemTap == null ? null : () => onItemTap!(item),
+              ),
+          ],
         );
       },
     );

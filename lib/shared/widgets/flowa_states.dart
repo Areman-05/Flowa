@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../design_system/components/flowa_actions.dart';
+import '../../design_system/components/flowa_icon.dart';
 import '../../design_system/tokens/flowa_colors.dart';
 import '../../design_system/tokens/flowa_spacing.dart';
-import '../widgets/flowa_buttons.dart';
+import '../../design_system/tokens/flowa_typography.dart';
 
 class FlowaEmptyState extends StatelessWidget {
   const FlowaEmptyState({
@@ -12,6 +14,7 @@ class FlowaEmptyState extends StatelessWidget {
     this.actionLabel,
     this.onAction,
     this.icon = Icons.inbox_outlined,
+    this.glyph,
   });
 
   final String title;
@@ -19,27 +22,37 @@ class FlowaEmptyState extends StatelessWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
   final IconData icon;
+  final FlowaGlyph? glyph;
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: FlowaSpacing.screenPadding,
+        padding: const EdgeInsets.symmetric(vertical: FlowaSpacing.xxl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 48, color: FlowaColors.textTertiary),
-            const SizedBox(height: FlowaSpacing.md),
-            Text(title, style: Theme.of(context).textTheme.titleLarge),
+            FlowaIconOrb(
+              glyph: glyph ?? FlowaGlyph.more,
+              size: 64,
+              background: FlowaColors.inkHigh,
+              foreground: FlowaColors.mint,
+            ),
+            const SizedBox(height: FlowaSpacing.lg),
+            Text(title, style: FlowaType.titleLg(), textAlign: TextAlign.center),
             const SizedBox(height: FlowaSpacing.xs),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: FlowaType.body(),
             ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: FlowaSpacing.xl),
-              FlowaPrimaryButton(label: actionLabel!, onPressed: onAction),
+              FlowaAcidButton(
+                label: actionLabel!,
+                onPressed: onAction,
+                expand: false,
+              ),
             ],
           ],
         ),
@@ -63,7 +76,7 @@ class FlowaErrorState extends StatelessWidget {
     return FlowaEmptyState(
       title: 'Algo salió mal',
       message: message,
-      icon: Icons.error_outline,
+      glyph: FlowaGlyph.more,
       actionLabel: onRetry == null ? null : 'Reintentar',
       onAction: onRetry,
     );
