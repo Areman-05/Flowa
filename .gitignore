@@ -1,3 +1,7 @@
+# Local design captures (not shipped with the app)
+.shots/
+assets/design_references/
+
 # Miscellaneous
 *.class
 *.log
