@@ -4,6 +4,8 @@ import '../entities/auth_user.dart';
 abstract class AuthRepository {
   Future<bool> isLoggedIn();
 
+  Future<bool> hasRegisteredAccount();
+
   Future<AuthUser?> currentUser();
 
   Future<AuthUser> register({
@@ -16,6 +18,9 @@ abstract class AuthRepository {
     required String email,
     required String password,
   });
+
+  /// Unlock for returning users — email read from stored account.
+  Future<AuthUser> unlockWithPassword(String password);
 
   Future<void> logout();
 }

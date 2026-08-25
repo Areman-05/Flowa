@@ -12,9 +12,9 @@ class MockAccountRepository implements AccountRepository {
   Account _account;
   UserProfile _user;
 
-  void bootstrapUser(UserProfile user) {
+  void bootstrapUser(UserProfile user, {Account? account}) {
     _user = user;
-    _account = MockFinanceData.accountForUser(user);
+    _account = account ?? MockFinanceData.accountForUser(user);
   }
 
   @override

@@ -2,6 +2,7 @@ import '../../data/repositories/in_memory_auth_repository.dart';
 import '../../data/repositories/in_memory_contact_repository.dart';
 import '../../data/repositories/in_memory_preferences_repository.dart';
 import '../../data/repositories/mock_account_repository.dart';
+import '../../data/repositories/mock_freelance_repository.dart';
 import '../../data/repositories/mock_inbox_repository.dart';
 import '../../data/repositories/mock_scheduled_transfer_repository.dart';
 import '../../data/repositories/mock_sub_account_repository.dart';
@@ -11,6 +12,7 @@ import '../../data/services/mock_ai_assistant_service.dart';
 import '../../domain/repositories/account_repository.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/contact_repository.dart';
+import '../../domain/repositories/freelance_repository.dart';
 import '../../domain/repositories/inbox_repository.dart';
 import '../../domain/repositories/preferences_repository.dart';
 import '../../domain/repositories/scheduled_transfer_repository.dart';
@@ -33,11 +35,17 @@ abstract final class FlowaServices {
   static ScheduledTransferRepository scheduledTransferRepository =
       MockScheduledTransferRepository();
   static ContactRepository contactRepository = InMemoryContactRepository();
+  static FreelanceRepository freelanceRepository = MockFreelanceRepository();
+
+  /// Guard so demo data is only injected once per session.
+  static bool demoSeeded = false;
 
   /// Clears financial data while keeping auth/prefs as provided.
   static void resetUserData() {
+    demoSeeded = false;
     accountRepository = MockAccountRepository();
     transactionRepository = MockTransactionRepository();
+    freelanceRepository = MockFreelanceRepository();
     subAccountRepository = MockSubAccountRepository();
     walletRepository = MockWalletRepository();
     aiAssistant = MockAiAssistantService();

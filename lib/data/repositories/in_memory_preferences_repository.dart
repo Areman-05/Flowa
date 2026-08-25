@@ -3,7 +3,7 @@ import '../../domain/repositories/preferences_repository.dart';
 /// Fast in-memory preferences for tests and pre-bootstrap fallback.
 class InMemoryPreferencesRepository implements PreferencesRepository {
   bool _onboardingComplete = false;
-  bool _balanceHiddenByDefault = true;
+  bool _balanceHiddenByDefault = false;
   NotificationPreferences _notifications = const NotificationPreferences(
     allowNotifications: true,
     transactionNotifications: true,
@@ -93,7 +93,7 @@ class InMemoryPreferencesRepository implements PreferencesRepository {
 
   void reset() {
     _onboardingComplete = false;
-    _balanceHiddenByDefault = true;
+    _balanceHiddenByDefault = false;
     _pinEnabled = false;
     _pinCode = '';
     _monthlyBudgetLimit = 500;

@@ -33,7 +33,7 @@ class LocalPreferencesDataSource {
       _prefs.setBool(PreferenceKeys.onboardingComplete, value);
 
   bool get balanceHiddenByDefault =>
-      _prefs.getBool(PreferenceKeys.balanceHiddenByDefault) ?? true;
+      _prefs.getBool(PreferenceKeys.balanceHiddenByDefault) ?? false;
 
   Future<void> setBalanceHiddenByDefault(bool value) =>
       _prefs.setBool(PreferenceKeys.balanceHiddenByDefault, value);

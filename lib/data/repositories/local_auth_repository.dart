@@ -1,3 +1,4 @@
+import '../../core/utils/flowa_password.dart';
 import '../../domain/entities/auth_user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/local_auth_data_source.dart';
@@ -9,6 +10,9 @@ class LocalAuthRepository implements AuthRepository {
 
   @override
   Future<bool> isLoggedIn() async => _source.isLoggedIn;
+
+  @override
+  Future<bool> hasRegisteredAccount() async => _source.hasRegisteredAccount;
 
   @override
   Future<AuthUser?> currentUser() async {
@@ -38,8 +42,11 @@ class LocalAuthRepository implements AuthRepository {
     if (!_isValidEmail(trimmedEmail)) {
       throw AuthException('Introduce un email válido');
     }
-    if (password.length < 4) {
-      throw AuthException('La contraseña debe tener al menos 4 caracteres');
+    if (!FlowaPassword.isStrong(password)) {
+      throw AuthException(
+        FlowaPassword.validationMessage(password) ??
+            'La contraseña no cumple los requisitos',
+      );
     }
     if (_source.hasRegisteredAccount &&
         _source.userEmail == trimmedEmail) {
@@ -70,6 +77,22 @@ class LocalAuthRepository implements AuthRepository {
     }
     if (!_source.verifyPassword(password)) {
       throw AuthException('Email o contraseña incorrectos');
+    }
+    await _source.setLoggedIn(true);
+    final user = await currentUser();
+    if (user == null) {
+      throw AuthException('No se pudo cargar el usuario');
+    }
+    return user;
+  }
+
+  @override
+  Future<AuthUser> unlockWithPassword(String password) async {
+    if (!_source.hasRegisteredAccount) {
+      throw AuthException('No hay ninguna cuenta. Regístrate primero.');
+    }
+    if (!_source.verifyPassword(password)) {
+      throw AuthException('Contraseña incorrecta');
     }
     await _source.setLoggedIn(true);
     final user = await currentUser();

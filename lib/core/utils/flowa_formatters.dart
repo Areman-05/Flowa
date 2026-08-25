@@ -39,6 +39,42 @@ abstract final class FlowaFormatters {
     return _transactionStamp.format(value.toLocal());
   }
 
+  static String dayHeading(DateTime value) {
+    final local = value.toLocal();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final day = DateTime(local.year, local.month, local.day);
+    final diff = today.difference(day).inDays;
+    if (diff == 0) {
+      return 'Hoy';
+    }
+    if (diff == 1) {
+      return 'Ayer';
+    }
+    return DateFormat('d MMMM', 'es_ES').format(local);
+  }
+
+  static final NumberFormat _plain = NumberFormat('#,##0.00', 'es_ES');
+
+  /// Splits an amount into its integer and fractional halves so the hero
+  /// figure can typeset them at different sizes.
+  static ({String integer, String fraction}) amountParts(double amount) {
+    final formatted = _plain.format(amount.abs());
+    final separator = formatted.lastIndexOf(',');
+    if (separator < 0) {
+      return (integer: formatted, fraction: '00');
+    }
+    return (
+      integer: formatted.substring(0, separator),
+      fraction: formatted.substring(separator + 1),
+    );
+  }
+
+  /// Whole-euro rendering for dense statement rows.
+  static String compact(double amount) =>
+      '${NumberFormat('#,##0', 'es_ES').format(amount.abs())} '
+      '${FlowaConstants.currencySymbol}';
+
   static String maskedBalance({
     required double amount,
     required bool visible,
