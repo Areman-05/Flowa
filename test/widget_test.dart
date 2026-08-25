@@ -13,21 +13,26 @@ void main() {
     await auth.register(
       fullName: 'Ana López',
       email: 'ana@mail.com',
-      password: '1234',
+      password: 'Flowa1234',
     );
     FlowaServices.resetToMocks(preferences: prefs, auth: auth);
   });
 
   testWidgets('Flowa boots into the main shell', (tester) async {
-    await tester.pumpWidget(const FlowaApp(splashDuration: Duration.zero));
+    await tester.pumpWidget(
+      const FlowaApp(
+        splashDuration: Duration.zero,
+        skipColdStartUnlock: true,
+      ),
+    );
     await tester.pumpAndSettle();
 
-    expect(find.text('Ana López'), findsOneWidget);
+    expect(find.text('Ana'), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.text('Movimientos recientes'),
+      find.text('Historial'),
       200,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('Movimientos recientes'), findsOneWidget);
+    expect(find.text('Historial'), findsOneWidget);
   });
 }

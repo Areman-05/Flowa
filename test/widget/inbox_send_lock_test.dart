@@ -33,9 +33,9 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: NotificationInboxPage()));
     await tester.pumpAndSettle();
 
-    expect(find.text('Notificaciones'), findsOneWidget);
+    expect(find.text('Avisos'), findsOneWidget);
     expect(find.text('Money request from Emma'), findsOneWidget);
-    expect(find.text('Marcar todas'), findsOneWidget);
+    expect(find.byTooltip('Marcar todas'), findsOneWidget);
   });
 
   testWidgets('send review confirms bank transfer copy', (tester) async {
@@ -50,8 +50,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Revisar envío'), findsOneWidget);
-    expect(find.textContaining('no una recarga'), findsOneWidget);
+    expect(find.text('Revisar'), findsOneWidget);
     expect(find.text('Emma Parker'), findsOneWidget);
     expect(find.text('Enviar ahora'), findsOneWidget);
   });
@@ -68,7 +67,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: PinSetupPage()));
     await tester.pumpAndSettle();
 
-    expect(find.text('App lock'), findsOneWidget);
+    expect(find.text('Bloqueo'), findsOneWidget);
     expect(find.text('Require PIN on launch'), findsOneWidget);
   });
 }

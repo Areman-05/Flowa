@@ -5,7 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:flowa/core/utils/deep_links.dart';
 import 'package:flowa/core/utils/transaction_export.dart';
 import 'package:flowa/data/repositories/in_memory_preferences_repository.dart';
-import 'package:flowa/design_system/theme/flowa_theme.dart';
+import 'package:flowa/design_system/tokens/flowa_colors.dart';
 import 'package:flowa/domain/entities/budget_goal.dart';
 import 'package:flowa/domain/entities/finance_entities.dart';
 
@@ -15,15 +15,12 @@ void main() {
   });
 
   group('FlowaTheme', () {
-    test('light theme uses Radient dark canvas', () {
-      final theme = FlowaTheme.light();
-      expect(theme.brightness, Brightness.dark);
-      expect(theme.scaffoldBackgroundColor, const Color(0xFF0A0A0A));
+    test('canvas is true black', () {
+      expect(FlowaColors.ink, const Color(0xFF000000));
     });
 
-    test('dark theme uses dark brightness', () {
-      final theme = FlowaTheme.dark();
-      expect(theme.brightness, Brightness.dark);
+    test('dark and light resolve to the same ink', () {
+      expect(FlowaColors.background, FlowaColors.ink);
     });
   });
 

@@ -11,7 +11,7 @@ Future<void> _bootstrapAuthenticatedApp() async {
   await auth.register(
     fullName: 'Ana López',
     email: 'ana@mail.com',
-    password: '1234',
+    password: 'Flowa1234',
   );
   FlowaServices.resetToMocks(preferences: prefs, auth: auth);
 }
@@ -20,17 +20,22 @@ void main() {
   setUp(_bootstrapAuthenticatedApp);
 
   testWidgets('FlowaApp renders home shell destinations', (tester) async {
-    await tester.pumpWidget(const FlowaApp(splashDuration: Duration.zero));
+    await tester.pumpWidget(
+      const FlowaApp(
+        splashDuration: Duration.zero,
+        skipColdStartUnlock: true,
+      ),
+    );
     await tester.pumpAndSettle();
 
-    expect(find.text('Ana López'), findsOneWidget);
+    expect(find.text('Ana'), findsOneWidget);
     expect(find.text('Enviar'), findsOneWidget);
-    expect(find.text('Inicio'), findsOneWidget);
-    expect(find.text('IA'), findsOneWidget);
+    expect(find.bySemanticsLabel('Inicio'), findsOneWidget);
+    expect(find.bySemanticsLabel('IA'), findsOneWidget);
 
-    await tester.tap(find.text('IA'));
+    await tester.tap(find.bySemanticsLabel('IA'));
     await tester.pumpAndSettle();
 
-    expect(find.text('What Can I Help You?'), findsOneWidget);
+    expect(find.text('¿En qué te ayudo?'), findsOneWidget);
   });
 }

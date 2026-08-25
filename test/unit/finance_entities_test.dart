@@ -5,8 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('FlowaColors', () {
-    test('primary brand color stays Radient orange', () {
-      expect(FlowaColors.primary, const Color(0xFFFF5722));
+    test('primary brand color is Vare mint', () {
+      expect(FlowaColors.primary, const Color(0xFF00E6A6));
     });
 
     test('card gradient exposes multiple stops', () {

@@ -22,22 +22,27 @@ void main() {
     await auth.register(
       fullName: 'Ana López',
       email: 'ana@mail.com',
-      password: '1234',
+      password: 'Flowa1234',
     );
     FlowaServices.resetToMocks(preferences: prefs, auth: auth);
   });
 
   testWidgets('onboarding appears until completed', (tester) async {
-    await tester.pumpWidget(const FlowaApp(splashDuration: Duration.zero));
+    await tester.pumpWidget(
+      const FlowaApp(
+        splashDuration: Duration.zero,
+        skipColdStartUnlock: true,
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byType(OnboardingPage), findsOneWidget);
-    expect(find.text('Claridad primero'), findsOneWidget);
+    expect(find.textContaining('Lo que puedes gastar'), findsOneWidget);
 
     await tester.tap(find.text('Saltar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Ana López'), findsOneWidget);
+    expect(find.text('Ana'), findsOneWidget);
   });
 
   testWidgets('support center filters articles', (tester) async {
@@ -66,7 +71,7 @@ void main() {
     );
 
     expect(find.text('Apple'), findsOneWidget);
-    expect(find.textContaining('Need help'), findsOneWidget);
+    expect(find.textContaining('Problema con este pago'), findsOneWidget);
   });
 
   testWidgets('transfer success shows amount and done', (tester) async {
@@ -82,6 +87,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Money sent'), findsOneWidget);
-    expect(find.text('Done'), findsOneWidget);
+    expect(find.text('Listo'), findsOneWidget);
   });
 }

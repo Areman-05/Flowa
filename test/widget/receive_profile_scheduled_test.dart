@@ -38,7 +38,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: ReceivePage()));
     await tester.pumpAndSettle();
 
-    expect(find.text('Copiar número de cuenta'), findsOneWidget);
+    expect(find.text('Copiar número'), findsOneWidget);
   });
 
   testWidgets('scheduled transfers lists Emma Parker', (tester) async {

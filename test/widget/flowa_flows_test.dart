@@ -23,7 +23,7 @@ void main() {
     await auth.register(
       fullName: 'Ana López',
       email: 'ana@mail.com',
-      password: '1234',
+      password: 'Flowa1234',
     );
     FlowaServices.resetToMocks(preferences: prefs, auth: auth);
     FlowaServices.transactionRepository = MockTransactionRepository(
@@ -41,10 +41,15 @@ void main() {
   });
 
   testWidgets('home loads account and recent merchants', (tester) async {
-    await tester.pumpWidget(const FlowaApp(splashDuration: Duration.zero));
+    await tester.pumpWidget(
+      const FlowaApp(
+        splashDuration: Duration.zero,
+        skipColdStartUnlock: true,
+      ),
+    );
     await tester.pumpAndSettle();
 
-    expect(find.text('Ana López'), findsOneWidget);
+    expect(find.text('Ana'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Apple'),
       200,
@@ -52,7 +57,7 @@ void main() {
     );
     expect(find.text('Apple'), findsWidgets);
     expect(find.text('Enviar'), findsOneWidget);
-    expect(find.text('Recargar'), findsOneWidget);
+    expect(find.text('Bote'), findsOneWidget);
   });
 
   testWidgets('top-up page uses gold flow and confirmation copy', (tester) async {
@@ -90,7 +95,7 @@ void main() {
 
     final marketing = find.widgetWithText(
       SwitchListTile,
-      'Marketing and Promotions',
+      'Promos y marketing',
     );
     expect(marketing, findsOneWidget);
 

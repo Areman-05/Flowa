@@ -7,12 +7,12 @@ import 'package:flowa/domain/repositories/auth_repository.dart';
 
 void main() {
   group('InMemoryAuthRepository', () {
-    test('register then login succeeds', () async {
+    test('register then unlock succeeds', () async {
       final auth = InMemoryAuthRepository();
       final user = await auth.register(
         fullName: 'Ana López',
         email: 'ana@mail.com',
-        password: '1234',
+        password: 'Flowa1234',
       );
       expect(user.email, 'ana@mail.com');
       expect(await auth.isLoggedIn(), isTrue);
@@ -20,20 +20,32 @@ void main() {
       await auth.logout();
       expect(await auth.isLoggedIn(), isFalse);
 
-      final again = await auth.login(email: 'ana@mail.com', password: '1234');
+      final again = await auth.unlockWithPassword('Flowa1234');
       expect(again.fullName, 'Ana López');
     });
 
-    test('rejects wrong password', () async {
+    test('rejects weak password on register', () async {
+      final auth = InMemoryAuthRepository();
+      expect(
+        () => auth.register(
+          fullName: 'Ana',
+          email: 'ana@mail.com',
+          password: '1234',
+        ),
+        throwsA(isA<AuthException>()),
+      );
+    });
+
+    test('rejects wrong password on unlock', () async {
       final auth = InMemoryAuthRepository();
       await auth.register(
         fullName: 'Ana',
         email: 'ana@mail.com',
-        password: '1234',
+        password: 'Flowa1234',
       );
       await auth.logout();
       expect(
-        () => auth.login(email: 'ana@mail.com', password: 'bad'),
+        () => auth.unlockWithPassword('badpass1'),
         throwsA(isA<AuthException>()),
       );
     });

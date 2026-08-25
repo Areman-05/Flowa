@@ -15,15 +15,7 @@ void main() {
 
     await tester.enterText(find.byType(TextField).first, 'Emma College Fund');
     await tester.pump();
-
-    // Page body ListView is the first vertical Scrollable; icon picker is nested.
-    final pageScrollable = find.byType(Scrollable).first;
-    await tester.scrollUntilVisible(
-      find.byType(FilledButton),
-      400,
-      scrollable: pageScrollable,
-    );
-    await tester.tap(find.byType(FilledButton));
+    await tester.tap(find.text('Crear subcuenta'));
     await tester.pumpAndSettle();
 
     final items = await FlowaServices.subAccountRepository.getAll();
@@ -33,7 +25,7 @@ void main() {
   testWidgets('PayPal connect screen shows secure login copy', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: ConnectPayPalPage()));
 
-    expect(find.text('Connect PayPal'), findsOneWidget);
+    expect(find.text('Conectar PayPal'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Secure login handled by PayPal.'),
       200,
@@ -47,16 +39,11 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: AiAssistantPage()));
     await tester.pumpAndSettle();
 
-    expect(find.text('What Can I Help You?'), findsOneWidget);
-    await tester.tap(find.text('Top-Up'));
+    expect(find.text('¿En qué te ayudo?'), findsOneWidget);
+    await tester.tap(find.text('Recargar'));
     await tester.pumpAndSettle();
 
-    // Quick action opens Top-Up (Recargar) flow first.
-    expect(find.text('Recargar'), findsOneWidget);
-    await tester.pageBack();
-    await tester.pumpAndSettle();
-
-    expect(find.textContaining('Top-Up'), findsWidgets);
+    expect(find.text('Recargar desde'), findsOneWidget);
   });
 
   testWidgets('more sheet exposes sub-accounts and extra tools', (
