@@ -5,11 +5,14 @@ import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/flowa_haptics.dart';
 import '../../../core/utils/flowa_services.dart';
 import '../../../core/utils/receive_request.dart';
-import '../../../design_system/components/flowa_motion.dart';
+import '../../../design_system/components/flowa_actions.dart';
+import '../../../design_system/components/flowa_icon.dart';
+import '../../../design_system/components/flowa_primitives.dart';
+import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
+import '../../../design_system/tokens/flowa_typography.dart';
 import '../../../domain/entities/finance_entities.dart';
-import '../../../shared/widgets/flowa_buttons.dart';
 import '../../../shared/widgets/flowa_dialogs.dart';
 
 /// Receive / request money screen.
@@ -134,85 +137,94 @@ class _ReceivePageState extends State<ReceivePage> {
   Widget build(BuildContext context) {
     final account = _account;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Recibir')),
-      body: SafeArea(
-        child: account == null
-            ? const Padding(
-                padding: FlowaSpacing.screenPadding,
-                child: FlowaListSkeleton(itemCount: 3),
-              )
-            : ListView(
-                padding: FlowaSpacing.screenPadding,
-                children: [
-                  Container(
-                    padding: FlowaSpacing.cardPadding,
-                    decoration: const BoxDecoration(
-                      color: FlowaColors.actionReceive,
-                      borderRadius: FlowaRadii.lgAll,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Tu cuenta para recibir',
-                          style: Theme.of(context).textTheme.labelMedium,
+    return FlowaScreen(
+      title: 'Ingresar',
+      footer: account == null
+          ? null
+          : Column(
+              children: [
+                FlowaAcidButton(
+                  label: 'Crear solicitud',
+                  onPressed: _shareRequest,
+                ),
+                const SizedBox(height: FlowaSpacing.sm),
+                FlowaGhostButton(
+                  label: 'Registrar ingreso',
+                  onPressed: _registerIncoming,
+                ),
+              ],
+            ),
+      child: account == null
+          ? const Center(
+              child: CircularProgressIndicator(color: FlowaColors.mint),
+            )
+          : ListView(
+              children: [
+                FlowaSurface(
+                  color: FlowaColors.mint,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Tu cuenta',
+                        style: FlowaType.micro(color: FlowaColors.mintInk),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        account.maskedNumber,
+                        style: FlowaType.editorialMd(color: FlowaColors.mintInk),
+                      ),
+                      const SizedBox(height: FlowaSpacing.sm),
+                      Text(
+                        'Compártela para que te paguen más rápido.',
+                        style: FlowaType.bodySm(color: FlowaColors.mintInk),
+                      ),
+                      const SizedBox(height: FlowaSpacing.md),
+                      FlowaPressScale(
+                        onTap: () => _copyAccountNumber(account),
+                        child: Row(
+                          children: [
+                            const FlowaIcon(
+                              FlowaGlyph.receipt,
+                              size: 16,
+                              color: FlowaColors.mintInk,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Copiar número',
+                              style: FlowaType.label(color: FlowaColors.mintInk),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: FlowaSpacing.xs),
-                        Text(
-                          account.maskedNumber,
-                          style: Theme.of(context).textTheme.headlineMedium,
-                        ),
-                        const SizedBox(height: FlowaSpacing.xs),
-                        Text(
-                          'Comparte esta cuenta para que te paguen más rápido.',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        const SizedBox(height: FlowaSpacing.sm),
-                        TextButton.icon(
-                          onPressed: () => _copyAccountNumber(account),
-                          icon: const Icon(Icons.copy_outlined, size: 18),
-                          label: const Text('Copiar número de cuenta'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: FlowaSpacing.xl),
-                  TextField(
-                    controller: _amountController,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                        RegExp(r'^\d+\.?\d{0,2}'),
                       ),
                     ],
-                    decoration: const InputDecoration(
-                      labelText: 'Importe',
-                      prefixText: '€ ',
+                  ),
+                ),
+                const SizedBox(height: FlowaSpacing.xl),
+                TextField(
+                  controller: _amountController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d+\.?\d{0,2}'),
                     ),
+                  ],
+                  decoration: const InputDecoration(
+                    labelText: 'Importe',
+                    prefixText: '€ ',
                   ),
-                  const SizedBox(height: FlowaSpacing.sm),
-                  TextField(
-                    controller: _noteController,
-                    decoration: const InputDecoration(
-                      labelText: 'Nota (opcional)',
-                    ),
+                ),
+                const SizedBox(height: FlowaSpacing.sm),
+                TextField(
+                  controller: _noteController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nota (opcional)',
                   ),
-                  const SizedBox(height: FlowaSpacing.xxl),
-                  FlowaPrimaryButton(
-                    label: 'Crear solicitud',
-                    onPressed: _shareRequest,
-                  ),
-                  const SizedBox(height: FlowaSpacing.sm),
-                  FlowaSecondaryButton(
-                    label: 'Registrar ingreso',
-                    onPressed: _registerIncoming,
-                  ),
-                ],
-              ),
-      ),
+                ),
+              ],
+            ),
     );
   }
 }

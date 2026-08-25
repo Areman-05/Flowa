@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/flowa_services.dart';
+import '../../../design_system/components/flowa_actions.dart';
+import '../../../design_system/components/flowa_primitives.dart';
+import '../../../design_system/components/flowa_screen.dart';
+import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
+import '../../../design_system/tokens/flowa_typography.dart';
 import '../../../domain/entities/finance_entities.dart';
 import '../../../shared/navigation/flowa_routes.dart';
-import '../../../shared/widgets/flowa_buttons.dart';
 import '../../transfers/presentation/transfer_success_page.dart';
 
 class SendReviewPage extends StatelessWidget {
@@ -41,73 +45,54 @@ class SendReviewPage extends StatelessWidget {
     await pushFlowaRoute<void>(
       context,
       TransferSuccessPage(
-        title: 'Dinero enviado',
+        title: 'Has enviado',
         amount: amount,
-        subtitle: 'Enviado a $recipientName',
+        subtitle: recipientName,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Revisar envío')),
-      body: SafeArea(
-        child: Padding(
-          padding: FlowaSpacing.screenPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Confirma que es una transferencia bancaria, no una recarga.',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: FlowaSpacing.xl),
-              _ReviewRow(label: 'Para', value: recipientName),
-              _ReviewRow(label: 'Cuenta', value: accountNumber),
-              _ReviewRow(
-                label: 'Importe',
-                value: FlowaFormatters.currency(amount),
-              ),
-              if (note != null && note!.trim().isNotEmpty)
-                _ReviewRow(label: 'Nota', value: note!.trim()),
-              const Spacer(),
-              FlowaPrimaryButton(
-                label: 'Enviar ahora',
-                onPressed: () => _confirm(context),
-              ),
-              const SizedBox(height: FlowaSpacing.sm),
-              FlowaSecondaryButton(
-                label: 'Volver',
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ReviewRow extends StatelessWidget {
-  const _ReviewRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: FlowaSpacing.md),
-      child: Row(
+    return FlowaScreen(
+      title: 'Revisar',
+      footer: Column(
         children: [
-          SizedBox(
-            width: 88,
-            child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
+          FlowaAcidButton(
+            label: 'Enviar ahora',
+            onPressed: () => _confirm(context),
           ),
-          Expanded(
-            child: Text(value, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: FlowaSpacing.sm),
+          FlowaGhostButton(
+            label: 'Volver',
+            onPressed: () => Navigator.of(context).pop(),
           ),
+        ],
+      ),
+      child: ListView(
+        children: [
+          const SizedBox(height: FlowaSpacing.lg),
+          Text(
+            FlowaFormatters.currency(amount),
+            textAlign: TextAlign.center,
+            style: FlowaType.figureXl(),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'a $recipientName',
+            textAlign: TextAlign.center,
+            style: FlowaType.body(color: FlowaColors.mint),
+          ),
+          const SizedBox(height: FlowaSpacing.xxl),
+          FlowaLedgerRow(label: 'Para', value: recipientName),
+          FlowaLedgerRow(label: 'Cuenta', value: accountNumber),
+          FlowaLedgerRow(
+            label: 'Importe',
+            value: FlowaFormatters.currency(amount),
+            valueColor: FlowaColors.mint,
+          ),
+          if (note != null && note!.trim().isNotEmpty)
+            FlowaLedgerRow(label: 'Nota', value: note!.trim()),
         ],
       ),
     );

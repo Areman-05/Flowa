@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
+import '../../../core/utils/flowa_formatters.dart';
+import '../../../core/utils/flowa_haptics.dart';
 import '../../../core/utils/flowa_services.dart';
-import '../../../design_system/components/flowa_visa_card.dart';
+import '../../../design_system/components/flowa_actions.dart';
+import '../../../design_system/components/flowa_icon.dart';
+import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
-import '../../../domain/entities/finance_entities.dart';
+import '../../../design_system/tokens/flowa_typography.dart';
 import '../../../domain/entities/payee_contact.dart';
 import '../../../shared/navigation/flowa_routes.dart';
-import '../../../shared/widgets/flowa_buttons.dart';
 import '../../contacts/presentation/contacts_page.dart';
-import 'scheduled_transfers_page.dart';
 import 'send_review_page.dart';
 
-/// Send Money flow — visually distinct from Top-Up (purple source card).
+/// Send money — Vare: huge amount, keypad, mint CTA.
 class SendMoneyPage extends StatefulWidget {
   const SendMoneyPage({super.key});
 
@@ -22,13 +23,9 @@ class SendMoneyPage extends StatefulWidget {
 }
 
 class _SendMoneyPageState extends State<SendMoneyPage> {
-  Account? _account;
   List<PayeeContact> _contacts = const [];
-  bool _balanceVisible = true;
-  final _accountNumberController = TextEditingController();
-  final _accountNameController = TextEditingController();
-  final _noteController = TextEditingController();
-  final _amountController = TextEditingController();
+  PayeeContact? _selected;
+  int _cents = 0;
 
   @override
   void initState() {
@@ -37,26 +34,27 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
   }
 
   Future<void> _load() async {
-    final results = await Future.wait([
-      FlowaServices.accountRepository.getPrimaryAccount(),
-      FlowaServices.contactRepository.getAll(),
-    ]);
+    final contacts = await FlowaServices.contactRepository.getAll();
     if (!mounted) {
       return;
     }
-    setState(() {
-      _account = results[0] as Account;
-      _contacts = results[1] as List<PayeeContact>;
-    });
+    setState(() => _contacts = contacts);
   }
 
-  @override
-  void dispose() {
-    _accountNumberController.dispose();
-    _accountNameController.dispose();
-    _noteController.dispose();
-    _amountController.dispose();
-    super.dispose();
+  double get _amount => _cents / 100.0;
+
+  void _digit(String key) {
+    FlowaHaptics.selection();
+    setState(() {
+      if (key == '<') {
+        _cents = _cents ~/ 10;
+        return;
+      }
+      if (_cents >= 99999999) {
+        return;
+      }
+      _cents = _cents * 10 + int.parse(key);
+    });
   }
 
   Future<void> _pickContact() async {
@@ -67,21 +65,16 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
     if (contact == null || !mounted) {
       return;
     }
-    setState(() {
-      _accountNameController.text = contact.name;
-      _accountNumberController.text = contact.accountNumber;
-    });
+    setState(() => _selected = contact);
     await _load();
   }
 
   Future<void> _submit() async {
-    final amount = double.tryParse(_amountController.text) ?? 0;
-    if (_accountNumberController.text.isEmpty ||
-        _accountNameController.text.isEmpty ||
-        amount <= 0) {
+    final selected = _selected;
+    if (selected == null || _amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Completa el destinatario y un importe válido.'),
+          content: Text('Elige un contacto y un importe válido.'),
         ),
       );
       return;
@@ -90,154 +83,175 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
     await pushFlowaRoute<void>(
       context,
       SendReviewPage(
-        recipientName: _accountNameController.text,
-        accountNumber: _accountNumberController.text,
-        amount: amount,
-        note: _noteController.text,
+        recipientName: selected.name,
+        accountNumber: selected.accountNumber,
+        amount: _amount,
       ),
     );
-    await _load();
   }
 
   @override
   Widget build(BuildContext context) {
-    final account = _account;
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Enviar dinero')),
-      body: SafeArea(
-        child: account == null
-            ? const Center(child: CircularProgressIndicator())
-            : ListView(
-                padding: FlowaSpacing.screenPadding,
-                children: [
-                  Text(
-                    'Enviar desde',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: FlowaSpacing.sm),
-                  FlowaVisaCard(
-                    account: account,
-                    balanceVisible: _balanceVisible,
-                    onToggleVisibility: () {
-                      setState(() => _balanceVisible = !_balanceVisible);
-                    },
-                    height: 160,
-                  ),
-                  const SizedBox(height: FlowaSpacing.xl),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Enviar a',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ),
-                      TextButton.icon(
-                        onPressed: _pickContact,
-                        icon: const Icon(Icons.contacts_outlined, size: 18),
-                        label: const Text('Contactos'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: FlowaSpacing.sm),
-                  if (_contacts.isNotEmpty)
-                    Wrap(
-                      spacing: FlowaSpacing.sm,
-                      runSpacing: FlowaSpacing.sm,
-                      children: [
-                        for (final contact in _contacts.take(6))
-                          ActionChip(
-                            avatar: Icon(
-                              contact.kind == PayeeKind.business
-                                  ? Icons.apartment_outlined
-                                  : Icons.person_outline,
-                              size: 16,
-                            ),
-                            label: Text(contact.name),
-                            onPressed: () {
-                              setState(() {
-                                _accountNameController.text = contact.name;
-                                _accountNumberController.text =
-                                    contact.accountNumber;
-                              });
-                            },
-                          ),
-                      ],
-                    )
-                  else
-                    Text(
-                      'Aún no tienes contactos. Añade personas o empresas.',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  const SizedBox(height: FlowaSpacing.sm),
-                  TextField(
-                    controller: _accountNumberController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Número de cuenta',
-                    ),
-                  ),
-                  const SizedBox(height: FlowaSpacing.sm),
-                  TextField(
-                    controller: _accountNameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Nombre del destinatario',
-                    ),
-                  ),
-                  const SizedBox(height: FlowaSpacing.sm),
-                  TextField(
-                    controller: _noteController,
-                    decoration: const InputDecoration(
-                      labelText: 'Nota (opcional)',
-                    ),
-                  ),
-                  const SizedBox(height: FlowaSpacing.xl),
-                  Text(
-                    'Importe',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: FlowaSpacing.sm),
-                  TextField(
-                    controller: _amountController,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                        RegExp(r'^\d+\.?\d{0,2}'),
-                      ),
-                    ],
-                    decoration: const InputDecoration(
-                      prefixText: '€ ',
-                      hintText: '0,00',
-                    ),
-                  ),
-                  const SizedBox(height: FlowaSpacing.xxl),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton.icon(
-                      onPressed: () => pushFlowaRoute<void>(
-                        context,
-                        const ScheduledTransfersPage(),
-                      ),
-                      icon: const Icon(Icons.schedule_outlined),
-                      label: const Text('Transferencias programadas'),
-                    ),
-                  ),
-                  const SizedBox(height: FlowaSpacing.sm),
-                  FlowaPrimaryButton(label: 'Continuar', onPressed: _submit),
-                  const SizedBox(height: FlowaSpacing.sm),
-                  Text(
-                    'Esta pantalla es para transferencias bancarias, no recargas.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: FlowaColors.textSecondary,
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
+    return FlowaScreen(
+      title: 'Enviar',
+      footer: FlowaAcidButton(
+        label: 'Continuar',
+        onPressed: _submit,
       ),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 72,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _contacts.length + 1,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                if (index == _contacts.length) {
+                  return _ContactOrb(
+                    label: 'Nuevo',
+                    mint: true,
+                    glyph: FlowaGlyph.plus,
+                    selected: false,
+                    onTap: _pickContact,
+                  );
+                }
+                final contact = _contacts[index];
+                final selected = _selected?.id == contact.id;
+                return _ContactOrb(
+                  label: contact.name,
+                  initial: contact.name.isEmpty
+                      ? '?'
+                      : contact.name[0].toUpperCase(),
+                  selected: selected,
+                  onTap: () => setState(() => _selected = contact),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: FlowaSpacing.lg),
+          Text(
+            _selected == null ? '¿A quién?' : _selected!.name,
+            style: FlowaType.micro(),
+          ),
+          const SizedBox(height: FlowaSpacing.sm),
+          Text(
+            FlowaFormatters.currency(_amount),
+            style: FlowaType.figureXl(),
+          ),
+          const Spacer(),
+          _Keypad(onKey: _digit),
+          const SizedBox(height: FlowaSpacing.md),
+        ],
+      ),
+    );
+  }
+}
+
+class _ContactOrb extends StatelessWidget {
+  const _ContactOrb({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.initial,
+    this.glyph,
+    this.mint = false,
+  });
+
+  final String label;
+  final String? initial;
+  final FlowaGlyph? glyph;
+  final bool selected;
+  final bool mint;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final fill = mint || selected ? FlowaColors.mint : FlowaColors.inkHigh;
+    final ink = mint || selected ? FlowaColors.mintInk : FlowaColors.bone;
+    return FlowaPressScale(
+      onTap: onTap,
+      scale: 0.94,
+      child: SizedBox(
+        width: 64,
+        child: Column(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(color: fill, shape: BoxShape.circle),
+              alignment: Alignment.center,
+              child: glyph != null
+                  ? FlowaIcon(glyph!, color: ink, size: 18)
+                  : Text(initial ?? '', style: FlowaType.titleMd(color: ink)),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: FlowaType.micro(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Keypad extends StatelessWidget {
+  const _Keypad({required this.onKey});
+
+  final ValueChanged<String> onKey;
+
+  static const _keys = [
+    ['1', '2', '3'],
+    ['4', '5', '6'],
+    ['7', '8', '9'],
+    ['00', '0', '<'],
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (final row in _keys)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Row(
+              children: [
+                for (final key in row)
+                  Expanded(
+                    child: FlowaPressScale(
+                      onTap: () {
+                        if (key == '00') {
+                          onKey('0');
+                          onKey('0');
+                        } else {
+                          onKey(key);
+                        }
+                      },
+                      scale: 0.94,
+                      haptic: false,
+                      child: SizedBox(
+                        height: 56,
+                        child: Center(
+                          child: key == '<'
+                              ? const FlowaIcon(
+                                  FlowaGlyph.arrowLeft,
+                                  size: 20,
+                                  color: FlowaColors.boneMuted,
+                                )
+                              : Text(key, style: FlowaType.titleLg()),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }

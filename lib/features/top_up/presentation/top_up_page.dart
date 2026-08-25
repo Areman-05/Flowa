@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/utils/flowa_services.dart';
+import '../../../design_system/components/flowa_actions.dart';
 import '../../../design_system/components/flowa_amount_chips.dart';
+import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/components/flowa_visa_card.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/finance_entities.dart';
 import '../../../shared/navigation/flowa_routes.dart';
-import '../../../shared/widgets/flowa_buttons.dart';
 import '../../../shared/widgets/flowa_dialogs.dart';
 import '../../transfers/presentation/transfer_success_page.dart';
 
@@ -102,14 +103,17 @@ class _TopUpPageState extends State<TopUpPage> {
   Widget build(BuildContext context) {
     final account = _account;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Recargar')),
-      body: SafeArea(
-        child: account == null
-            ? const Center(child: CircularProgressIndicator())
-            : ListView(
-                padding: FlowaSpacing.screenPadding,
-                children: [
+    return FlowaScreen(
+      title: 'Recargar',
+      footer: account == null
+          ? null
+          : FlowaAcidButton(label: 'Continuar', onPressed: _continue),
+      child: account == null
+          ? const Center(
+              child: CircularProgressIndicator(color: FlowaColors.mint),
+            )
+          : ListView(
+              children: [
                   Text(
                     'Recargar desde',
                     style: Theme.of(context).textTheme.titleMedium,
@@ -122,7 +126,6 @@ class _TopUpPageState extends State<TopUpPage> {
                       setState(() => _balanceVisible = !_balanceVisible);
                     },
                     style: FlowaCardStyle.gold,
-                    height: 150,
                   ),
                   const SizedBox(height: FlowaSpacing.xl),
                   Text(
@@ -177,11 +180,6 @@ class _TopUpPageState extends State<TopUpPage> {
                       actionLabel: 'Más info',
                     ),
                   ],
-                  const SizedBox(height: FlowaSpacing.xxl),
-                  FlowaPrimaryButton(
-                    label: 'Continuar',
-                    onPressed: _continue,
-                  ),
                   const SizedBox(height: FlowaSpacing.sm),
                   Text(
                     'La recarga es solo para móvil/operador.',
@@ -192,7 +190,6 @@ class _TopUpPageState extends State<TopUpPage> {
                   ),
                 ],
               ),
-      ),
     );
   }
 }

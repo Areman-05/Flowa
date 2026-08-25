@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/flowa_haptics.dart';
+import '../../../design_system/components/flowa_actions.dart';
+import '../../../design_system/components/flowa_icon.dart';
+import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
-import '../../../shared/widgets/flowa_buttons.dart';
+import '../../../design_system/tokens/flowa_typography.dart';
 
 class TransferSuccessPage extends StatefulWidget {
   const TransferSuccessPage({
@@ -47,54 +50,40 @@ class _TransferSuccessPageState extends State<TransferSuccessPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: FlowaSpacing.screenPadding,
-          child: Column(
-            children: [
-              const Spacer(),
-              ScaleTransition(
-                scale: _scale,
-                child: const CircleAvatar(
-                  radius: 42,
-                  backgroundColor: FlowaColors.actionReceive,
-                  child: Icon(
-                    Icons.check_rounded,
-                    size: 44,
-                    color: FlowaColors.success,
-                  ),
-                ),
-              ),
-              const SizedBox(height: FlowaSpacing.xl),
-              Text(
-                widget.title,
-                style: Theme.of(context).textTheme.headlineMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: FlowaSpacing.sm),
-              Text(
-                FlowaFormatters.currency(widget.amount),
-                style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      color: FlowaColors.primary,
-                    ),
-              ),
-              const SizedBox(height: FlowaSpacing.sm),
-              Text(
-                widget.subtitle,
-                style: Theme.of(context).textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              const Spacer(),
-              FlowaPrimaryButton(
-                label: 'Done',
-                onPressed: () => Navigator.of(context).popUntil(
-                  (route) => route.isFirst,
-                ),
-              ),
-            ],
+    return FlowaScreen(
+      title: '',
+      showBack: false,
+      footer: FlowaAcidButton(
+        label: 'Listo',
+        onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+      ),
+      child: Column(
+        children: [
+          const Spacer(),
+          ScaleTransition(
+            scale: _scale,
+            child: const FlowaIconOrb(
+              glyph: FlowaGlyph.check,
+              size: 88,
+              background: FlowaColors.mint,
+              foreground: FlowaColors.mintInk,
+            ),
           ),
-        ),
+          const SizedBox(height: FlowaSpacing.xl),
+          Text(widget.title, style: FlowaType.micro()),
+          const SizedBox(height: FlowaSpacing.sm),
+          Text(
+            FlowaFormatters.currency(widget.amount),
+            style: FlowaType.figureXl(),
+          ),
+          const SizedBox(height: FlowaSpacing.sm),
+          Text(
+            widget.subtitle,
+            style: FlowaType.body(color: FlowaColors.mint),
+            textAlign: TextAlign.center,
+          ),
+          const Spacer(),
+        ],
       ),
     );
   }
