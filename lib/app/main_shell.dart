@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/utils/flowa_services.dart';
-import '../design_system/components/flowa_glass.dart';
+import '../design_system/components/flowa_capsule_nav.dart';
+import '../design_system/components/flowa_icon.dart';
+import '../design_system/components/flowa_texture.dart';
 import '../design_system/tokens/flowa_colors.dart';
-import '../design_system/tokens/flowa_spacing.dart';
+import '../design_system/tokens/flowa_motion_tokens.dart';
 import '../features/ai_assistant/presentation/ai_assistant_page.dart';
 import '../features/home/presentation/home_page.dart';
+import '../features/invoices/presentation/invoices_page.dart';
 import '../features/profile/presentation/profile_page.dart';
 import '../features/transactions/presentation/transactions_page.dart';
 
-/// Root shell with Inicio · Movimientos · IA · Perfil navigation.
+/// Root shell. The canvas lives here so texture stays continuous across tabs.
 class MainShell extends StatefulWidget {
   const MainShell({super.key, this.onLogout});
 
@@ -29,9 +33,7 @@ class _MainShellState extends State<MainShell> {
     _refreshBadge();
   }
 
-  void _openTransactionsTab() {
-    setState(() => _index = 1);
-  }
+  void _openTransactionsTab() => setState(() => _index = 2);
 
   Future<void> _refreshBadge() async {
     final count = await FlowaServices.inboxRepository.unreadCount();
@@ -48,88 +50,60 @@ class _MainShellState extends State<MainShell> {
         onSeeAllTransactions: _openTransactionsTab,
         onBadgeRefresh: _refreshBadge,
       ),
-      const _ShellInset(child: TransactionsPage()),
-      const _ShellInset(child: AiAssistantPage()),
-      _ShellInset(child: ProfilePage(onLogout: widget.onLogout)),
+      const _Tab(child: InvoicesPage(embedded: true)),
+      const _Tab(child: TransactionsPage(embedded: true)),
+      const _Tab(child: AiAssistantPage(embedded: true)),
+      _Tab(child: ProfilePage(embedded: true, onLogout: widget.onLogout)),
     ];
 
-    return Scaffold(
-      extendBody: true,
-      backgroundColor: FlowaColors.background,
-      body: IndexedStack(index: _index, children: pages),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          FlowaSpacing.md,
-          0,
-          FlowaSpacing.md,
-          FlowaSpacing.sm,
-        ),
-        child: FlowaGlass(
-          blur: 24,
-          padding: EdgeInsets.zero,
-          borderRadius: BorderRadius.circular(28),
-          child: NavigationBar(
-            selectedIndex: _index,
-            height: 68,
-            backgroundColor: Colors.transparent,
-            surfaceTintColor: Colors.transparent,
-            indicatorColor: FlowaColors.primarySoft.withValues(alpha: 0.85),
-            elevation: 0,
-            onDestinationSelected: (value) {
-              setState(() => _index = value);
-              _refreshBadge();
-            },
-            destinations: [
-              const NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home_rounded),
-                label: 'Inicio',
-                tooltip: 'Inicio',
-              ),
-              NavigationDestination(
-                icon: Badge(
-                  isLabelVisible: _unread > 0,
-                  smallSize: 8,
-                  child: const Icon(Icons.receipt_long_outlined),
-                ),
-                selectedIcon: Badge(
-                  isLabelVisible: _unread > 0,
-                  smallSize: 8,
-                  child: const Icon(Icons.receipt_long_rounded),
-                ),
-                label: 'Movimientos',
-                tooltip: 'Historial de movimientos',
-              ),
-              const NavigationDestination(
-                icon: Icon(Icons.auto_awesome_outlined),
-                selectedIcon: Icon(Icons.auto_awesome),
-                label: 'IA',
-                tooltip: 'Asistente IA',
-              ),
-              const NavigationDestination(
-                icon: Icon(Icons.person_outline),
-                selectedIcon: Icon(Icons.person_rounded),
-                label: 'Perfil',
-                tooltip: 'Perfil y ajustes',
-              ),
-            ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        extendBody: true,
+        backgroundColor: FlowaColors.ink,
+        body: FlowaCanvas(
+          child: AnimatedSwitcher(
+            duration: FlowaMotion.base,
+            switchInCurve: FlowaMotion.expoOut,
+            switchOutCurve: FlowaMotion.exit,
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: child,
+            ),
+            child: KeyedSubtree(
+              key: ValueKey<int>(_index),
+              child: pages[_index],
+            ),
           ),
+        ),
+        bottomNavigationBar: FlowaCapsuleNav(
+          index: _index,
+          onSelected: (value) {
+            setState(() => _index = value);
+            _refreshBadge();
+          },
+          items: [
+            const FlowaNavItem(glyph: FlowaGlyph.home, label: 'Inicio'),
+            const FlowaNavItem(glyph: FlowaGlyph.receipt, label: 'Facturas'),
+            const FlowaNavItem(glyph: FlowaGlyph.transfer, label: 'Movs'),
+            const FlowaNavItem(glyph: FlowaGlyph.chart, label: 'IA'),
+            FlowaNavItem(
+              glyph: FlowaGlyph.person,
+              label: 'Perfil',
+              badge: _unread > 0,
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _ShellInset extends StatelessWidget {
-  const _ShellInset({required this.child});
+class _Tab extends StatelessWidget {
+  const _Tab({required this.child});
 
   final Widget child;
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 88),
-      child: child,
-    );
-  }
+  Widget build(BuildContext context) => child;
 }
