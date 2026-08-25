@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/utils/flowa_services.dart';
 import '../../../core/utils/flowa_validators.dart';
+import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
@@ -74,11 +75,9 @@ class _ConnectPayPalPageState extends State<ConnectPayPalPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Connect PayPal')),
-      body: SafeArea(
-        child: ListView(
-          padding: FlowaSpacing.screenPadding,
+    return FlowaScreen(
+      title: 'Conectar PayPal',
+      child: ListView(
           children: [
             const SizedBox(height: FlowaSpacing.xl),
             const Icon(
@@ -172,7 +171,6 @@ class _ConnectPayPalPageState extends State<ConnectPayPalPage> {
             ),
           ],
         ),
-      ),
     );
   }
 }

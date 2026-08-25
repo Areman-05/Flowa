@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../design_system/components/flowa_icon.dart';
+import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/support_article.dart';
@@ -33,12 +35,9 @@ class _SupportCenterPageState extends State<SupportCenterPage> {
   @override
   Widget build(BuildContext context) {
     final items = _filtered;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Soporte')),
-      body: SafeArea(
-        child: Padding(
-          padding: FlowaSpacing.screenPadding,
-          child: Column(
+    return FlowaScreen(
+      title: 'Soporte',
+      child: Column(
             children: [
               TextField(
                 onChanged: (value) => setState(() => _query = value),
@@ -53,9 +52,9 @@ class _SupportCenterPageState extends State<SupportCenterPage> {
               Expanded(
                 child: items.isEmpty
                     ? const FlowaEmptyState(
-                        title: 'No articles found',
-                        message: 'Try another keyword or browse categories.',
-                        icon: Icons.support_agent,
+                        title: 'Sin artículos',
+                        message: 'Prueba otra palabra o mira las categorías.',
+                        glyph: FlowaGlyph.search,
                       )
                     : ListView.separated(
                         itemCount: items.length,
@@ -116,8 +115,6 @@ class _SupportCenterPageState extends State<SupportCenterPage> {
               ),
             ],
           ),
-        ),
-      ),
     );
   }
 }

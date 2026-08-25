@@ -7,6 +7,7 @@ import '../../../design_system/components/flowa_purpose_selector.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/finance_entities.dart';
+import '../../../design_system/components/flowa_screen.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
 
 class CreateSubAccountPage extends StatefulWidget {
@@ -66,11 +67,14 @@ class _CreateSubAccountPageState extends State<CreateSubAccountPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Crear subcuenta')),
-      body: SafeArea(
-        child: ListView(
-          padding: FlowaSpacing.screenPadding,
+    return FlowaScreen(
+      title: 'Nueva subcuenta',
+      footer: FlowaPrimaryButton(
+        label: 'Crear subcuenta',
+        isLoading: _saving,
+        onPressed: _create,
+      ),
+      child: ListView(
           children: [
             Container(
               width: double.infinity,
@@ -145,15 +149,8 @@ class _CreateSubAccountPageState extends State<CreateSubAccountPage> {
               value: _accessLevel,
               onChanged: (value) => setState(() => _accessLevel = value),
             ),
-            const SizedBox(height: FlowaSpacing.xxl),
-            FlowaPrimaryButton(
-              label: 'Create Sub-Account',
-              isLoading: _saving,
-              onPressed: _create,
-            ),
           ],
         ),
-      ),
     );
   }
 }

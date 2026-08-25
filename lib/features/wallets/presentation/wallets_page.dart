@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/utils/flowa_services.dart';
+import '../../../design_system/components/flowa_actions.dart';
+import '../../../design_system/components/flowa_icon.dart';
+import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
-import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/wallet_entities.dart';
 import '../../../shared/navigation/flowa_routes.dart';
-import '../../../shared/widgets/flowa_buttons.dart';
 import '../../../shared/widgets/flowa_states.dart';
 import 'connect_paypal_page.dart';
 
@@ -64,7 +65,7 @@ class _WalletsPageState extends State<WalletsPage> {
     }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Disconnected ${wallet.displayName ?? 'wallet'}.'),
+        content: Text('Desconectado ${wallet.displayName ?? 'monedero'}.'),
       ),
     );
     await _load();
@@ -72,56 +73,37 @@ class _WalletsPageState extends State<WalletsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Monederos')),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-          ? FlowaErrorState(message: _error!, onRetry: _load)
-          : _wallets.isEmpty
-          ? FlowaEmptyState(
-              title: 'No wallets linked',
-              message: 'Conecta PayPal para enviar y recibir fuera de Flowa.',
-              actionLabel: 'Conectar PayPal',
-              onAction: _connect,
+    return FlowaScreen(
+      title: 'Monederos',
+      footer: FlowaAcidButton(label: 'Conectar PayPal', onPressed: _connect),
+      child: _loading
+          ? const Center(
+              child: CircularProgressIndicator(color: FlowaColors.mint),
             )
-          : ListView(
-              padding: FlowaSpacing.screenPadding,
-              children: [
-                for (final wallet in _wallets)
-                  ListTile(
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: FlowaRadii.mdAll,
-                      side: BorderSide(color: FlowaColors.border),
-                    ),
-                    leading: const CircleAvatar(
-                      backgroundColor: FlowaColors.primarySoft,
-                      child: Icon(Icons.account_balance_wallet_outlined),
-                    ),
-                    title: Text(wallet.displayName ?? 'PayPal'),
-                    subtitle: Text(
-                      wallet.isConnected
-                          ? wallet.email ?? 'Connected'
-                          : 'Not connected',
-                    ),
-                    trailing: wallet.isConnected
-                        ? TextButton(
-                            onPressed: () => _disconnect(wallet),
-                            child: const Text('Disconnect'),
-                          )
-                        : const Text(
-                            'Connect',
-                            style: TextStyle(color: FlowaColors.primary),
+          : _error != null
+              ? FlowaErrorState(message: _error!, onRetry: _load)
+              : _wallets.isEmpty
+                  ? FlowaEmptyState(
+                      title: 'Sin monederos',
+                      message:
+                          'Conecta PayPal para enviar y recibir fuera de Flowa.',
+                      glyph: FlowaGlyph.card,
+                    )
+                  : ListView(
+                      children: [
+                        for (final wallet in _wallets)
+                          FlowaMenuRow(
+                            glyph: FlowaGlyph.card,
+                            title: wallet.displayName ?? 'PayPal',
+                            subtitle: wallet.isConnected
+                                ? wallet.email ?? 'Conectado'
+                                : 'Sin conectar',
+                            onTap: wallet.isConnected
+                                ? () => _disconnect(wallet)
+                                : _connect,
                           ),
-                    onTap: wallet.isConnected ? null : _connect,
-                  ),
-                const SizedBox(height: FlowaSpacing.xl),
-                FlowaPrimaryButton(
-                  label: 'Conectar PayPal',
-                  onPressed: _connect,
-                ),
-              ],
-            ),
+                      ],
+                    ),
     );
   }
 }
