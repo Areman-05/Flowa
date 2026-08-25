@@ -65,7 +65,8 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return AuthShell(
-      tagline: 'Claridad lunar para tu dinero.\nPremium. Preciso. Tuyo.',
+      tagline:
+          'Gestiona activos, pagos e insights\nen una sola experiencia segura.',
       form: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -108,11 +109,15 @@ class _LoginPageState extends State<LoginPage> {
           ),
           if (_error != null) ...[
             const SizedBox(height: FlowaSpacing.sm),
-            Text(
-              _error!,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: FlowaColors.danger,
-                  ),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              child: Text(
+                _error!,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: FlowaColors.danger,
+                    ),
+              ),
             ),
           ],
         ],
@@ -131,10 +136,29 @@ class _LoginPageState extends State<LoginPage> {
                 ? null
                 : () {
                     Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => RegisterPage(
-                          onAuthenticated: widget.onAuthenticated,
-                        ),
+                      PageRouteBuilder<void>(
+                        pageBuilder: (context, animation, secondaryAnimation) {
+                          return RegisterPage(
+                            onAuthenticated: widget.onAuthenticated,
+                          );
+                        },
+                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                          final curved = CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutCubic,
+                          );
+                          return FadeTransition(
+                            opacity: curved,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0.04, 0),
+                                end: Offset.zero,
+                              ).animate(curved),
+                              child: child,
+                            ),
+                          );
+                        },
+                        transitionDuration: const Duration(milliseconds: 360),
                       ),
                     );
                   },

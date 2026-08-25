@@ -266,38 +266,39 @@ class HomeSpendingStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: FlowaSpacing.cardPadding,
-      decoration: BoxDecoration(
-        color: FlowaColors.surface,
-        borderRadius: FlowaRadii.lgAll,
-        border: Border.all(color: FlowaColors.border),
-      ),
-      child: Row(
+    final textTheme = Theme.of(context).textTheme;
+    final focus = snapshot.topMerchant == '—'
+        ? 'Sin foco todavía'
+        : 'Mayor gasto: ${snapshot.topMerchant}';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          Text.rich(
+            TextSpan(
+              style: textTheme.bodyLarge?.copyWith(
+                color: FlowaColors.textPrimary,
+                height: 1.45,
+              ),
               children: [
-                Text(
-                  'Este periodo',
-                  style: Theme.of(context).textTheme.labelMedium,
+                const TextSpan(text: 'Este periodo has salido '),
+                TextSpan(
+                  text: FlowaFormatters.currency(snapshot.outgoing),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Out ${FlowaFormatters.currency(snapshot.outgoing)}',
-                  style: Theme.of(context).textTheme.titleMedium,
+                TextSpan(
+                  text: '. Neto ${FlowaFormatters.signedCurrency(snapshot.net)}.',
                 ),
               ],
             ),
           ),
+          const SizedBox(height: FlowaSpacing.xs),
           Text(
-            FlowaFormatters.signedCurrency(snapshot.net),
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: snapshot.isPositive
-                  ? FlowaColors.success
-                  : FlowaColors.danger,
+            focus,
+            style: textTheme.bodyMedium?.copyWith(
+              color: FlowaColors.textSecondary,
             ),
           ),
         ],

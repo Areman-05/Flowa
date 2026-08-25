@@ -41,7 +41,7 @@ void main() {
   });
 
   testWidgets('home loads account and recent merchants', (tester) async {
-    await tester.pumpWidget(const FlowaApp());
+    await tester.pumpWidget(const FlowaApp(splashDuration: Duration.zero));
     await tester.pumpAndSettle();
 
     expect(find.text('Ana López'), findsOneWidget);

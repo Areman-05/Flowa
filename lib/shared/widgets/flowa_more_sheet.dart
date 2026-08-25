@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../design_system/components/flowa_glass.dart';
 import '../../design_system/tokens/flowa_colors.dart';
 import '../../design_system/tokens/flowa_spacing.dart';
 import '../../features/contacts/presentation/contacts_page.dart';
@@ -9,86 +10,112 @@ import '../../features/wallets/presentation/wallets_page.dart';
 import '../navigation/flowa_routes.dart';
 
 Future<void> showFlowaMoreActionsSheet(BuildContext context) {
-  return showModalBottomSheet<void>(
+  return showFlowaGlassSheet<void>(
     context: context,
-    showDragHandle: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(FlowaRadii.xl)),
-    ),
     builder: (context) {
       return SafeArea(
-        child: Padding(
-          padding: FlowaSpacing.screenPadding,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Más', style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: FlowaSpacing.sm),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const CircleAvatar(
-                    backgroundColor: FlowaColors.actionSend,
-                    child: Icon(Icons.groups_outlined),
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: FlowaSpacing.md),
+                  decoration: BoxDecoration(
+                    color: FlowaColors.border,
+                    borderRadius: BorderRadius.circular(99),
                   ),
-                  title: const Text('Contactos'),
-                  subtitle: const Text('Personas y empresas destinatarias'),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await pushFlowaRoute<void>(context, const ContactsPage());
-                  },
                 ),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const CircleAvatar(
-                    backgroundColor: FlowaColors.actionMore,
-                    child: Icon(Icons.account_tree_outlined),
-                  ),
-                  title: const Text('Subcuentas'),
-                  subtitle: const Text('Separa dinero familiar y de empresa'),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await pushFlowaRoute<void>(
-                      context,
-                      const SubAccountsPage(),
-                    );
-                  },
-                ),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const CircleAvatar(
-                    backgroundColor: FlowaColors.primarySoft,
-                    child: Icon(Icons.account_balance_wallet_outlined),
-                  ),
-                  title: const Text('Monederos'),
-                  subtitle: const Text('Vincula PayPal y otros monederos'),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await pushFlowaRoute<void>(context, const WalletsPage());
-                  },
-                ),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const CircleAvatar(
-                    backgroundColor: FlowaColors.actionReceive,
-                    child: Icon(Icons.insights_outlined),
-                  ),
-                  title: const Text('Resumen'),
-                  subtitle: const Text(
-                    'Entradas, salidas y principales gastos',
-                  ),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await pushFlowaRoute<void>(context, const InsightsPage());
-                  },
-                ),
-                const SizedBox(height: FlowaSpacing.md),
-              ],
-            ),
+              ),
+              Text('Más', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: FlowaSpacing.xs),
+              Text(
+                'Elige qué gestionar ahora.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: FlowaSpacing.md),
+              _MoreRow(
+                color: FlowaColors.actionSend,
+                icon: Icons.groups_outlined,
+                title: 'Contactos',
+                subtitle: 'A quién envías',
+                onTap: () async {
+                  Navigator.pop(context);
+                  await pushFlowaRoute<void>(context, const ContactsPage());
+                },
+              ),
+              _MoreRow(
+                color: FlowaColors.actionMore,
+                icon: Icons.account_tree_outlined,
+                title: 'Subcuentas',
+                subtitle: 'Separar familiar y empresa',
+                onTap: () async {
+                  Navigator.pop(context);
+                  await pushFlowaRoute<void>(
+                    context,
+                    const SubAccountsPage(),
+                  );
+                },
+              ),
+              _MoreRow(
+                color: FlowaColors.primarySoft,
+                icon: Icons.account_balance_wallet_outlined,
+                title: 'Monederos',
+                subtitle: 'PayPal y otros',
+                onTap: () async {
+                  Navigator.pop(context);
+                  await pushFlowaRoute<void>(context, const WalletsPage());
+                },
+              ),
+              _MoreRow(
+                color: FlowaColors.actionReceive,
+                icon: Icons.insights_outlined,
+                title: 'Resumen',
+                subtitle: 'Entradas, salidas, foco',
+                onTap: () async {
+                  Navigator.pop(context);
+                  await pushFlowaRoute<void>(context, const InsightsPage());
+                },
+              ),
+              const SizedBox(height: FlowaSpacing.sm),
+            ],
           ),
         ),
       );
     },
   );
+}
+
+class _MoreRow extends StatelessWidget {
+  const _MoreRow({
+    required this.color,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final Color color;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: CircleAvatar(
+        backgroundColor: color,
+        child: Icon(icon, color: FlowaColors.textPrimary),
+      ),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      onTap: onTap,
+    );
+  }
 }

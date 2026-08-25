@@ -26,6 +26,8 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _loading = false;
   bool _obscure = true;
 
+  static const _fieldGap = FlowaSpacing.lg;
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -75,8 +77,11 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return AuthShell(
       showBack: true,
-      markSize: 72,
-      tagline: 'Empieza vacío. Tú decides qué entra.',
+      showWordmark: false,
+      markSize: 56,
+      title: 'Crear cuenta',
+      tagline:
+          'Crea tu cuenta y empieza a mover dinero\ncon claridad y control.',
       form: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -92,7 +97,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
           ),
-          const SizedBox(height: FlowaSpacing.lg),
+          const SizedBox(height: _fieldGap),
           TextField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
@@ -105,7 +110,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
           ),
-          const SizedBox(height: FlowaSpacing.lg),
+          const SizedBox(height: _fieldGap),
           TextField(
             controller: _passwordController,
             obscureText: _obscure,
@@ -127,7 +132,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
           ),
-          const SizedBox(height: FlowaSpacing.lg),
+          const SizedBox(height: _fieldGap),
           TextField(
             controller: _confirmController,
             obscureText: _obscure,
@@ -156,6 +161,11 @@ class _RegisterPageState extends State<RegisterPage> {
         label: _loading ? 'Creando…' : 'Crear cuenta',
         loading: _loading,
         onPressed: _loading ? null : _submit,
+      ),
+      footer: Text(
+        'Tu cuenta se guarda en este dispositivo.',
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.bodySmall,
       ),
     );
   }

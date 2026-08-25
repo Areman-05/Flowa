@@ -45,7 +45,7 @@ abstract final class FlowaShadows {
 
   static const List<BoxShadow> card = [
     BoxShadow(
-      color: Color(0x1A7B3AED),
+      color: Color(0x33FF5722),
       blurRadius: 24,
       offset: Offset(0, 12),
     ),

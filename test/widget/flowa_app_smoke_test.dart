@@ -20,7 +20,7 @@ void main() {
   setUp(_bootstrapAuthenticatedApp);
 
   testWidgets('FlowaApp renders home shell destinations', (tester) async {
-    await tester.pumpWidget(const FlowaApp());
+    await tester.pumpWidget(const FlowaApp(splashDuration: Duration.zero));
     await tester.pumpAndSettle();
 
     expect(find.text('Ana López'), findsOneWidget);

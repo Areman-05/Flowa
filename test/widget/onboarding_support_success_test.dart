@@ -28,7 +28,7 @@ void main() {
   });
 
   testWidgets('onboarding appears until completed', (tester) async {
-    await tester.pumpWidget(const FlowaApp());
+    await tester.pumpWidget(const FlowaApp(splashDuration: Duration.zero));
     await tester.pumpAndSettle();
 
     expect(find.byType(OnboardingPage), findsOneWidget);

@@ -191,6 +191,63 @@ class _StaggeredItemState extends State<_StaggeredItem>
   }
 }
 
+/// Fade + soft rise entrance (auth, sheets, hero blocks).
+class FlowaFadeSlide extends StatefulWidget {
+  const FlowaFadeSlide({
+    required this.child,
+    super.key,
+    this.delay = Duration.zero,
+    this.duration = const Duration(milliseconds: 520),
+    this.offset = const Offset(0, 0.06),
+  });
+
+  final Widget child;
+  final Duration delay;
+  final Duration duration;
+  final Offset offset;
+
+  @override
+  State<FlowaFadeSlide> createState() => _FlowaFadeSlideState();
+}
+
+class _FlowaFadeSlideState extends State<FlowaFadeSlide>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _opacity;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: widget.duration);
+    _opacity = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
+    _slide = Tween<Offset>(
+      begin: widget.offset,
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+
+    Future<void>.delayed(widget.delay, () {
+      if (mounted) {
+        _controller.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _opacity,
+      child: SlideTransition(position: _slide, child: widget.child),
+    );
+  }
+}
+
 /// Scale-on-press wrapper for quick action tiles.
 class FlowaPressable extends StatefulWidget {
   const FlowaPressable({required this.child, required this.onTap, super.key});

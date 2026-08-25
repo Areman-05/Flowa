@@ -15,9 +15,10 @@ void main() {
   });
 
   group('FlowaTheme', () {
-    test('light theme uses light brightness', () {
+    test('light theme uses Radient dark canvas', () {
       final theme = FlowaTheme.light();
-      expect(theme.brightness, Brightness.light);
+      expect(theme.brightness, Brightness.dark);
+      expect(theme.scaffoldBackgroundColor, const Color(0xFF0A0A0A));
     });
 
     test('dark theme uses dark brightness', () {

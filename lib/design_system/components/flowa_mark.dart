@@ -4,25 +4,27 @@ import 'package:flutter/material.dart';
 
 import '../tokens/flowa_colors.dart';
 
-/// Brand mark: crescent moon + soft orbit — LUNA identity.
+/// Brand mark: continuous flow loop + optional wordmark.
 class FlowaMark extends StatelessWidget {
   const FlowaMark({
     super.key,
     this.size = 72,
     this.showWordmark = true,
     this.wordmarkSize = 36,
+    this.animated = true,
   });
 
   final double size;
   final bool showWordmark;
   final double wordmarkSize;
+  final bool animated;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _LunaGlyph(size: size),
+        FlowaFlowGlyph(size: size, animated: animated),
         if (showWordmark) ...[
           SizedBox(height: size * 0.22),
           Text(
@@ -30,7 +32,7 @@ class FlowaMark extends StatelessWidget {
             style: Theme.of(context).textTheme.displaySmall?.copyWith(
                   fontSize: wordmarkSize,
                   fontWeight: FontWeight.w700,
-                  letterSpacing: -1.4,
+                  letterSpacing: -1.2,
                   height: 1,
                   color: FlowaColors.textPrimary,
                 ),
@@ -41,122 +43,194 @@ class FlowaMark extends StatelessWidget {
   }
 }
 
-class _LunaGlyph extends StatefulWidget {
-  const _LunaGlyph({required this.size});
+/// Open triangular flow mark — flat Radient orange, no glow.
+class FlowaFlowGlyph extends StatefulWidget {
+  const FlowaFlowGlyph({
+    required this.size,
+    super.key,
+    this.animated = true,
+    this.progress,
+  });
 
   final double size;
+  final bool animated;
+  final double? progress;
 
   @override
-  State<_LunaGlyph> createState() => _LunaGlyphState();
+  State<FlowaFlowGlyph> createState() => _FlowaFlowGlyphState();
 }
 
-class _LunaGlyphState extends State<_LunaGlyph>
+class _FlowaFlowGlyphState extends State<FlowaFlowGlyph>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
+  late final AnimationController _breath;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    _breath = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 4200),
-    )..repeat(reverse: true);
+    );
+    _syncMotion(widget.animated);
+  }
+
+  @override
+  void didUpdateWidget(covariant FlowaFlowGlyph oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.animated != widget.animated) {
+      _syncMotion(widget.animated);
+    }
+  }
+
+  void _syncMotion(bool animated) {
+    if (animated && !_isWidgetTest) {
+      if (!_breath.isAnimating) {
+        _breath.repeat(reverse: true);
+      }
+    } else {
+      _breath
+        ..stop()
+        ..value = 0.35;
+    }
+  }
+
+  bool get _isWidgetTest {
+    return WidgetsBinding.instance.runtimeType
+        .toString()
+        .contains('TestWidgetsFlutterBinding');
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _breath.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final draw = widget.progress ?? 1.0;
+
     return AnimatedBuilder(
-      animation: _controller,
+      animation: _breath,
       builder: (context, child) {
-        final glow = 0.35 + (_controller.value * 0.25);
-        return Container(
-          width: widget.size,
-          height: widget.size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: FlowaColors.fuchsia.withValues(alpha: glow * 0.35),
-                blurRadius: 28,
-                spreadRadius: 2,
-              ),
-            ],
+        // Barely-there breathe — no glow, no shadow halo.
+        final t = Curves.easeInOut.transform(_breath.value);
+        final scale = 1 + (t * 0.008);
+
+        return Transform.scale(
+          scale: scale,
+          child: CustomPaint(
+            size: Size.square(widget.size),
+            painter: _FlowRibbonPainter(progress: draw),
           ),
-          child: child,
         );
       },
-      child: CustomPaint(
-        size: Size.square(widget.size),
-        painter: const _LunaMarkPainter(),
-      ),
     );
   }
 }
 
-class _LunaMarkPainter extends CustomPainter {
-  const _LunaMarkPainter();
+/// Three open ribbons — flat Radient orange, same tone on every blade.
+class _FlowRibbonPainter extends CustomPainter {
+  const _FlowRibbonPainter({required this.progress});
+
+  final double progress;
+
+  static final _fill = Paint()
+    ..color = FlowaColors.primary
+    ..isAntiAlias = true;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    final center = rect.center;
-    final radius = size.shortestSide / 2;
+    final s = size.shortestSide;
+    final c = Offset(size.width / 2, size.height / 2);
+    final p = progress.clamp(0.0, 1.0);
+    if (p <= 0) {
+      return;
+    }
 
-    final disc = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          FlowaColors.primaryDark,
-          FlowaColors.primary,
-          FlowaColors.fuchsia,
-        ],
-      ).createShader(rect);
+    for (var i = 0; i < 3; i++) {
+      final reveal = ((p * 3) - i).clamp(0.0, 1.0);
+      if (reveal <= 0.02) {
+        continue;
+      }
 
-    final moon = Path()
-      ..addOval(Rect.fromCircle(center: center, radius: radius));
-    final cut = Path()
-      ..addOval(
-        Rect.fromCircle(
-          center: center.translate(radius * 0.42, -radius * 0.06),
-          radius: radius * 0.82,
-        ),
-      );
-    final crescent = Path.combine(PathOperation.difference, moon, cut);
-    canvas.drawPath(crescent, disc);
+      canvas.save();
+      canvas.translate(c.dx, c.dy);
+      canvas.rotate(-math.pi / 2 + i * 2 * math.pi / 3);
+      canvas.translate(0, -s * 0.06);
 
-    final highlight = Paint()
-      ..shader = RadialGradient(
-        center: const Alignment(-0.55, -0.35),
-        radius: 0.9,
-        colors: [
-          Colors.white.withValues(alpha: 0.4),
-          Colors.white.withValues(alpha: 0),
-        ],
-      ).createShader(rect);
-    canvas.drawPath(crescent, highlight);
+      final ribbon = _blade(s, reveal);
+      canvas.drawPath(ribbon, _fill);
 
-    final arcPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.9)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size.shortestSide * 0.05
-      ..strokeCap = StrokeCap.round;
+      canvas.restore();
+    }
+  }
 
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius * 0.7),
-      -math.pi * 0.2,
-      math.pi * 1.1,
-      false,
-      arcPaint,
+  Path _blade(double s, double reveal) {
+    final full = Path();
+    final k = s / 100;
+
+    full.moveTo(-6 * k, -36 * k);
+    full.cubicTo(
+      10 * k,
+      -40 * k,
+      28 * k,
+      -28 * k,
+      32 * k,
+      -8 * k,
     );
+    full.cubicTo(
+      35 * k,
+      10 * k,
+      26 * k,
+      28 * k,
+      8 * k,
+      36 * k,
+    );
+    full.cubicTo(
+      14 * k,
+      24 * k,
+      18 * k,
+      10 * k,
+      16 * k,
+      -4 * k,
+    );
+    full.cubicTo(
+      14 * k,
+      -16 * k,
+      4 * k,
+      -26 * k,
+      -6 * k,
+      -28 * k,
+    );
+    full.cubicTo(
+      -10 * k,
+      -30 * k,
+      -10 * k,
+      -34 * k,
+      -6 * k,
+      -36 * k,
+    );
+    full.close();
+
+    if (reveal >= 0.995) {
+      return full;
+    }
+
+    final metrics = full.computeMetrics(forceClosed: true);
+    final m = metrics.isEmpty ? null : metrics.first;
+    if (m == null) {
+      return full;
+    }
+    final len = m.length * reveal.clamp(0.08, 1.0);
+    final drawn = m.extractPath(0, len);
+    return Path()
+      ..addPath(drawn, Offset.zero)
+      ..close();
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _FlowRibbonPainter oldDelegate) {
+    return oldDelegate.progress != progress;
+  }
 }

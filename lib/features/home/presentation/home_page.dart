@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/flowa_services.dart';
+import '../../../design_system/components/flowa_atmosphere.dart';
+import '../../../design_system/components/flowa_glass.dart';
 import '../../../design_system/components/flowa_motion.dart';
 import '../../../design_system/components/flowa_transaction_tile.dart';
 import '../../../design_system/components/flowa_visa_card.dart';
@@ -21,7 +23,7 @@ import '../../top_up/presentation/top_up_page.dart';
 import '../../transactions/presentation/transaction_detail_page.dart';
 import 'card_details_sheet.dart';
 
-/// Home dashboard with live account card and recent transactions.
+/// Home: see (hero) → understand (line) → act (one CTA + quiet tools).
 class HomePage extends StatefulWidget {
   const HomePage({super.key, this.onSeeAllTransactions, this.onBadgeRefresh});
 
@@ -117,119 +119,196 @@ class _HomePageState extends State<HomePage> {
       return const SizedBox.shrink();
     }
 
-    return SafeArea(
-      child: RefreshIndicator(
-        onRefresh: _load,
-        child: ListView(
-          padding: FlowaSpacing.screenPadding,
-          children: [
-            Row(
+    return Stack(
+      children: [
+                        const Positioned.fill(
+          child: FlowaAtmosphere(),
+        ),
+        SafeArea(
+          child: RefreshIndicator(
+            onRefresh: _load,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(
+                FlowaSpacing.lg,
+                FlowaSpacing.md,
+                FlowaSpacing.lg,
+                108,
+              ),
               children: [
-                const CircleAvatar(
-                  radius: 22,
-                  backgroundColor: FlowaColors.primarySoft,
-                  child: Icon(Icons.person, color: FlowaColors.primary),
-                ),
-                const SizedBox(width: FlowaSpacing.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                FlowaFadeSlide(
+                  child: Row(
                     children: [
-                      Text(
-                        FlowaGreeting.forDateTime(DateTime.now()),
-                        style: textTheme.bodyMedium,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              FlowaGreeting.forDateTime(DateTime.now()),
+                              style: textTheme.bodyMedium,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _user!.fullName,
+                              style: textTheme.headlineLarge?.copyWith(
+                                letterSpacing: -0.4,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      Text(_user!.fullName, style: textTheme.titleLarge),
+                      IconButton.outlined(
+                        onPressed: () async {
+                          await _open(const NotificationInboxPage());
+                          await _load();
+                          widget.onBadgeRefresh?.call();
+                        },
+                        icon: Badge(
+                          isLabelVisible: _unread > 0,
+                          smallSize: 8,
+                          child: const Icon(Icons.notifications_none_rounded),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                IconButton.outlined(
-                  onPressed: () async {
-                    await _open(const NotificationInboxPage());
-                    await _load();
-                  },
-                  icon: Badge(
-                    isLabelVisible: _unread > 0,
-                    smallSize: 8,
-                    child: const Icon(Icons.notifications_none_rounded),
+                const SizedBox(height: FlowaSpacing.lg),
+                FlowaFadeSlide(
+                  delay: const Duration(milliseconds: 70),
+                  child: GestureDetector(
+                    onLongPress: () =>
+                        showCardDetailsSheet(context, _account!),
+                    child: FlowaGlass(
+                      padding: const EdgeInsets.all(6),
+                      borderRadius: BorderRadius.circular(30),
+                      child: FlowaVisaCard(
+                        account: _account!,
+                        balanceVisible: _balanceVisible,
+                        isFrozen: _cardFrozen,
+                        onToggleVisibility: () {
+                          setState(
+                            () => _balanceVisible = !_balanceVisible,
+                          );
+                        },
+                        onToggleFreeze: () {
+                          setState(() => _cardFrozen = !_cardFrozen);
+                        },
+                      ),
+                    ),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: FlowaSpacing.lg),
-            GestureDetector(
-              onLongPress: () => showCardDetailsSheet(context, _account!),
-              child: FlowaVisaCard(
-                account: _account!,
-                balanceVisible: _balanceVisible,
-                isFrozen: _cardFrozen,
-                onToggleVisibility: () {
-                  setState(() => _balanceVisible = !_balanceVisible);
-                },
-                onToggleFreeze: () {
-                  setState(() => _cardFrozen = !_cardFrozen);
-                },
-              ),
-            ),
-            const SizedBox(height: FlowaSpacing.md),
-            GestureDetector(
-              onTap: () => _open(const InsightsPage()),
-              child: HomeSpendingStrip(snapshot: _snapshot),
-            ),
-            const SizedBox(height: FlowaSpacing.xl),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                FlowaQuickAction(
-                  label: 'Enviar',
-                  icon: Icons.account_balance_wallet_outlined,
-                  background: FlowaColors.actionSend,
-                  onTap: () => _open(const SendMoneyPage()),
+                const SizedBox(height: FlowaSpacing.lg),
+                FlowaFadeSlide(
+                  delay: const Duration(milliseconds: 120),
+                  child: GestureDetector(
+                    onTap: () => _open(const InsightsPage()),
+                    child: HomeSpendingStrip(snapshot: _snapshot),
+                  ),
                 ),
-                FlowaQuickAction(
-                  label: 'Recibir',
-                  icon: Icons.payments_outlined,
-                  background: FlowaColors.actionReceive,
-                  onTap: () => _open(const ReceivePage()),
+                const SizedBox(height: FlowaSpacing.xxl),
+                FlowaFadeSlide(
+                  delay: const Duration(milliseconds: 160),
+                  child: _HomeActions(
+                    onSend: () => _open(const SendMoneyPage()),
+                    onReceive: () => _open(const ReceivePage()),
+                    onTopUp: () => _open(const TopUpPage()),
+                    onMore: () => showFlowaMoreActionsSheet(context),
+                  ),
                 ),
-                FlowaQuickAction(
-                  label: 'Recargar',
-                  icon: Icons.point_of_sale_outlined,
-                  background: FlowaColors.actionTopUp,
-                  onTap: () => _open(const TopUpPage()),
+                const SizedBox(height: FlowaSpacing.xxl),
+                FlowaFadeSlide(
+                  delay: const Duration(milliseconds: 200),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Movimientos recientes',
+                        style: textTheme.titleMedium,
+                      ),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: widget.onSeeAllTransactions,
+                        child: const Text('Ver todos'),
+                      ),
+                    ],
+                  ),
                 ),
-                FlowaQuickAction(
-                  label: 'Más',
-                  icon: Icons.grid_view_rounded,
-                  background: FlowaColors.actionMore,
-                  onTap: () => showFlowaMoreActionsSheet(context),
+                const SizedBox(height: FlowaSpacing.sm),
+                FlowaTransactionList(
+                  items: _recent,
+                  onItemTap: (item) {
+                    pushFlowaRoute<void>(
+                      context,
+                      TransactionDetailPage(item: item),
+                    );
+                  },
                 ),
               ],
             ),
-            const SizedBox(height: FlowaSpacing.xl),
-            Row(
-              children: [
-                Text('Movimientos recientes', style: textTheme.titleMedium),
-                const Spacer(),
-                TextButton(
-                  onPressed: widget.onSeeAllTransactions,
-                  child: const Text('Ver todos >'),
-                ),
-              ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HomeActions extends StatelessWidget {
+  const _HomeActions({
+    required this.onSend,
+    required this.onReceive,
+    required this.onTopUp,
+    required this.onMore,
+  });
+
+  final VoidCallback onSend;
+  final VoidCallback onReceive;
+  final VoidCallback onTopUp;
+  final VoidCallback onMore;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FlowaPressable(
+          onTap: onSend,
+          child: Container(
+            height: 56,
+            decoration: BoxDecoration(
+              gradient: FlowaColors.brandGradient,
+              borderRadius: FlowaRadii.lgAll,
+              boxShadow: FlowaShadows.tinted(FlowaColors.primary),
             ),
-            const SizedBox(height: FlowaSpacing.sm),
-            FlowaTransactionList(
-              items: _recent,
-              onItemTap: (item) {
-                pushFlowaRoute<void>(
-                  context,
-                  TransactionDetailPage(item: item),
-                );
-              },
+            alignment: Alignment.center,
+            child: Text(
+              'Enviar',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+          ),
+        ),
+        const SizedBox(height: FlowaSpacing.md),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            FlowaQuickAction(
+              label: 'Recibir',
+              icon: Icons.payments_outlined,
+              background: FlowaColors.actionReceive,
+              onTap: onReceive,
+            ),
+            FlowaQuickAction(
+              label: 'Recargar',
+              icon: Icons.point_of_sale_outlined,
+              background: FlowaColors.actionTopUp,
+              onTap: onTopUp,
+            ),
+            FlowaQuickAction(
+              label: 'Más',
+              icon: Icons.grid_view_rounded,
+              background: FlowaColors.actionMore,
+              onTap: onMore,
             ),
           ],
         ),
-      ),
+      ],
     );
   }
 }

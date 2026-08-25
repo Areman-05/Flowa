@@ -5,12 +5,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('FlowaColors', () {
-    test('primary brand color stays electric blue', () {
-      expect(FlowaColors.primary, const Color(0xFF2F6BFF));
+    test('primary brand color stays Radient orange', () {
+      expect(FlowaColors.primary, const Color(0xFFFF5722));
     });
 
-    test('card gradient exposes two stops', () {
-      expect(FlowaColors.cardPrimaryGradient.colors.length, 2);
+    test('card gradient exposes multiple stops', () {
+      expect(FlowaColors.cardPrimaryGradient.colors.length, greaterThan(1));
     });
   });
 

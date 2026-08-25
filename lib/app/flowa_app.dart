@@ -8,11 +8,18 @@ import '../design_system/theme/flowa_theme.dart';
 import '../features/auth/presentation/login_page.dart';
 import '../features/lock/presentation/pin_lock_pages.dart';
 import '../features/onboarding/presentation/onboarding_page.dart';
+import '../features/splash/presentation/splash_page.dart';
 import 'main_shell.dart';
 
-/// Application root: auth → onboarding → optional PIN → shell.
+/// Application root: splash → auth → onboarding → optional PIN → shell.
 class FlowaApp extends StatefulWidget {
-  const FlowaApp({super.key});
+  const FlowaApp({
+    super.key,
+    this.splashDuration = const Duration(seconds: 3),
+  });
+
+  /// Minimum splash time while session prefs load. Tests pass [Duration.zero].
+  final Duration splashDuration;
 
   @override
   State<FlowaApp> createState() => _FlowaAppState();
@@ -33,6 +40,7 @@ class _FlowaAppState extends State<FlowaApp> {
   }
 
   Future<void> _bootstrap() async {
+    final started = DateTime.now();
     final loggedIn = await FlowaServices.authRepository.isLoggedIn();
     final complete =
         await FlowaServices.preferencesRepository.isOnboardingComplete();
@@ -52,6 +60,12 @@ class _FlowaAppState extends State<FlowaApp> {
           ),
         );
       }
+    }
+
+    final elapsed = DateTime.now().difference(started);
+    final remaining = widget.splashDuration - elapsed;
+    if (remaining > Duration.zero) {
+      await Future<void>.delayed(remaining);
     }
 
     if (!mounted) {
@@ -89,7 +103,9 @@ class _FlowaAppState extends State<FlowaApp> {
   Widget build(BuildContext context) {
     Widget home;
     if (_loading) {
-      home = const Scaffold(body: Center(child: CircularProgressIndicator()));
+      home = widget.splashDuration <= Duration.zero
+          ? const Scaffold(backgroundColor: Color(0xFF0A0A0A))
+          : SplashPage(duration: widget.splashDuration);
     } else if (!_loggedIn) {
       home = LoginPage(onAuthenticated: _onAuthenticated);
     } else if (!_onboardingComplete) {
@@ -116,7 +132,22 @@ class _FlowaAppState extends State<FlowaApp> {
       theme: FlowaTheme.light(),
       darkTheme: FlowaTheme.dark(),
       themeMode: _darkMode ? ThemeMode.dark : ThemeMode.light,
-      home: home,
+      home: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 480),
+        switchInCurve: Curves.easeOutCubic,
+        child: KeyedSubtree(
+          key: ValueKey<String>(_loading
+              ? 'splash'
+              : !_loggedIn
+                  ? 'login'
+                  : !_onboardingComplete
+                      ? 'onboarding'
+                      : (_pinEnabled && !_unlocked)
+                          ? 'pin'
+                          : 'shell'),
+          child: home,
+        ),
+      ),
     );
   }
 }

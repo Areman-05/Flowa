@@ -1,53 +1,59 @@
 import 'package:flutter/material.dart';
 
-/// Flowa color tokens — LUNA: lunar white, mist gray, card fuchsia.
+/// Flowa color tokens — Radient-inspired (dark premium + vibrant orange).
 abstract final class FlowaColors {
-  // --- Brand (fuchsia aligned with Visa card gradient) ---
-  static const Color primary = Color(0xFF9B2CFF);
-  static const Color primaryDark = Color(0xFF7B3AED);
-  static const Color primarySoft = Color(0xFFF3E8FF);
-  static const Color fuchsia = Color(0xFFD946EF);
-  static const Color fuchsiaDeep = Color(0xFFA21CAF);
-  static const Color mist = Color(0xFFF5F3F7);
+  // --- Brand (Radient orange) ---
+  static const Color primary = Color(0xFFFF5722);
+  static const Color primaryDark = Color(0xFFE64A19);
+  static const Color primarySoft = Color(0xFF3D2218);
+  static const Color accent = Color(0xFFFF8A50);
+  static const Color ember = Color(0xFFFF7043);
+  static const Color mist = Color(0xFF141414);
 
-  // --- Surfaces ---
-  static const Color background = Color(0xFFFBFBFC);
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceMuted = Color(0xFFF1F0F3);
-  static const Color border = Color(0xFFE8E6EC);
+  /// Legacy aliases kept for call sites.
+  static const Color periwinkle = accent;
+  static const Color fuchsia = primary;
+  static const Color fuchsiaDeep = primaryDark;
+
+  // --- Surfaces (dark-first) ---
+  static const Color background = Color(0xFF0A0A0A);
+  static const Color surface = Color(0xFF141414);
+  static const Color surfaceMuted = Color(0xFF1C1C1C);
+  static const Color border = Color(0xFF2A2A2A);
 
   // --- Text ---
-  static const Color textPrimary = Color(0xFF14121A);
-  static const Color textSecondary = Color(0xFF6B6572);
-  static const Color textTertiary = Color(0xFF9A94A3);
+  static const Color textPrimary = Color(0xFFFFFFFF);
+  static const Color textSecondary = Color(0xFF9E9E9E);
+  static const Color textTertiary = Color(0xFF6B6B6B);
   static const Color textOnPrimary = Color(0xFFFFFFFF);
   static const Color textOnCard = Color(0xFFFFFFFF);
 
   // --- Semantic ---
-  static const Color success = Color(0xFF16A34A);
-  static const Color danger = Color(0xFFEF4444);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color warningSoft = Color(0xFFFFF6DB);
-  static const Color income = Color(0xFF7B3AED);
+  static const Color success = Color(0xFF00C853);
+  static const Color danger = Color(0xFFFF5252);
+  static const Color warning = Color(0xFFFFB300);
+  static const Color warningSoft = Color(0xFF3D3218);
+  static const Color income = Color(0xFF00C853);
 
-  // --- Quick actions (pastel) ---
-  static const Color actionSend = Color(0xFFF3E8FF);
-  static const Color actionReceive = Color(0xFFD8F5EA);
-  static const Color actionTopUp = Color(0xFFFFF1C9);
-  static const Color actionMore = Color(0xFFEDE4FF);
+  // --- Quick actions (muted on dark) ---
+  static const Color actionSend = Color(0xFF3D2218);
+  static const Color actionReceive = Color(0xFF1A2E22);
+  static const Color actionTopUp = Color(0xFF3D3218);
+  static const Color actionMore = Color(0xFF1A2430);
 
   // --- Card gradients ---
-  static const Color cardPurpleStart = Color(0xFF7B3AED);
-  static const Color cardPurpleEnd = Color(0xFFC4B5FD);
-  static const Color cardGoldStart = Color(0xFFE8C37A);
-  static const Color cardGoldEnd = Color(0xFFF7E7C3);
-  static const Color cardGreenStart = Color(0xFFB7E4C7);
-  static const Color cardGreenEnd = Color(0xFFE9F7EF);
+  static const Color cardPurpleStart = Color(0xFFFF5722);
+  static const Color cardPurpleMid = Color(0xFFFF7043);
+  static const Color cardPurpleEnd = Color(0xFFFF8A50);
+  static const Color cardGoldStart = Color(0xFFE8A04A);
+  static const Color cardGoldEnd = Color(0xFF3D3218);
+  static const Color cardGreenStart = Color(0xFF1A3D28);
+  static const Color cardGreenEnd = Color(0xFF0F1F16);
 
   static const LinearGradient cardPrimaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [cardPurpleStart, fuchsia, cardPurpleEnd],
+    colors: [cardPurpleStart, cardPurpleMid, cardPurpleEnd],
   );
 
   static const LinearGradient cardGoldGradient = LinearGradient(
@@ -59,14 +65,31 @@ abstract final class FlowaColors {
   );
 
   static const LinearGradient brandGradient = LinearGradient(
-    colors: [primaryDark, primary, fuchsia],
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [primaryDark, primary, ember],
   );
 
-  static const LinearGradient lunaBackdrop = LinearGradient(
+  static const LinearGradient softBackdrop = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
     colors: [
-      Color(0xFFFFFFFF),
-      mist,
-      Color(0xFFF8F5FB),
+      Color(0xFF121212),
+      background,
+      Color(0xFF0D0D0D),
     ],
   );
+
+  /// Radient hero glow — orange bloom on dark canvas.
+  static const LinearGradient radientHeroGlow = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Color(0x33FF5722),
+      Color(0x00FF5722),
+    ],
+  );
+
+  /// @Deprecated Use [softBackdrop].
+  static const LinearGradient lunaBackdrop = softBackdrop;
 }

@@ -10,6 +10,7 @@ abstract final class FlowaTheme {
   static ThemeData light() {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: FlowaColors.primary,
+      brightness: Brightness.dark,
       primary: FlowaColors.primary,
       onPrimary: FlowaColors.textOnPrimary,
       secondary: FlowaColors.primarySoft,
@@ -20,45 +21,38 @@ abstract final class FlowaTheme {
 
     return _build(
       colorScheme: colorScheme,
-      brightness: Brightness.light,
+      brightness: Brightness.dark,
       scaffoldBg: FlowaColors.background,
       surfaceColor: FlowaColors.surface,
       textPrimary: FlowaColors.textPrimary,
       textOnPrimary: FlowaColors.textOnPrimary,
       borderColor: FlowaColors.border,
       surfaceMuted: FlowaColors.surfaceMuted,
-      overlayStyle: SystemUiOverlayStyle.dark,
+      overlayStyle: SystemUiOverlayStyle.light,
     );
   }
 
   static ThemeData dark() {
-    const darkBg = Color(0xFF0F1117);
-    const darkSurface = Color(0xFF1A1D27);
-    const darkBorder = Color(0xFF2A2D37);
-    const darkMuted = Color(0xFF22252F);
-    const darkText = Color(0xFFE5E7EB);
-    const darkTextOn = Color(0xFFFFFFFF);
-
     final colorScheme = ColorScheme.fromSeed(
       seedColor: FlowaColors.primary,
       brightness: Brightness.dark,
       primary: FlowaColors.primary,
-      onPrimary: darkTextOn,
+      onPrimary: FlowaColors.textOnPrimary,
       secondary: FlowaColors.primarySoft,
-      surface: darkSurface,
-      onSurface: darkText,
+      surface: FlowaColors.surface,
+      onSurface: FlowaColors.textPrimary,
       error: FlowaColors.danger,
     );
 
     return _build(
       colorScheme: colorScheme,
       brightness: Brightness.dark,
-      scaffoldBg: darkBg,
-      surfaceColor: darkSurface,
-      textPrimary: darkText,
-      textOnPrimary: darkTextOn,
-      borderColor: darkBorder,
-      surfaceMuted: darkMuted,
+      scaffoldBg: FlowaColors.background,
+      surfaceColor: FlowaColors.surface,
+      textPrimary: FlowaColors.textPrimary,
+      textOnPrimary: FlowaColors.textOnPrimary,
+      borderColor: FlowaColors.border,
+      surfaceMuted: FlowaColors.surfaceMuted,
       overlayStyle: SystemUiOverlayStyle.light,
     );
   }
