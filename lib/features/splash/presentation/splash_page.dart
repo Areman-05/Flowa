@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../design_system/components/flowa_mark.dart';
+import '../../../design_system/components/flowa_texture.dart';
+import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
+import '../../../design_system/tokens/flowa_typography.dart';
 
-/// Splash — black canvas, large open mark, quiet tagline (Radient layout).
 class SplashPage extends StatefulWidget {
   const SplashPage({
     super.key,
@@ -19,46 +21,22 @@ class SplashPage extends StatefulWidget {
 
 class _SplashPageState extends State<SplashPage>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _intro;
-  late final Animation<double> _draw;
-  late final Animation<double> _markOpacity;
-  late final Animation<double> _markScale;
-  late final Animation<double> _tagOpacity;
+  late final AnimationController _load;
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
-
-    _intro = AnimationController(
+    final loadMs = widget.duration.inMilliseconds.clamp(300, 20000);
+    _load = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    );
-    _draw = CurvedAnimation(
-      parent: _intro,
-      curve: const Interval(0, 0.7, curve: Curves.easeOutCubic),
-    );
-    _markOpacity = CurvedAnimation(
-      parent: _intro,
-      curve: const Interval(0, 0.35, curve: Curves.easeOut),
-    );
-    _markScale = Tween<double>(begin: 0.9, end: 1).animate(
-      CurvedAnimation(
-        parent: _intro,
-        curve: const Interval(0, 0.55, curve: Curves.easeOutCubic),
-      ),
-    );
-    _tagOpacity = CurvedAnimation(
-      parent: _intro,
-      curve: const Interval(0.55, 1, curve: Curves.easeOutCubic),
-    );
-
-    _intro.forward();
+      duration: Duration(milliseconds: loadMs),
+    )..forward();
   }
 
   @override
   void dispose() {
-    _intro.dispose();
+    _load.dispose();
     super.dispose();
   }
 
@@ -67,48 +45,43 @@ class _SplashPageState extends State<SplashPage>
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
-        backgroundColor: Colors.black,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              Center(
-                child: FadeTransition(
-                  opacity: _markOpacity,
-                  child: ScaleTransition(
-                    scale: _markScale,
-                    child: AnimatedBuilder(
-                      animation: _draw,
-                      builder: (context, child) {
-                        return FlowaFlowGlyph(
-                          size: 168,
-                          progress: _draw.value,
-                          animated: _draw.value >= 0.98,
-                        );
-                      },
-                    ),
-                  ),
-                ),
+        backgroundColor: FlowaColors.ink,
+        body: FlowaCanvas(
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: FlowaSpacing.gutter,
               ),
-              Positioned(
-                left: FlowaSpacing.xl,
-                right: FlowaSpacing.xl,
-                bottom: FlowaSpacing.xxl,
-                child: FadeTransition(
-                  opacity: _tagOpacity,
-                  child: Text(
-                    'Tu dinero, claro y bajo control.',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF8A8A8A),
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: 0.15,
-                          fontSize: 14,
-                          height: 1.3,
+              child: Column(
+                children: [
+                  const Spacer(flex: 3),
+                  const FlowaFlowGlyph(size: 72),
+                  const SizedBox(height: FlowaSpacing.xl),
+                  Text('Flowa', style: FlowaType.wordmark(size: 42)),
+                  const SizedBox(height: FlowaSpacing.sm),
+                  Text(
+                    'Tu dinero, claro.',
+                    style: FlowaType.body(color: FlowaColors.boneMuted),
+                  ),
+                  const Spacer(flex: 4),
+                  AnimatedBuilder(
+                    animation: _load,
+                    builder: (context, _) {
+                      return ClipRRect(
+                        borderRadius: FlowaRadii.pillAll,
+                        child: LinearProgressIndicator(
+                          value: _load.value,
+                          minHeight: 4,
+                          backgroundColor: FlowaColors.inkHigh,
+                          color: FlowaColors.mint,
                         ),
+                      );
+                    },
                   ),
-                ),
+                  const SizedBox(height: FlowaSpacing.xxl),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
