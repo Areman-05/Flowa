@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/utils/flowa_services.dart';
+import '../../../design_system/components/flowa_actions.dart';
+import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/payee_contact.dart';
-import '../../../shared/widgets/flowa_buttons.dart';
 
 class CreateContactPage extends StatefulWidget {
   const CreateContactPage({super.key});
@@ -47,10 +48,10 @@ class _CreateContactPageState extends State<CreateContactPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Nuevo contacto')),
-      body: ListView(
-        padding: FlowaSpacing.screenPadding,
+    return FlowaScreen(
+      title: 'Nuevo contacto',
+      footer: FlowaAcidButton(label: 'Guardar', onPressed: _save),
+      child: ListView(
         children: [
           TextField(
             controller: _nameController,
@@ -61,20 +62,18 @@ class _CreateContactPageState extends State<CreateContactPage> {
             ),
           ),
           const SizedBox(height: FlowaSpacing.md),
-          Text('Tipo', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: FlowaSpacing.sm),
-          Wrap(
-            spacing: FlowaSpacing.sm,
+          Row(
             children: [
-              ChoiceChip(
-                label: const Text('Persona'),
+              FlowaFilterChip(
+                label: 'Persona',
                 selected: _kind == PayeeKind.person,
-                onSelected: (_) => setState(() => _kind = PayeeKind.person),
+                onTap: () => setState(() => _kind = PayeeKind.person),
               ),
-              ChoiceChip(
-                label: const Text('Empresa'),
+              const SizedBox(width: 8),
+              FlowaFilterChip(
+                label: 'Empresa',
                 selected: _kind == PayeeKind.business,
-                onSelected: (_) => setState(() => _kind = PayeeKind.business),
+                onTap: () => setState(() => _kind = PayeeKind.business),
               ),
             ],
           ),
@@ -89,12 +88,8 @@ class _CreateContactPageState extends State<CreateContactPage> {
           const SizedBox(height: FlowaSpacing.sm),
           TextField(
             controller: _noteController,
-            decoration: const InputDecoration(
-              labelText: 'Nota (opcional)',
-            ),
+            decoration: const InputDecoration(labelText: 'Nota (opcional)'),
           ),
-          const SizedBox(height: FlowaSpacing.xl),
-          FlowaPrimaryButton(label: 'Guardar', onPressed: _save),
         ],
       ),
     );

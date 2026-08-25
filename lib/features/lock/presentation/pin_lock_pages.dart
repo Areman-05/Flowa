@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../core/utils/flowa_haptics.dart';
 import '../../../core/utils/flowa_pin.dart';
 import '../../../core/utils/flowa_services.dart';
+import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../shared/widgets/flowa_buttons.dart';
@@ -180,12 +181,14 @@ class _PinSetupPageState extends State<PinSetupPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('App lock')),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
+    return FlowaScreen(
+      title: 'Bloqueo',
+      footer: FlowaPrimaryButton(label: 'Guardar', onPressed: _save),
+      child: _loading
+          ? const Center(
+              child: CircularProgressIndicator(color: FlowaColors.mint),
+            )
           : ListView(
-              padding: FlowaSpacing.screenPadding,
               children: [
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
@@ -219,8 +222,6 @@ class _PinSetupPageState extends State<PinSetupPage> {
                     ),
                   ),
                 ],
-                const SizedBox(height: FlowaSpacing.xl),
-                FlowaPrimaryButton(label: 'Save', onPressed: _save),
               ],
             ),
     );

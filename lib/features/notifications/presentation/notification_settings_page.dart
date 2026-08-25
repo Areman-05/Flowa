@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/utils/flowa_services.dart';
-import '../../../design_system/tokens/flowa_spacing.dart';
+import '../../../design_system/components/flowa_screen.dart';
+import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../domain/repositories/preferences_repository.dart';
 
-/// Granular notification preferences to reduce notification fatigue.
 class NotificationSettingsPage extends StatefulWidget {
   const NotificationSettingsPage({super.key});
 
@@ -51,16 +51,20 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Notification')),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
+    return FlowaScreen(
+      title: 'Notificaciones',
+      child: _loading
+          ? const Center(
+              child: CircularProgressIndicator(color: FlowaColors.mint),
+            )
           : ListView(
               children: [
                 SwitchListTile(
-                  contentPadding: FlowaSpacing.screenPadding,
-                  title: const Text('Allow Notifications'),
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Permitir avisos'),
                   value: _allowNotifications,
+                  activeThumbColor: FlowaColors.mintInk,
+                  activeTrackColor: FlowaColors.mint,
                   onChanged: (value) async {
                     setState(() {
                       _allowNotifications = value;
@@ -72,14 +76,13 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                     await _persist();
                   },
                 ),
-                const Divider(height: 1),
                 SwitchListTile(
-                  contentPadding: FlowaSpacing.screenPadding,
-                  title: const Text('Transaction Notifications'),
-                  subtitle: const Text(
-                    'Get notified when transactions are processed',
-                  ),
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Movimientos'),
+                  subtitle: const Text('Cuando entra o sale dinero'),
                   value: _allowNotifications && _transactionNotifications,
+                  activeThumbColor: FlowaColors.mintInk,
+                  activeTrackColor: FlowaColors.mint,
                   onChanged: !_allowNotifications
                       ? null
                       : (value) async {
@@ -87,14 +90,13 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                           await _persist();
                         },
                 ),
-                const Divider(height: 1),
                 SwitchListTile(
-                  contentPadding: FlowaSpacing.screenPadding,
-                  title: const Text('Marketing and Promotions'),
-                  subtitle: const Text(
-                    'Receive updates on new features, offers, and promotions',
-                  ),
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Promos y marketing'),
+                  subtitle: const Text('Novedades y ofertas. Mejor apagado.'),
                   value: _allowNotifications && _marketingPromotions,
+                  activeThumbColor: FlowaColors.mintInk,
+                  activeTrackColor: FlowaColors.mint,
                   onChanged: !_allowNotifications
                       ? null
                       : (value) async {
