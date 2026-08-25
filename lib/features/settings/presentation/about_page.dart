@@ -1,71 +1,55 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/flowa_constants.dart';
+import '../../../design_system/components/flowa_icon.dart';
+import '../../../design_system/components/flowa_primitives.dart';
+import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
+import '../../../design_system/tokens/flowa_typography.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Acerca de')),
-      body: ListView(
-        padding: FlowaSpacing.screenPadding,
+    return FlowaScreen(
+      title: 'Acerca de',
+      child: ListView(
         children: [
           const SizedBox(height: FlowaSpacing.xl),
-          const Icon(
-            Icons.account_balance_wallet_rounded,
-            size: 64,
-            color: FlowaColors.primary,
+          const Center(
+            child: FlowaIconOrb(
+              glyph: FlowaGlyph.card,
+              size: 72,
+              background: FlowaColors.mint,
+              foreground: FlowaColors.mintInk,
+            ),
           ),
           const SizedBox(height: FlowaSpacing.md),
           Text(
             FlowaConstants.appName,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineMedium,
+            style: FlowaType.editorialMd(),
           ),
           const SizedBox(height: FlowaSpacing.xs),
           Text(
             FlowaConstants.appTagline,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: FlowaType.body(),
           ),
           const SizedBox(height: FlowaSpacing.xl),
-          const _InfoRow(label: 'Version', value: '1.0.0'),
-          const _InfoRow(label: 'Build', value: 'portfolio-demo'),
-          const _InfoRow(label: 'Platform', value: 'Flutter'),
-          const _InfoRow(label: 'License', value: 'MIT'),
+          const FlowaLedgerRow(label: 'Versión', value: '1.0.0'),
+          const FlowaLedgerRow(label: 'Build', value: 'portfolio-demo'),
+          const FlowaLedgerRow(label: 'Plataforma', value: 'Flutter'),
+          const FlowaLedgerRow(label: 'Licencia', value: 'MIT'),
           const SizedBox(height: FlowaSpacing.xl),
           Text(
-            'Designed as a portfolio case study inspired by '
-            '"Simplifying Finance" from Opedia Studio on Behance.',
+            'Banco para quien factura. Paleta e iconos de Vare Wallet; '
+            'estructura y flujo de Privat Bank. Adaptado, no copiado.',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall,
+            style: FlowaType.bodySm(),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: FlowaSpacing.md),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(label, style: Theme.of(context).textTheme.bodyMedium),
-          ),
-          Text(value, style: Theme.of(context).textTheme.titleMedium),
         ],
       ),
     );

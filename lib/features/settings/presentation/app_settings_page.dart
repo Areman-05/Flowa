@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/utils/flowa_services.dart';
+import '../../../design_system/components/flowa_actions.dart';
+import '../../../design_system/components/flowa_icon.dart';
+import '../../../design_system/components/flowa_screen.dart';
+import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../shared/navigation/flowa_routes.dart';
-import '../../../shared/widgets/flowa_buttons.dart';
 import '../../lock/presentation/pin_lock_pages.dart';
 import '../../notifications/presentation/notification_settings_page.dart';
 import 'about_page.dart';
@@ -51,19 +54,21 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Ajustes')),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
+    return FlowaScreen(
+      title: 'Ajustes',
+      child: _loading
+          ? const Center(
+              child: CircularProgressIndicator(color: FlowaColors.mint),
+            )
           : ListView(
               children: [
                 SwitchListTile(
-                  contentPadding: FlowaSpacing.screenPadding,
+                  contentPadding: EdgeInsets.zero,
                   title: const Text('Ocultar saldo por defecto'),
-                  subtitle: const Text(
-                    'Inicia Inicio con el saldo enmascarado',
-                  ),
+                  subtitle: const Text('Inicio con el saldo enmascarado'),
                   value: _balanceHidden,
+                  activeThumbColor: FlowaColors.mintInk,
+                  activeTrackColor: FlowaColors.mint,
                   onChanged: (value) async {
                     setState(() => _balanceHidden = value);
                     await FlowaServices.preferencesRepository
@@ -71,10 +76,12 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                   },
                 ),
                 SwitchListTile(
-                  contentPadding: FlowaSpacing.screenPadding,
+                  contentPadding: EdgeInsets.zero,
                   title: const Text('Modo oscuro'),
-                  subtitle: const Text('Usar el tema oscuro'),
+                  subtitle: const Text('Siempre activo en esta versión'),
                   value: _darkMode,
+                  activeThumbColor: FlowaColors.mintInk,
+                  activeTrackColor: FlowaColors.mint,
                   onChanged: (value) async {
                     setState(() => _darkMode = value);
                     await FlowaServices.preferencesRepository
@@ -82,12 +89,12 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                   },
                 ),
                 SwitchListTile(
-                  contentPadding: FlowaSpacing.screenPadding,
+                  contentPadding: EdgeInsets.zero,
                   title: const Text('Presupuesto mensual'),
-                  subtitle: const Text(
-                    'Controla el gasto en Resumen',
-                  ),
+                  subtitle: const Text('Controla el gasto en Análisis'),
                   value: _budgetEnabled,
+                  activeThumbColor: FlowaColors.mintInk,
+                  activeTrackColor: FlowaColors.mint,
                   onChanged: (value) async {
                     setState(() => _budgetEnabled = value);
                     await FlowaServices.preferencesRepository
@@ -95,11 +102,10 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                   },
                 ),
                 if (_budgetEnabled)
-                  ListTile(
-                    contentPadding: FlowaSpacing.screenPadding,
-                    title: const Text('Límite de presupuesto'),
-                    subtitle: Text('€${_budgetLimit.toStringAsFixed(0)}'),
-                    trailing: const Icon(Icons.chevron_right),
+                  FlowaMenuRow(
+                    glyph: FlowaGlyph.chart,
+                    title: 'Límite de presupuesto',
+                    subtitle: '€${_budgetLimit.toStringAsFixed(0)}',
                     onTap: () async {
                       final controller = TextEditingController(
                         text: _budgetLimit.toStringAsFixed(0),
@@ -108,6 +114,7 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                         context: context,
                         builder: (context) {
                           return AlertDialog(
+                            backgroundColor: FlowaColors.inkHigh,
                             title: const Text('Presupuesto mensual'),
                             content: TextField(
                               controller: controller,
@@ -140,46 +147,27 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                       }
                     },
                   ),
-                const Divider(height: 1),
-                ListTile(
-                  contentPadding: FlowaSpacing.screenPadding,
-                  title: const Text('Preferencias de notificación'),
-                  trailing: const Icon(Icons.chevron_right),
+                const SizedBox(height: FlowaSpacing.md),
+                FlowaMenuRow(
+                  glyph: FlowaGlyph.bell,
+                  title: 'Notificaciones',
                   onTap: () => pushFlowaRoute<void>(
                     context,
                     const NotificationSettingsPage(),
                   ),
                 ),
-                ListTile(
-                  contentPadding: FlowaSpacing.screenPadding,
-                  title: const Text('Bloqueo de la app'),
-                  subtitle: const Text('Pedir PIN de 4 dígitos al abrir'),
-                  trailing: const Icon(Icons.lock_outline),
+                FlowaMenuRow(
+                  glyph: FlowaGlyph.lock,
+                  title: 'Bloqueo de la app',
+                  subtitle: 'PIN de 4 dígitos al abrir',
                   onTap: () =>
                       pushFlowaRoute<void>(context, const PinSetupPage()),
                 ),
-                const Divider(height: 1),
-                ListTile(
-                  contentPadding: FlowaSpacing.screenPadding,
-                  title: const Text('Acerca de Flowa'),
-                  trailing: const Icon(Icons.info_outline),
+                FlowaMenuRow(
+                  glyph: FlowaGlyph.spark,
+                  title: 'Acerca de Flowa',
                   onTap: () =>
                       pushFlowaRoute<void>(context, const AboutPage()),
-                ),
-                Padding(
-                  padding: FlowaSpacing.screenPadding,
-                  child: FlowaSecondaryButton(
-                    label: 'Repetir bienvenida',
-                    onPressed: () async {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'La bienvenida volverá en el próximo arranque tras reiniciar preferencias.',
-                          ),
-                        ),
-                      );
-                    },
-                  ),
                 ),
               ],
             ),

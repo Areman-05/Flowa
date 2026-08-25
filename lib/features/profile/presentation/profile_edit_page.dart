@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/utils/flowa_services.dart';
+import '../../../design_system/components/flowa_actions.dart';
+import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../domain/entities/finance_entities.dart';
-import '../../../shared/widgets/flowa_buttons.dart';
 
 class ProfileEditPage extends StatefulWidget {
   const ProfileEditPage({required this.user, super.key});
@@ -48,10 +49,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Editar perfil')),
-      body: ListView(
-        padding: FlowaSpacing.screenPadding,
+    return FlowaScreen(
+      title: 'Editar perfil',
+      footer: FlowaAcidButton(label: 'Guardar', onPressed: _save),
+      child: ListView(
         children: [
           TextField(
             controller: _nameController,
@@ -69,8 +70,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               helperText: 'El email se gestiona al registrarte.',
             ),
           ),
-          const SizedBox(height: FlowaSpacing.xl),
-          FlowaPrimaryButton(label: 'Guardar', onPressed: _save),
         ],
       ),
     );
