@@ -7,7 +7,7 @@ import '../../../core/utils/flowa_services.dart';
 import '../../../core/utils/receive_request.dart';
 import '../../../design_system/components/flowa_actions.dart';
 import '../../../design_system/components/flowa_icon.dart';
-import '../../../design_system/components/flowa_primitives.dart';
+import '../../../design_system/components/flowa_money_keypad.dart';
 import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
@@ -15,7 +15,7 @@ import '../../../design_system/tokens/flowa_typography.dart';
 import '../../../domain/entities/finance_entities.dart';
 import '../../../shared/widgets/flowa_dialogs.dart';
 
-/// Receive / request money screen.
+/// Receive / request money — hero amount + keypad + account share.
 class ReceivePage extends StatefulWidget {
   const ReceivePage({super.key});
 
@@ -25,8 +25,10 @@ class ReceivePage extends StatefulWidget {
 
 class _ReceivePageState extends State<ReceivePage> {
   Account? _account;
-  final _amountController = TextEditingController();
+  int _cents = 0;
   final _noteController = TextEditingController();
+
+  double get _amount => _cents / 100.0;
 
   @override
   void initState() {
@@ -44,9 +46,29 @@ class _ReceivePageState extends State<ReceivePage> {
 
   @override
   void dispose() {
-    _amountController.dispose();
     _noteController.dispose();
     super.dispose();
+  }
+
+  void _digit(String key) {
+    FlowaHaptics.selection();
+    setState(() {
+      if (key == '<') {
+        _cents = _cents ~/ 10;
+        return;
+      }
+      if (key == '00') {
+        if (_cents >= 1000000) {
+          return;
+        }
+        _cents = _cents * 100;
+        return;
+      }
+      if (_cents >= 99999999) {
+        return;
+      }
+      _cents = _cents * 10 + int.parse(key);
+    });
   }
 
   Future<void> _copyAccountNumber(Account account) async {
@@ -61,9 +83,8 @@ class _ReceivePageState extends State<ReceivePage> {
   }
 
   Future<void> _shareRequest() async {
-    final amount = double.tryParse(_amountController.text) ?? 0;
     final account = _account;
-    if (amount <= 0 || account == null) {
+    if (_amount <= 0 || account == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Introduce un importe para solicitar.')),
       );
@@ -72,7 +93,7 @@ class _ReceivePageState extends State<ReceivePage> {
 
     final message = ReceiveRequest.build(
       account: account,
-      amount: amount,
+      amount: _amount,
       note: _noteController.text,
     );
 
@@ -94,15 +115,14 @@ class _ReceivePageState extends State<ReceivePage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Solicitud de ${FlowaFormatters.currency(amount)} copiada.',
+          'Solicitud de ${FlowaFormatters.currency(_amount)} copiada.',
         ),
       ),
     );
   }
 
   Future<void> _registerIncoming() async {
-    final amount = double.tryParse(_amountController.text) ?? 0;
-    if (amount <= 0) {
+    if (_amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Introduce un importe válido.')),
       );
@@ -113,23 +133,22 @@ class _ReceivePageState extends State<ReceivePage> {
       TransactionItem(
         id: 'tx-${DateTime.now().millisecondsSinceEpoch}',
         merchant: note.isEmpty ? 'Ingreso' : note,
-        amount: amount,
+        amount: _amount,
         occurredAt: DateTime.now(),
         direction: TransactionDirection.credit,
         category: 'Ingreso',
       ),
     );
-    await FlowaServices.accountRepository.applyBalanceDelta(amount);
+    await FlowaServices.accountRepository.applyBalanceDelta(_amount);
+    await FlowaHaptics.success();
+    final labelled = FlowaFormatters.currency(_amount);
     await _load();
     if (!mounted) {
       return;
     }
+    setState(() => _cents = 0);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Ingreso de ${FlowaFormatters.currency(amount)} registrado.',
-        ),
-      ),
+      SnackBar(content: Text('Ingreso de $labelled registrado.')),
     );
   }
 
@@ -158,73 +177,104 @@ class _ReceivePageState extends State<ReceivePage> {
           ? const Center(
               child: CircularProgressIndicator(color: FlowaColors.mint),
             )
-          : ListView(
+          : Column(
               children: [
-                FlowaSurface(
-                  color: FlowaColors.mint,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Tu cuenta',
-                        style: FlowaType.micro(color: FlowaColors.mintInk),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        account.maskedNumber,
-                        style: FlowaType.editorialMd(color: FlowaColors.mintInk),
-                      ),
-                      const SizedBox(height: FlowaSpacing.sm),
-                      Text(
-                        'Compártela para que te paguen más rápido.',
-                        style: FlowaType.bodySm(color: FlowaColors.mintInk),
-                      ),
-                      const SizedBox(height: FlowaSpacing.md),
-                      FlowaPressScale(
-                        onTap: () => _copyAccountNumber(account),
-                        child: Row(
-                          children: [
-                            const FlowaIcon(
-                              FlowaGlyph.receipt,
-                              size: 16,
-                              color: FlowaColors.mintInk,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Copiar número',
-                              style: FlowaType.label(color: FlowaColors.mintInk),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                _AccountShareCard(
+                  account: account,
+                  onCopy: () => _copyAccountNumber(account),
                 ),
                 const SizedBox(height: FlowaSpacing.xl),
-                TextField(
-                  controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(
-                      RegExp(r'^\d+\.?\d{0,2}'),
-                    ),
-                  ],
-                  decoration: const InputDecoration(
-                    labelText: 'Importe',
-                    prefixText: '€ ',
-                  ),
+                Text('Importe', style: FlowaType.micro()),
+                const SizedBox(height: 6),
+                Text(
+                  FlowaFormatters.currency(_amount),
+                  style: FlowaType.figureXl(),
                 ),
-                const SizedBox(height: FlowaSpacing.sm),
+                const SizedBox(height: FlowaSpacing.md),
+                FlowaQuickAmounts(
+                  values: const [20, 50, 100, 250],
+                  activeCents: _cents,
+                  onSelected: (euros) => setState(() => _cents = euros * 100),
+                ),
+                const SizedBox(height: FlowaSpacing.md),
                 TextField(
                   controller: _noteController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nota (opcional)',
+                  style: FlowaType.body(),
+                  decoration: InputDecoration(
+                    hintText: 'Nota (opcional)',
+                    filled: true,
+                    fillColor: FlowaColors.inkHigh,
+                    border: OutlineInputBorder(
+                      borderRadius: FlowaRadii.lgAll,
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                   ),
+                ),
+                const Spacer(),
+                FlowaMoneyKeypad(onKey: _digit),
+                const SizedBox(height: FlowaSpacing.sm),
+              ],
+            ),
+    );
+  }
+}
+
+class _AccountShareCard extends StatelessWidget {
+  const _AccountShareCard({required this.account, required this.onCopy});
+
+  final Account account;
+  final VoidCallback onCopy;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(FlowaSpacing.lg),
+      decoration: const BoxDecoration(
+        color: FlowaColors.inkHigh,
+        borderRadius: FlowaRadii.xxlAll,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: const BoxDecoration(
+              color: FlowaColors.mint,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: const FlowaIcon(
+              FlowaGlyph.arrowDown,
+              size: 20,
+              color: FlowaColors.mintInk,
+            ),
+          ),
+          const SizedBox(width: FlowaSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Tu cuenta', style: FlowaType.micro()),
+                const SizedBox(height: 2),
+                Text(
+                  account.maskedNumber,
+                  style: FlowaType.titleSm(),
                 ),
               ],
             ),
+          ),
+          FlowaIconAction(
+            glyph: FlowaGlyph.receipt,
+            tooltip: 'Copiar',
+            size: 40,
+            onTap: onCopy,
+          ),
+        ],
+      ),
     );
   }
 }

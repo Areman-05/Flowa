@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/utils/flowa_formatters.dart';
+import '../../../core/utils/flowa_haptics.dart';
 import '../../../core/utils/flowa_services.dart';
 import '../../../design_system/components/flowa_actions.dart';
+import '../../../design_system/components/flowa_icon.dart';
 import '../../../design_system/components/flowa_primitives.dart';
 import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
@@ -38,6 +40,7 @@ class SendReviewPage extends StatelessWidget {
       ),
     );
     await FlowaServices.accountRepository.applyBalanceDelta(-amount);
+    await FlowaHaptics.success();
 
     if (!context.mounted) {
       return;
@@ -54,24 +57,34 @@ class SendReviewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final initial =
+        recipientName.isEmpty ? '?' : recipientName[0].toUpperCase();
+
     return FlowaScreen(
       title: 'Revisar',
-      footer: Column(
-        children: [
-          FlowaAcidButton(
-            label: 'Enviar ahora',
-            onPressed: () => _confirm(context),
-          ),
-          const SizedBox(height: FlowaSpacing.sm),
-          FlowaGhostButton(
-            label: 'Volver',
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ],
+      footer: FlowaAcidButton(
+        label: 'Enviar ahora',
+        onPressed: () => _confirm(context),
       ),
       child: ListView(
         children: [
           const SizedBox(height: FlowaSpacing.lg),
+          Center(
+            child: Container(
+              width: 64,
+              height: 64,
+              decoration: const BoxDecoration(
+                color: FlowaColors.mint,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                initial,
+                style: FlowaType.titleLg(color: FlowaColors.mintInk),
+              ),
+            ),
+          ),
+          const SizedBox(height: FlowaSpacing.md),
           Text(
             FlowaFormatters.currency(amount),
             textAlign: TextAlign.center,
@@ -84,15 +97,42 @@ class SendReviewPage extends StatelessWidget {
             style: FlowaType.body(color: FlowaColors.mint),
           ),
           const SizedBox(height: FlowaSpacing.xxl),
-          FlowaLedgerRow(label: 'Para', value: recipientName),
-          FlowaLedgerRow(label: 'Cuenta', value: accountNumber),
-          FlowaLedgerRow(
-            label: 'Importe',
-            value: FlowaFormatters.currency(amount),
-            valueColor: FlowaColors.mint,
+          Container(
+            padding: const EdgeInsets.fromLTRB(18, 8, 18, 8),
+            decoration: const BoxDecoration(
+              color: FlowaColors.inkHigh,
+              borderRadius: FlowaRadii.xxlAll,
+            ),
+            child: Column(
+              children: [
+                FlowaLedgerRow(label: 'Para', value: recipientName),
+                FlowaLedgerRow(label: 'Cuenta', value: accountNumber),
+                FlowaLedgerRow(
+                  label: 'Importe',
+                  value: FlowaFormatters.currency(amount),
+                  valueColor: FlowaColors.mint,
+                ),
+                if (note != null && note!.trim().isNotEmpty)
+                  FlowaLedgerRow(label: 'Nota', value: note!.trim()),
+              ],
+            ),
           ),
-          if (note != null && note!.trim().isNotEmpty)
-            FlowaLedgerRow(label: 'Nota', value: note!.trim()),
+          const SizedBox(height: FlowaSpacing.lg),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const FlowaIcon(
+                FlowaGlyph.lock,
+                size: 14,
+                color: FlowaColors.boneFaint,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Transferencia instantánea protegida',
+                style: FlowaType.micro(),
+              ),
+            ],
+          ),
         ],
       ),
     );
