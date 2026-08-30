@@ -15,11 +15,13 @@ class FlowaTransactionTile extends StatelessWidget {
     super.key,
     this.onTap,
     this.masked = false,
+    this.orbBackground = FlowaColors.inkHigh,
   });
 
   final TransactionItem item;
   final VoidCallback? onTap;
   final bool masked;
+  final Color orbBackground;
 
   static FlowaGlyph glyphFor(TransactionItem item) {
     if (item.isIncome) {
@@ -46,14 +48,14 @@ class FlowaTransactionTile extends StatelessWidget {
       onTap: onTap,
       scale: 0.985,
       haptic: false,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
         child: Row(
           children: [
             FlowaIconOrb(
               glyph: glyphFor(item),
-              size: 48,
-              background: FlowaColors.inkHigh,
+              size: 44,
+              background: orbBackground,
               foreground: item.isIncome ? FlowaColors.mint : FlowaColors.bone,
             ),
             const SizedBox(width: FlowaSpacing.sm),
@@ -92,6 +94,7 @@ class FlowaTransactionList extends StatelessWidget {
     this.masked = false,
     this.physics,
     this.shrinkWrap = true,
+    this.orbBackground = FlowaColors.inkHigh,
   });
 
   final List<TransactionItem> items;
@@ -99,6 +102,7 @@ class FlowaTransactionList extends StatelessWidget {
   final bool masked;
   final ScrollPhysics? physics;
   final bool shrinkWrap;
+  final Color orbBackground;
 
   @override
   Widget build(BuildContext context) {
@@ -112,6 +116,7 @@ class FlowaTransactionList extends StatelessWidget {
         return FlowaTransactionTile(
           item: item,
           masked: masked,
+          orbBackground: orbBackground,
           onTap: onItemTap == null ? null : () => onItemTap!(item),
         );
       },

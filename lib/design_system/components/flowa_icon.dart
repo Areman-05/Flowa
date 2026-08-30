@@ -4,16 +4,9 @@ import 'package:flutter/material.dart';
 
 import '../tokens/flowa_colors.dart';
 
-/// The Flowa icon set.
+/// Flowa glyph set — thin geometric outlines (Privat / SF-Symbols feel).
 ///
-/// Drawn rather than imported. Material's icons carry their own personality —
-/// varying optical weights, filled counters, a specific corner treatment — and
-/// dropping them into a considered layout is the fastest way to make it look
-/// unfinished.
-///
-/// Every glyph here obeys the same three rules: a single uniform stroke, round
-/// caps and joins, and a 24×24 design box. That consistency is most of what
-/// makes an icon set read as designed instead of collected.
+/// One stroke weight, round caps, 24×24 box. No filled “AI blob” shapes.
 enum FlowaGlyph {
   home,
   chart,
@@ -38,13 +31,14 @@ enum FlowaGlyph {
   logout,
   settings,
   spark,
+  pin,
 }
 
 class FlowaIcon extends StatelessWidget {
   const FlowaIcon(
     this.glyph, {
     super.key,
-    this.size = 22,
+    this.size = 26,
     this.color = FlowaColors.bone,
     this.strokeWidth,
   });
@@ -52,9 +46,6 @@ class FlowaIcon extends StatelessWidget {
   final FlowaGlyph glyph;
   final double size;
   final Color color;
-
-  /// Defaults to a stroke that scales with the glyph, so a 16px icon does not
-  /// look like a fattened version of the 28px one.
   final double? strokeWidth;
 
   @override
@@ -65,7 +56,7 @@ class FlowaIcon extends StatelessWidget {
         painter: _GlyphPainter(
           glyph: glyph,
           color: color,
-          strokeWidth: strokeWidth ?? size * 0.085,
+          strokeWidth: strokeWidth ?? size * 0.072,
         ),
       ),
     );
@@ -85,8 +76,6 @@ class _GlyphPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Everything below is authored on a 24×24 grid and scaled to fit, which
-    // keeps proportions identical at every size we render at.
     final s = size.width / 24;
     final paint = Paint()
       ..color = color
@@ -101,23 +90,15 @@ class _GlyphPainter extends CustomPainter {
       ..style = PaintingStyle.fill
       ..isAntiAlias = true;
 
-    Offset p(double x, double y) => Offset(x * s, y * s);
+    Offset o(double x, double y) => Offset(x * s, y * s);
 
     void line(double x1, double y1, double x2, double y2) =>
-        canvas.drawLine(p(x1, y1), p(x2, y2), paint);
+        canvas.drawLine(o(x1, y1), o(x2, y2), paint);
 
-    void path(List<Offset> points, {bool close = false}) {
-      final route = Path()..moveTo(points.first.dx, points.first.dy);
-      for (final point in points.skip(1)) {
-        route.lineTo(point.dx, point.dy);
-      }
-      if (close) {
-        route.close();
-      }
-      canvas.drawPath(route, paint);
-    }
+    void circle(double x, double y, double r, {bool filled = false}) =>
+        canvas.drawCircle(o(x, y), r * s, filled ? fill : paint);
 
-    void roundRect(double l, double t, double r, double b, double radius) {
+    void rrect(double l, double t, double r, double b, double radius) {
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromLTRB(l * s, t * s, r * s, b * s),
@@ -127,148 +108,205 @@ class _GlyphPainter extends CustomPainter {
       );
     }
 
+    void poly(List<Offset> pts, {bool close = false}) {
+      final path = Path()..moveTo(pts.first.dx, pts.first.dy);
+      for (final p in pts.skip(1)) {
+        path.lineTo(p.dx, p.dy);
+      }
+      if (close) {
+        path.close();
+      }
+      canvas.drawPath(path, paint);
+    }
+
     switch (glyph) {
       case FlowaGlyph.home:
-        path([p(3.5, 10), p(12, 3.5), p(20.5, 10), p(20.5, 20), p(3.5, 20)],
-            close: true);
-        line(9.5, 20, 9.5, 14.5);
-        line(14.5, 20, 14.5, 14.5);
-        line(9.5, 14.5, 14.5, 14.5);
+        // Simple house — roof + open base (no door fill).
+        poly([o(4, 11), o(12, 4), o(20, 11)]);
+        poly([o(6.5, 10.5), o(6.5, 20), o(17.5, 20), o(17.5, 10.5)]);
+        rrect(10, 14.5, 14, 20, 1.2);
 
       case FlowaGlyph.chart:
+        // Rising polyline — cleaner than thick bars.
+        poly([o(4, 17), o(9, 12), o(13, 14.5), o(20, 6.5)]);
         line(4, 20, 20, 20);
-        line(7.5, 20, 7.5, 12);
-        line(12, 20, 12, 6.5);
-        line(16.5, 20, 16.5, 15);
 
       case FlowaGlyph.transfer:
-        path([p(7, 4.5), p(7, 19)]);
-        path([p(3.5, 8), p(7, 4.5), p(10.5, 8)]);
-        path([p(17, 19.5), p(17, 5)]);
-        path([p(13.5, 16), p(17, 19.5), p(20.5, 16)]);
+        // Two opposing chevrons (send / receive).
+        poly([o(8, 7), o(12, 3.5), o(16, 7)]);
+        line(12, 3.5, 12, 11);
+        poly([o(8, 17), o(12, 20.5), o(16, 17)]);
+        line(12, 13, 12, 20.5);
 
       case FlowaGlyph.card:
-        roundRect(3, 5.5, 21, 18.5, 3.5);
-        line(3, 10, 21, 10);
-        line(7, 14.5, 11, 14.5);
+        rrect(3.5, 6.5, 20.5, 17.5, 2.8);
+        line(3.5, 10.5, 20.5, 10.5);
+        line(7, 14.2, 11.5, 14.2);
 
       case FlowaGlyph.person:
-        canvas.drawCircle(p(12, 8.5), 4 * s, paint);
-        path([p(4.5, 20), p(4.5, 18.5), p(12, 14.5), p(19.5, 18.5), p(19.5, 20)]);
+        circle(12, 8, 3.4);
+        canvas.drawArc(
+          Rect.fromCenter(center: o(12, 20.5), width: 13 * s, height: 10 * s),
+          math.pi,
+          math.pi,
+          false,
+          paint,
+        );
 
       case FlowaGlyph.arrowDown:
-        line(12, 4.5, 12, 19);
-        path([p(6.5, 13.5), p(12, 19), p(17.5, 13.5)]);
+        line(12, 5, 12, 18.5);
+        poly([o(7.5, 14), o(12, 18.5), o(16.5, 14)]);
 
       case FlowaGlyph.arrowUp:
-        line(12, 19.5, 12, 5);
-        path([p(6.5, 10.5), p(12, 5), p(17.5, 10.5)]);
+        line(12, 19, 12, 5.5);
+        poly([o(7.5, 10), o(12, 5.5), o(16.5, 10)]);
 
       case FlowaGlyph.arrowRight:
-        line(4.5, 12, 19, 12);
-        path([p(13.5, 6.5), p(19, 12), p(13.5, 17.5)]);
+        line(5, 12, 18.5, 12);
+        poly([o(14, 7.5), o(18.5, 12), o(14, 16.5)]);
 
       case FlowaGlyph.arrowLeft:
-        line(19.5, 12, 5, 12);
-        path([p(10.5, 6.5), p(5, 12), p(10.5, 17.5)]);
+        line(19, 12, 5.5, 12);
+        poly([o(10, 7.5), o(5.5, 12), o(10, 16.5)]);
 
       case FlowaGlyph.plus:
-        line(12, 5, 12, 19);
-        line(5, 12, 19, 12);
+        line(12, 6, 12, 18);
+        line(6, 12, 18, 12);
 
       case FlowaGlyph.bell:
-        path([
-          p(6, 17),
-          p(6, 10.5),
-          p(12, 4.5),
-          p(18, 10.5),
-          p(18, 17),
-        ]);
-        line(4, 17, 20, 17);
-        path([p(10, 19.5), p(12, 21), p(14, 19.5)]);
+        // Classic alert bell — dome + base + clapper.
+        final bell = Path()
+          ..moveTo(o(7, 15).dx, o(7, 15).dy)
+          ..cubicTo(
+            o(7, 9).dx,
+            o(7, 9).dy,
+            o(9, 5.5).dx,
+            o(9, 5.5).dy,
+            o(12, 5.5).dx,
+            o(12, 5.5).dy,
+          )
+          ..cubicTo(
+            o(15, 5.5).dx,
+            o(15, 5.5).dy,
+            o(17, 9).dx,
+            o(17, 9).dy,
+            o(17, 15).dx,
+            o(17, 15).dy,
+          );
+        canvas.drawPath(bell, paint);
+        line(5.5, 15.5, 18.5, 15.5);
+        canvas.drawArc(
+          Rect.fromCenter(center: o(12, 15.5), width: 4.5 * s, height: 3.5 * s),
+          0,
+          math.pi,
+          false,
+          paint,
+        );
 
       case FlowaGlyph.search:
-        canvas.drawCircle(p(10.5, 10.5), 6 * s, paint);
-        line(15, 15, 20, 20);
+        // Loupe — thinner ring, longer handle.
+        circle(10, 10, 5.8);
+        line(14.3, 14.3, 20, 20);
 
       case FlowaGlyph.receipt:
-        path([
-          p(5, 21),
-          p(5, 3),
-          p(19, 3),
-          p(19, 21),
-          p(16, 19),
-          p(13.5, 21),
-          p(10.5, 19),
-          p(8, 21),
-        ], close: true);
-        line(9, 8.5, 15, 8.5);
-        line(9, 13, 13, 13);
+        // Clean document, not serrated ticket.
+        rrect(6, 3.5, 18, 20.5, 2.2);
+        line(9, 9, 15, 9);
+        line(9, 12.5, 15, 12.5);
+        line(9, 16, 13, 16);
 
       case FlowaGlyph.vault:
-        roundRect(3.5, 4.5, 20.5, 19.5, 3.5);
-        canvas.drawCircle(p(12, 12), 4 * s, paint);
-        line(12, 4.5, 12, 8);
+        // Piggy bank / hucha.
+        final body = Path()
+          ..addOval(
+            Rect.fromCenter(
+              center: o(11.5, 13),
+              width: 14 * s,
+              height: 11 * s,
+            ),
+          );
+        canvas.drawPath(body, paint);
+        // Ear
+        canvas.drawOval(
+          Rect.fromCenter(center: o(16.5, 7.5), width: 4.5 * s, height: 4 * s),
+          paint,
+        );
+        // Snout
+        rrect(16, 12, 21, 16, 1.6);
+        // Legs
+        line(7, 18.5, 7, 20.5);
+        line(14, 18.5, 14, 20.5);
+        // Coin slot
+        line(9, 9.5, 13.5, 9.5);
 
       case FlowaGlyph.more:
-        canvas.drawCircle(p(5.5, 12), strokeWidth * 0.85, fill);
-        canvas.drawCircle(p(12, 12), strokeWidth * 0.85, fill);
-        canvas.drawCircle(p(18.5, 12), strokeWidth * 0.85, fill);
+        circle(6, 12, 1.15, filled: true);
+        circle(12, 12, 1.15, filled: true);
+        circle(18, 12, 1.15, filled: true);
 
       case FlowaGlyph.eye:
-        path([
-          p(2.5, 12),
-          p(6, 7.5),
-          p(12, 6),
-          p(18, 7.5),
-          p(21.5, 12),
-          p(18, 16.5),
-          p(12, 18),
-          p(6, 16.5),
+        poly([
+          o(3, 12),
+          o(7.5, 7.5),
+          o(12, 6.5),
+          o(16.5, 7.5),
+          o(21, 12),
+          o(16.5, 16.5),
+          o(12, 17.5),
+          o(7.5, 16.5),
         ], close: true);
-        canvas.drawCircle(p(12, 12), 3 * s, paint);
+        circle(12, 12, 2.6);
 
       case FlowaGlyph.eyeOff:
-        path([p(3.5, 9.5), p(7, 14), p(12, 15.5), p(17, 14), p(20.5, 9.5)]);
-        line(12, 15.5, 12, 19.5);
-        line(6, 14.5, 3.5, 18);
-        line(18, 14.5, 20.5, 18);
+        poly([o(4, 9), o(8, 14), o(12, 15.5), o(16, 14), o(20, 9)]);
+        line(5, 18, 19, 6);
 
       case FlowaGlyph.check:
-        path([p(5, 12.5), p(10, 17.5), p(19, 7)]);
+        poly([o(5.5, 12.5), o(10, 17), o(18.5, 7.5)]);
 
       case FlowaGlyph.clock:
-        canvas.drawCircle(p(12, 12), 8 * s, paint);
-        path([p(12, 7), p(12, 12), p(15.5, 14)]);
+        circle(12, 12, 7.5);
+        poly([o(12, 7.5), o(12, 12), o(15.5, 14)]);
 
       case FlowaGlyph.lock:
-        roundRect(4.5, 10.5, 19.5, 20.5, 3);
-        path([p(8, 10.5), p(8, 7.5), p(12, 4), p(16, 7.5), p(16, 10.5)]);
+        rrect(6, 11, 18, 20, 2.4);
+        poly([o(8.5, 11), o(8.5, 8), o(12, 5.5), o(15.5, 8), o(15.5, 11)]);
 
       case FlowaGlyph.logout:
-        path([p(14, 4.5), p(5, 4.5), p(5, 19.5), p(14, 19.5)]);
-        line(10, 12, 20, 12);
-        path([p(16.5, 8.5), p(20, 12), p(16.5, 15.5)]);
+        rrect(4.5, 5, 13.5, 19, 2.2);
+        line(11, 12, 19.5, 12);
+        poly([o(16, 8.5), o(19.5, 12), o(16, 15.5)]);
 
       case FlowaGlyph.settings:
-        canvas.drawCircle(p(12, 12), 3.2 * s, paint);
-        canvas.drawCircle(p(12, 12), 8 * s, paint);
-        line(12, 2.8, 12, 5.4);
-        line(12, 18.6, 12, 21.2);
-        line(2.8, 12, 5.4, 12);
-        line(18.6, 12, 21.2, 12);
+        circle(12, 12, 2.8);
+        for (var i = 0; i < 6; i++) {
+          final a = (i * 60) * math.pi / 180;
+          final x1 = 12 + math.cos(a) * 5.2;
+          final y1 = 12 + math.sin(a) * 5.2;
+          final x2 = 12 + math.cos(a) * 8.2;
+          final y2 = 12 + math.sin(a) * 8.2;
+          line(x1, y1, x2, y2);
+        }
 
       case FlowaGlyph.spark:
-        path([
-          p(12, 2.5),
-          p(14.2, 9.8),
-          p(21.5, 12),
-          p(14.2, 14.2),
-          p(12, 21.5),
-          p(9.8, 14.2),
-          p(2.5, 12),
-          p(9.8, 9.8),
+        // Soft 4-point spark (AI) — not a heavy star blob.
+        poly([
+          o(12, 3.5),
+          o(13.4, 10.6),
+          o(20.5, 12),
+          o(13.4, 13.4),
+          o(12, 20.5),
+          o(10.6, 13.4),
+          o(3.5, 12),
+          o(10.6, 10.6),
         ], close: true);
+
+      case FlowaGlyph.pin:
+        // Four PIN dots.
+        circle(6.5, 12, 1.6);
+        circle(10.5, 12, 1.6);
+        circle(14.5, 12, 1.6);
+        circle(18.5, 12, 1.6);
     }
   }
 
@@ -279,13 +317,11 @@ class _GlyphPainter extends CustomPainter {
       old.strokeWidth != strokeWidth;
 }
 
-/// Circular container for a glyph, as used for transaction categories and
-/// avatars in the reference.
 class FlowaIconOrb extends StatelessWidget {
   const FlowaIconOrb({
     required this.glyph,
     super.key,
-    this.size = 44,
+    this.size = 48,
     this.background = FlowaColors.inkSurface,
     this.foreground = FlowaColors.bone,
     this.borderColor,
@@ -308,12 +344,11 @@ class FlowaIconOrb extends StatelessWidget {
         border: borderColor == null ? null : Border.all(color: borderColor!),
       ),
       alignment: Alignment.center,
-      child: FlowaIcon(glyph, size: size * 0.48, color: foreground),
+      child: FlowaIcon(glyph, size: size * 0.5, color: foreground),
     );
   }
 }
 
-/// Rotates a glyph, used for the diagonal in/out arrows on transaction rows.
 class FlowaIconRotated extends StatelessWidget {
   const FlowaIconRotated({
     required this.glyph,

@@ -22,7 +22,7 @@ class FlowaNavItem {
   final IconData? icon;
 }
 
-/// Floating island nav — Privat silhouette, Vare mint active state.
+/// Compact floating dock — inset, short, icon-only.
 class FlowaCapsuleNav extends StatelessWidget {
   const FlowaCapsuleNav({
     required this.items,
@@ -39,34 +39,39 @@ class FlowaCapsuleNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        FlowaSpacing.gutter,
+        52,
         0,
-        FlowaSpacing.gutter,
-        10 + MediaQuery.paddingOf(context).bottom,
+        52,
+        8 + MediaQuery.paddingOf(context).bottom,
       ),
-      child: Container(
-        height: 68,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        decoration: BoxDecoration(
-          color: FlowaColors.inkHigh,
-          borderRadius: FlowaRadii.pillAll,
-          border: Border.all(color: FlowaColors.hairlineStrong),
-          boxShadow: FlowaShadows.card,
-        ),
-        child: Row(
-          children: [
-            for (var i = 0; i < items.length; i++)
-              _NavCell(
-                item: items[i],
-                selected: i == index,
-                onTap: () {
-                  if (i != index) {
-                    FlowaHaptics.selection();
-                  }
-                  onSelected(i);
-                },
-              ),
-          ],
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 292),
+          child: Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            decoration: BoxDecoration(
+              color: FlowaColors.inkHigh,
+              borderRadius: FlowaRadii.pillAll,
+              border: Border.all(color: FlowaColors.hairlineStrong),
+            ),
+            child: Row(
+              children: [
+                for (var i = 0; i < items.length; i++)
+                  _NavCell(
+                    item: items[i],
+                    selected: i == index,
+                    onTap: () {
+                      if (i != index) {
+                        FlowaHaptics.selection();
+                      }
+                      onSelected(i);
+                    },
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -93,37 +98,39 @@ class _NavCell extends StatelessWidget {
         child: Semantics(
           label: item.label,
           button: true,
-          child: AnimatedContainer(
-            duration: FlowaMotion.base,
-            curve: FlowaMotion.swiftOut,
-            width: selected ? 46 : 40,
-            height: selected ? 46 : 40,
-            decoration: BoxDecoration(
-              color: selected ? FlowaColors.mint : Colors.transparent,
-              shape: BoxShape.circle,
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              clipBehavior: Clip.none,
-              children: [
-                FlowaIcon(
-                  item.glyph,
-                  size: 21,
-                  color: selected ? FlowaColors.mintInk : FlowaColors.boneFaint,
-                ),
-                if (item.badge && !selected)
-                  const Positioned(
-                    top: 6,
-                    right: 6,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: FlowaColors.mint,
-                        shape: BoxShape.circle,
-                      ),
-                      child: SizedBox(width: 7, height: 7),
-                    ),
+          child: Center(
+            child: AnimatedContainer(
+              duration: FlowaMotion.base,
+              curve: FlowaMotion.swiftOut,
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: selected ? FlowaColors.mint : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [
+                  FlowaIcon(
+                    item.glyph,
+                    size: 24,
+                    color: selected ? FlowaColors.mintInk : FlowaColors.boneFaint,
                   ),
-              ],
+                  if (item.badge && !selected)
+                    const Positioned(
+                      top: 5,
+                      right: 5,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: FlowaColors.mint,
+                          shape: BoxShape.circle,
+                        ),
+                        child: SizedBox(width: 7, height: 7),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),

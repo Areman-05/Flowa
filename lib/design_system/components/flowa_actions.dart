@@ -233,9 +233,9 @@ class FlowaIconAction extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             if (glyph != null)
-              FlowaIcon(glyph!, size: 18, color: FlowaColors.boneMuted)
+              FlowaIcon(glyph!, size: 22, color: FlowaColors.boneMuted)
             else
-              Icon(icon, size: 19, color: FlowaColors.boneMuted),
+              Icon(icon, size: 22, color: FlowaColors.boneMuted),
             if (badge)
               const Positioned(
                 top: 10,
@@ -289,7 +289,7 @@ class FlowaMenuRow extends StatelessWidget {
           children: [
             FlowaIconOrb(
               glyph: glyph,
-              size: 44,
+              size: 48,
               background: FlowaColors.inkHigh,
               foreground: FlowaColors.bone,
             ),
@@ -309,7 +309,7 @@ class FlowaMenuRow extends StatelessWidget {
             trailing ??
                 const FlowaIcon(
                   FlowaGlyph.arrowRight,
-                  size: 16,
+                  size: 20,
                   color: FlowaColors.boneFaint,
                 ),
           ],
@@ -357,7 +357,7 @@ class FlowaFilterChip extends StatelessWidget {
   }
 }
 
-/// Circular action used in the Home rail: glyph orb plus caption.
+/// Squircle action used in the Home rail: dark tile plus caption.
 class FlowaRailAction extends StatelessWidget {
   const FlowaRailAction({
     required this.label,
@@ -376,6 +376,7 @@ class FlowaRailAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fg = emphasised ? FlowaColors.mintInk : FlowaColors.bone;
     return Expanded(
       child: FlowaPressScale(
         onTap: onTap,
@@ -383,32 +384,23 @@ class FlowaRailAction extends StatelessWidget {
         child: Column(
           children: [
             Container(
-              width: 58,
-              height: 58,
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(
                 color: emphasised ? FlowaColors.mint : FlowaColors.inkHigh,
-                shape: BoxShape.circle,
+                borderRadius: FlowaRadii.lgAll,
               ),
               alignment: Alignment.center,
               child: glyph != null
-                  ? FlowaIcon(
-                      glyph!,
-                      color: emphasised
-                          ? FlowaColors.mintInk
-                          : FlowaColors.bone,
-                    )
-                  : Icon(
-                      icon,
-                      size: 22,
-                      color: emphasised
-                          ? FlowaColors.mintInk
-                          : FlowaColors.bone,
-                    ),
+                  ? FlowaIcon(glyph!, color: fg, size: 26)
+                  : Icon(icon, size: 26, color: fg),
             ),
-            const SizedBox(height: FlowaSpacing.sm),
+            const SizedBox(height: FlowaSpacing.xs),
             Text(
               label,
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: FlowaType.micro(color: FlowaColors.boneMuted),
             ),
           ],
