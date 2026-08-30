@@ -47,6 +47,7 @@ class _SplashPageState extends State<SplashPage>
       child: Scaffold(
         backgroundColor: FlowaColors.ink,
         body: FlowaCanvas(
+          mist: false,
           child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(

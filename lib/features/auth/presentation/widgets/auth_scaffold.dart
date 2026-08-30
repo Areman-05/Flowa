@@ -46,6 +46,7 @@ class AuthScaffold extends StatelessWidget {
       child: Scaffold(
         backgroundColor: FlowaColors.ink,
         body: FlowaCanvas(
+          mist: false,
           child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(

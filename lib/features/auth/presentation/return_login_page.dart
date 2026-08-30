@@ -115,6 +115,7 @@ class _ReturnLoginPageState extends State<ReturnLoginPage>
     return Scaffold(
       backgroundColor: FlowaColors.ink,
       body: FlowaCanvas(
+        mist: false,
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(

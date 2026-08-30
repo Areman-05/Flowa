@@ -193,6 +193,7 @@ abstract final class FlowaTheme {
         contentTextStyle: FlowaType.bodySm(color: FlowaColors.bone),
         actionTextColor: FlowaColors.acid,
         shape: const RoundedRectangleBorder(borderRadius: FlowaRadii.smAll),
+        insetPadding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: Colors.transparent,

@@ -28,7 +28,7 @@ abstract final class FlowaSpacing {
   static const EdgeInsets cardPadding = EdgeInsets.all(lg);
 
   /// Clearance for the floating capsule navigation.
-  static const double navClearance = 104;
+  static const double navClearance = 88;
 }
 
 /// Corner radii.

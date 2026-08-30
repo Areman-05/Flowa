@@ -74,6 +74,113 @@ class _FlowaEntranceState extends State<FlowaEntrance>
   }
 }
 
+/// Show/hide with the same rise+fade, so a list can expand and collapse
+/// with matching stagger (pass reverse delays when collapsing).
+class FlowaReveal extends StatefulWidget {
+  const FlowaReveal({
+    required this.visible,
+    required this.child,
+    super.key,
+    this.delay = Duration.zero,
+    this.duration = FlowaMotion.slow,
+    this.rise = 16,
+  });
+
+  final bool visible;
+  final Widget child;
+  final Duration delay;
+  final Duration duration;
+  final double rise;
+
+  @override
+  State<FlowaReveal> createState() => _FlowaRevealState();
+}
+
+class _FlowaRevealState extends State<FlowaReveal>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  int _gen = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: widget.duration);
+    if (FlowaRuntime.isWidgetTest) {
+      _controller.value = widget.visible ? 1 : 0;
+      return;
+    }
+    if (widget.visible) {
+      _schedule(() => _controller.forward());
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant FlowaReveal oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.visible == widget.visible) {
+      return;
+    }
+    if (FlowaRuntime.isWidgetTest) {
+      _controller.value = widget.visible ? 1 : 0;
+      return;
+    }
+    if (widget.visible) {
+      _schedule(() => _controller.forward());
+    } else {
+      _schedule(() => _controller.reverse());
+    }
+  }
+
+  void _schedule(VoidCallback action) {
+    final gen = ++_gen;
+    Future<void>.delayed(widget.delay, () {
+      if (!mounted || gen != _gen) {
+        return;
+      }
+      action();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final curved = CurvedAnimation(
+      parent: _controller,
+      curve: FlowaMotion.expoOut,
+      reverseCurve: FlowaMotion.exit,
+    );
+
+    return AnimatedBuilder(
+      animation: curved,
+      builder: (context, child) {
+        final t = curved.value.clamp(0.0, 1.0);
+        if (t == 0) {
+          return const SizedBox.shrink();
+        }
+        return ClipRect(
+          child: Align(
+            alignment: Alignment.topCenter,
+            heightFactor: t,
+            child: Opacity(
+              opacity: t,
+              child: Transform.translate(
+                offset: Offset(0, widget.rise * (1 - t)),
+                child: child,
+              ),
+            ),
+          ),
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
+
 /// A 1px hairline. This replaces cards as the primary way of separating
 /// content: rules structure a layout without adding a box around everything.
 class FlowaRule extends StatelessWidget {

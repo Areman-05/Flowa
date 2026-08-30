@@ -108,21 +108,74 @@ class _GrainPainter extends CustomPainter {
       oldDelegate.noise != noise;
 }
 
-/// The standard Flowa backdrop: flat black paper with a little tooth.
-///
-/// There is no bloom, wash or gradient here by design. The previous version
-/// carried a tinted radial glow and it read as a half-loaded image rather than
-/// as atmosphere.
+/// Soft teal dust at the top — blurred cloud, not a hard semicircle.
+class FlowaTopMist extends StatelessWidget {
+  const FlowaTopMist({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Soft blurred cloud — depth comes from blur, not a sharp radial edge.
+          ImageFiltered(
+            imageFilter: ui.ImageFilter.blur(sigmaX: 48, sigmaY: 56),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                height: 140,
+                margin: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(90),
+                  gradient: RadialGradient(
+                    center: const Alignment(0, -0.2),
+                    radius: 0.95,
+                    colors: [
+                      const Color(0xFF1F6B5C).withValues(alpha: 0.55),
+                      const Color(0xFF0E3D34).withValues(alpha: 0.28),
+                      const Color(0x00000000),
+                    ],
+                    stops: const [0, 0.55, 1],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Feathered linear falloff so it dissolves into black.
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFF123D36).withValues(alpha: 0.42),
+                  const Color(0xFF0A2823).withValues(alpha: 0.16),
+                  const Color(0x00000000),
+                ],
+                stops: const [0, 0.38, 1],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The standard Flowa backdrop: flat black with optional top mist.
 class FlowaCanvas extends StatelessWidget {
   const FlowaCanvas({
     required this.child,
     super.key,
-    this.grain = true,
+    this.grain = false,
+    this.mist = true,
     this.color,
   });
 
   final Widget child;
   final bool grain;
+  final bool mist;
   final Color? color;
 
   @override
@@ -130,18 +183,30 @@ class FlowaCanvas extends StatelessWidget {
     if (context.findAncestorWidgetOfExactType<FlowaCanvas>() != null) {
       return child;
     }
+
+    final layers = <Widget>[
+      if (mist)
+        const Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 260,
+          child: FlowaTopMist(),
+        ),
+      child,
+      if (grain)
+        const Positioned.fill(
+          child: IgnorePointer(child: FlowaGrain()),
+        ),
+    ];
+
+    if (layers.length == 1) {
+      return Material(color: color ?? FlowaColors.ink, child: child);
+    }
+
     return Material(
       color: color ?? FlowaColors.ink,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          child,
-          if (grain)
-            const Positioned.fill(
-              child: IgnorePointer(child: FlowaGrain()),
-            ),
-        ],
-      ),
+      child: Stack(fit: StackFit.expand, children: layers),
     );
   }
 }

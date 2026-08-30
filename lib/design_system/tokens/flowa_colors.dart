@@ -73,11 +73,9 @@ abstract final class FlowaColors {
     stops: [0, 0.55, 1],
   );
 
-  /// Secondary card — graphite, so two cards never compete.
+  /// Solid black face — no graphite wash that reads purple/blue.
   static const LinearGradient cardVault = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF1C1C20), Color(0xFF101012)],
+    colors: [Color(0xFF000000), Color(0xFF000000)],
   );
 
   static const LinearGradient canvasWash = LinearGradient(

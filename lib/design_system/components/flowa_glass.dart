@@ -5,14 +5,14 @@ import 'package:flutter/material.dart';
 import '../tokens/flowa_colors.dart';
 import '../tokens/flowa_spacing.dart';
 
-/// Frosted surface — dark Radient tint for splash/footer; light elsewhere.
+/// Solid dark sheet surface — no mint halo, no frosted green cast.
 class FlowaGlass extends StatelessWidget {
   const FlowaGlass({
     required this.child,
     super.key,
     this.padding,
     this.borderRadius,
-    this.blur = 28,
+    this.blur = 0,
     this.tint,
     this.dark = false,
   });
@@ -27,53 +27,33 @@ class FlowaGlass extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final radius = borderRadius ?? FlowaRadii.xlAll;
-    final baseTint = tint ?? (dark ? FlowaColors.surface : Colors.white);
+    final fill = tint ?? (dark ? FlowaColors.inkHigh : FlowaColors.inkSurface);
 
-    return DecoratedBox(
+    Widget panel = DecoratedBox(
       decoration: BoxDecoration(
+        color: fill,
         borderRadius: radius,
-        boxShadow: [
-          BoxShadow(
-            color: FlowaColors.primary.withValues(alpha: dark ? 0.18 : 0.1),
-            blurRadius: 32,
-            offset: const Offset(0, 18),
-          ),
-        ],
+        border: Border.all(color: FlowaColors.hairlineStrong),
       ),
-      child: ClipRRect(
+      child: Padding(
+        padding: padding ?? const EdgeInsets.all(FlowaSpacing.lg),
+        child: child,
+      ),
+    );
+
+    if (blur > 0) {
+      panel = ClipRRect(
         borderRadius: radius,
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: radius,
-              border: Border.all(
-                color: dark
-                    ? FlowaColors.border.withValues(alpha: 0.9)
-                    : Colors.white.withValues(alpha: 0.72),
-              ),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: dark
-                    ? [
-                        baseTint.withValues(alpha: 0.92),
-                        baseTint.withValues(alpha: 0.78),
-                      ]
-                    : [
-                        baseTint.withValues(alpha: 0.56),
-                        baseTint.withValues(alpha: 0.2),
-                      ],
-              ),
-            ),
-            child: Padding(
-              padding: padding ?? const EdgeInsets.all(FlowaSpacing.lg),
-              child: child,
-            ),
-          ),
+          child: panel,
         ),
-      ),
-    );
+      );
+    } else {
+      panel = ClipRRect(borderRadius: radius, child: panel);
+    }
+
+    return panel;
   }
 }
 
@@ -86,7 +66,7 @@ Future<T?> showFlowaGlassSheet<T>({
     context: context,
     isScrollControlled: isScrollControlled,
     backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withValues(alpha: 0.55),
+    barrierColor: Colors.black.withValues(alpha: 0.72),
     builder: (context) {
       return Padding(
         padding: const EdgeInsets.fromLTRB(
