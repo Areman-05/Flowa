@@ -22,7 +22,8 @@ import '../../receive/presentation/receive_page.dart';
 import '../../send_money/presentation/send_money_page.dart';
 import '../../transactions/presentation/transaction_detail_page.dart';
 import '../../vault/presentation/tax_vault_sheet.dart';
-import 'card_details_sheet.dart';
+import 'card_wallet_sheet.dart';
+import 'card_wallet_store.dart';
 
 /// Home.
 ///
@@ -30,10 +31,16 @@ import 'card_details_sheet.dart';
 /// outgoings, because for someone with lumpy income the raw balance is the one
 /// number guaranteed to mislead them.
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, this.onSeeAllTransactions, this.onBadgeRefresh});
+  const HomePage({
+    super.key,
+    this.onSeeAllTransactions,
+    this.onBadgeRefresh,
+    this.onOpenProfile,
+  });
 
   final VoidCallback? onSeeAllTransactions;
   final VoidCallback? onBadgeRefresh;
+  final VoidCallback? onOpenProfile;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -69,7 +76,8 @@ class _HomePageState extends State<HomePage> {
       final account = await FlowaServices.accountRepository.getPrimaryAccount();
       final user = await FlowaServices.accountRepository.getCurrentUser();
       final all = await FlowaServices.transactionRepository.getAll();
-      final recent = await FlowaServices.transactionRepository.getRecent();
+      final recent =
+          await FlowaServices.transactionRepository.getRecent(limit: 6);
       final hidden =
           await FlowaServices.preferencesRepository.isBalanceHiddenByDefault();
       final unread = await FlowaServices.inboxRepository.unreadCount();
@@ -158,6 +166,7 @@ class _HomePageState extends State<HomePage> {
               child: _Header(
                 user: user,
                 unread: _unread,
+                onProfile: widget.onOpenProfile ?? () {},
                 onInbox: () => _open(const NotificationInboxPage()),
                 onSearch: () => _open(const InsightsPage()),
               ),
@@ -165,15 +174,40 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: FlowaSpacing.xl),
             FlowaEntrance(
               delay: FlowaMotion.stagger(1),
-              child: GestureDetector(
-                onTap: () => showCardDetailsSheet(context, account),
-                child: FlowaVisaCard(
-                  account: account,
-                  amount: _overview.trulyAvailable,
-                  balanceVisible: _balanceVisible,
-                  onToggleVisibility: () =>
-                      setState(() => _balanceVisible = !_balanceVisible),
-                ),
+              child: Builder(
+                builder: (context) {
+                  final store = CardWalletStore.instance;
+                  store.ensureSeeded(
+                    primary: account,
+                    vault: _vault,
+                    trulyAvailable: _overview.trulyAvailable,
+                  );
+                  return ListenableBuilder(
+                    listenable: store,
+                    builder: (context, _) {
+                      final live = store.deck;
+                      return FlowaCardDeck(
+                        cards: [
+                          for (final c in live)
+                            (
+                              account: c.account,
+                              tint: c.style,
+                              pattern: c.pattern,
+                              caption: c.caption,
+                              amount: c.account.availableBalance,
+                            ),
+                        ],
+                        onOpen: () => showCardWalletSheet(
+                          context: context,
+                          primary: account,
+                          vault: _vault,
+                          trulyAvailable: _overview.trulyAvailable,
+                          onChanged: () => setState(() {}),
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
             ),
             const SizedBox(height: FlowaSpacing.xl),
@@ -184,7 +218,6 @@ class _HomePageState extends State<HomePage> {
                   FlowaRailAction(
                     label: 'Ingresar',
                     glyph: FlowaGlyph.arrowDown,
-                    emphasised: true,
                     onTap: () => _open(const ReceivePage()),
                   ),
                   FlowaRailAction(
@@ -219,17 +252,12 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: FlowaSpacing.xl),
             FlowaEntrance(
               delay: FlowaMotion.stagger(4),
-              child: FlowaSectionHeader(
-                label: 'Historial',
-                actionLabel: 'Ver todo',
-                onAction: widget.onSeeAllTransactions,
+              child: _HistoryCard(
+                items: _recent,
+                masked: !_balanceVisible,
+                onSeeAll: widget.onSeeAllTransactions,
+                onItemTap: (item) => _open(TransactionDetailPage(item: item)),
               ),
-            ),
-            const SizedBox(height: FlowaSpacing.sm),
-            FlowaTransactionList(
-              items: _recent,
-              masked: !_balanceVisible,
-              onItemTap: (item) => _open(TransactionDetailPage(item: item)),
             ),
           ],
         ),
@@ -251,12 +279,14 @@ class _Header extends StatelessWidget {
   const _Header({
     required this.user,
     required this.unread,
+    required this.onProfile,
     required this.onInbox,
     required this.onSearch,
   });
 
   final UserProfile user;
   final int unread;
+  final VoidCallback onProfile;
   final VoidCallback onInbox;
   final VoidCallback onSearch;
 
@@ -264,30 +294,42 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
-          width: 46,
-          height: 46,
-          decoration: const BoxDecoration(
-            color: FlowaColors.mint,
-            shape: BoxShape.circle,
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            user.firstName.isEmpty ? 'F' : user.firstName[0].toUpperCase(),
-            style: FlowaType.titleMd(color: FlowaColors.mintInk),
-          ),
-        ),
-        const SizedBox(width: FlowaSpacing.sm),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                FlowaGreeting.forDateTime(DateTime.now()),
-                style: FlowaType.micro(color: FlowaColors.boneMuted),
-              ),
-              Text(user.firstName, style: FlowaType.titleLg()),
-            ],
+          child: GestureDetector(
+            onTap: onProfile,
+            behavior: HitTestBehavior.opaque,
+            child: Row(
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: const BoxDecoration(
+                    color: FlowaColors.mint,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    user.firstName.isEmpty
+                        ? 'F'
+                        : user.firstName[0].toUpperCase(),
+                    style: FlowaType.titleMd(color: FlowaColors.mintInk),
+                  ),
+                ),
+                const SizedBox(width: FlowaSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        FlowaGreeting.forDateTime(DateTime.now()),
+                        style: FlowaType.micro(color: FlowaColors.boneMuted),
+                      ),
+                      Text(user.firstName, style: FlowaType.titleLg()),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         FlowaIconAction(
@@ -467,6 +509,69 @@ class _Panel extends StatelessWidget {
           borderRadius: FlowaRadii.mdAll,
         ),
         child: child,
+      ),
+    );
+  }
+}
+
+class _HistoryCard extends StatelessWidget {
+  const _HistoryCard({
+    required this.items,
+    required this.masked,
+    required this.onSeeAll,
+    required this.onItemTap,
+  });
+
+  final List<TransactionItem> items;
+  final bool masked;
+  final VoidCallback? onSeeAll;
+  final ValueChanged<TransactionItem> onItemTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final preview = items.take(6).toList(growable: false);
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+      decoration: const BoxDecoration(
+        color: FlowaColors.inkHigh,
+        borderRadius: FlowaRadii.xxlAll,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Historial', style: FlowaType.titleSm()),
+          if (preview.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: FlowaSpacing.md),
+              child: Text('Sin movimientos', style: FlowaType.bodySm()),
+            )
+          else
+            for (final item in preview)
+              FlowaTransactionTile(
+                item: item,
+                masked: masked,
+                orbBackground: FlowaColors.ink,
+                onTap: () => onItemTap(item),
+              ),
+          const SizedBox(height: FlowaSpacing.xs),
+          FlowaPressScale(
+            onTap: onSeeAll,
+            child: Container(
+              height: 44,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                color: FlowaColors.mint,
+                borderRadius: FlowaRadii.pillAll,
+              ),
+              child: Text(
+                'Ver historial completo',
+                style: FlowaType.label(color: FlowaColors.mintInk),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

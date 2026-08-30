@@ -23,7 +23,6 @@ class TopUpPage extends StatefulWidget {
 
 class _TopUpPageState extends State<TopUpPage> {
   Account? _account;
-  bool _balanceVisible = true;
   double? _selectedChip;
   final _numberController = TextEditingController();
   final _amountController = TextEditingController();
@@ -121,11 +120,7 @@ class _TopUpPageState extends State<TopUpPage> {
                   const SizedBox(height: FlowaSpacing.sm),
                   FlowaVisaCard(
                     account: account,
-                    balanceVisible: _balanceVisible,
-                    onToggleVisibility: () {
-                      setState(() => _balanceVisible = !_balanceVisible);
-                    },
-                    style: FlowaCardStyle.gold,
+                    style: FlowaCardStyle.black,
                   ),
                   const SizedBox(height: FlowaSpacing.xl),
                   Text(

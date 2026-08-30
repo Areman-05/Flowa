@@ -49,6 +49,7 @@ class _MainShellState extends State<MainShell> {
       HomePage(
         onSeeAllTransactions: _openTransactionsTab,
         onBadgeRefresh: _refreshBadge,
+        onOpenProfile: () => setState(() => _index = 4),
       ),
       const _Tab(child: InvoicesPage(embedded: true)),
       const _Tab(child: TransactionsPage(embedded: true)),
@@ -86,7 +87,7 @@ class _MainShellState extends State<MainShell> {
             const FlowaNavItem(glyph: FlowaGlyph.home, label: 'Inicio'),
             const FlowaNavItem(glyph: FlowaGlyph.receipt, label: 'Facturas'),
             const FlowaNavItem(glyph: FlowaGlyph.transfer, label: 'Movs'),
-            const FlowaNavItem(glyph: FlowaGlyph.chart, label: 'IA'),
+            const FlowaNavItem(glyph: FlowaGlyph.spark, label: 'IA'),
             FlowaNavItem(
               glyph: FlowaGlyph.person,
               label: 'Perfil',
