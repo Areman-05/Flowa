@@ -6,21 +6,18 @@ import '../../../core/utils/flowa_haptics.dart';
 import '../../../core/utils/flowa_services.dart';
 import '../../../design_system/components/flowa_actions.dart';
 import '../../../design_system/components/flowa_icon.dart';
-import '../../../design_system/components/flowa_money_text.dart';
 import '../../../design_system/components/flowa_primitives.dart';
-import '../../../design_system/components/flowa_screen.dart';
+import '../../../design_system/components/flowa_texture.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_motion_tokens.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../design_system/tokens/flowa_typography.dart';
 import '../../../domain/entities/freelance_entities.dart';
+import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_states.dart';
+import '../../notifications/presentation/notification_inbox_page.dart';
 
-/// The invoice book.
-///
-/// Ordered by urgency rather than by date: overdue first, then due soonest.
-/// Marking an invoice paid moves the money into the account and takes the
-/// configured share straight to the tax vault.
+/// Invoice book — Privat “Loans” layout: hero card + status cards.
 class InvoicesPage extends StatefulWidget {
   const InvoicesPage({super.key, this.embedded = false});
 
@@ -34,6 +31,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
   List<Invoice> _invoices = const [];
   TaxVault _vault = const TaxVault(reserved: 0, rate: 0.25);
   bool _loading = true;
+  bool _showAll = false;
 
   @override
   void initState() {
@@ -86,11 +84,8 @@ class _InvoicesPageState extends State<InvoicesPage> {
         .where((invoice) => invoice.statusAt(now).isOutstanding)
         .toList()
       ..sort((a, b) => a.dueAt.compareTo(b.dueAt));
-    final drafts = _invoices
-        .where((invoice) => invoice.status == InvoiceStatus.draft)
-        .toList();
-    final paid = _invoices
-        .where((invoice) => invoice.status == InvoiceStatus.paid)
+    final others = _invoices
+        .where((invoice) => !invoice.statusAt(now).isOutstanding)
         .toList();
 
     final total = outstanding.fold<double>(0, (sum, i) => i.amount + sum);
@@ -98,85 +93,219 @@ class _InvoicesPageState extends State<InvoicesPage> {
         .where((i) => i.statusAt(now) == InvoiceStatus.overdue)
         .fold<double>(0, (sum, i) => sum + i.amount);
 
-    return FlowaScreen(
-      title: 'Facturas',
-      embedded: widget.embedded,
-      child: _loading
-          ? const Center(
-              child: CircularProgressIndicator(color: FlowaColors.mint),
-            )
-          : RefreshIndicator(
-              onRefresh: _load,
-              color: FlowaColors.mint,
-              backgroundColor: FlowaColors.inkHigh,
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(
-                  parent: BouncingScrollPhysics(),
-                ),
-                padding: const EdgeInsets.only(bottom: FlowaSpacing.navClearance),
-                children: [
-                  FlowaSurface(
-                    padding: const EdgeInsets.all(FlowaSpacing.lg),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Pendiente de cobro', style: FlowaType.micro()),
-                        const SizedBox(height: 6),
-                        FlowaFigure(amount: total),
-                        const SizedBox(height: FlowaSpacing.sm),
-                        Text(
-                          overdue > 0
-                              ? '${FlowaFormatters.compact(overdue)} llevan retraso.'
-                              : 'Todo dentro de plazo.',
-                          style: FlowaType.bodySm(
-                            color: overdue > 0
-                                ? FlowaColors.danger
-                                : FlowaColors.boneMuted,
-                          ),
-                        ),
-                      ],
+    final body = _loading
+        ? const Center(
+            child: CircularProgressIndicator(color: FlowaColors.mint),
+          )
+        : RefreshIndicator(
+            onRefresh: _load,
+            color: FlowaColors.mint,
+            backgroundColor: FlowaColors.inkHigh,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              padding: EdgeInsets.fromLTRB(
+                FlowaSpacing.gutter,
+                FlowaSpacing.md,
+                FlowaSpacing.gutter,
+                widget.embedded
+                    ? FlowaSpacing.navClearance
+                    : FlowaSpacing.xl,
+              ),
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text('Facturas', style: FlowaType.titleLg()),
                     ),
+                    FlowaIconAction(
+                      glyph: FlowaGlyph.bell,
+                      tooltip: 'Avisos',
+                      onTap: () => pushFlowaRoute<void>(
+                        context,
+                        const NotificationInboxPage(),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: FlowaSpacing.xl),
+                FlowaEntrance(
+                  child: _HeroInvoiceCard(
+                    total: total,
+                    overdue: overdue,
+                    rateLabel:
+                        'Reserva impuestos ${(_vault.rate * 100).round()}%',
+                    onApply: outstanding.isEmpty
+                        ? null
+                        : () => _markPaid(outstanding.first),
                   ),
-                  const SizedBox(height: FlowaSpacing.xl),
-                  if (outstanding.isNotEmpty) ...[
-                    const FlowaSectionHeader(label: 'Esperando cobro'),
-                    const SizedBox(height: FlowaSpacing.xs),
-                    for (var i = 0; i < outstanding.length; i++)
-                      FlowaEntrance(
-                        delay: FlowaMotion.stagger(i),
-                        child: _InvoiceRow(
-                          invoice: outstanding[i],
-                          onMarkPaid: () => _markPaid(outstanding[i]),
+                ),
+                const SizedBox(height: FlowaSpacing.xl),
+                Row(
+                  children: [
+                    Text('Tus facturas', style: FlowaType.titleSm()),
+                    const Spacer(),
+                    GestureDetector(
+                      onTap: () => setState(() => _showAll = !_showAll),
+                      child: Text(
+                        _showAll ? 'Ver menos' : 'Ver todo',
+                        style: FlowaType.micro(color: FlowaColors.boneMuted),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: FlowaSpacing.sm),
+                if (outstanding.isEmpty && !_showAll && others.isEmpty)
+                  const FlowaEmptyState(
+                    title: 'Sin facturas',
+                    message: 'Todavía no has emitido ninguna.',
+                    glyph: FlowaGlyph.receipt,
+                  )
+                else if (outstanding.isEmpty && !_showAll)
+                  const FlowaEmptyState(
+                    title: 'Nada pendiente',
+                    message: 'Pulsa Ver todo para ver el historial.',
+                    glyph: FlowaGlyph.receipt,
+                  )
+                else ...[
+                  for (var i = 0; i < outstanding.length; i++) ...[
+                    FlowaEntrance(
+                      delay: FlowaMotion.stagger(i.clamp(0, 6)),
+                      child: _InvoiceLoanCard(
+                        invoice: outstanding[i],
+                        onMarkPaid: outstanding[i].statusAt(now).isOutstanding
+                            ? () => _markPaid(outstanding[i])
+                            : null,
+                      ),
+                    ),
+                    if (i < outstanding.length - 1)
+                      const SizedBox(height: FlowaSpacing.sm),
+                  ],
+                  for (var i = 0; i < others.length; i++)
+                    FlowaReveal(
+                      visible: _showAll,
+                      delay: _showAll
+                          ? FlowaMotion.stagger(i.clamp(0, 6))
+                          : FlowaMotion.stagger(
+                              (others.length - 1 - i).clamp(0, 6),
+                            ),
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          top: (outstanding.isNotEmpty || i > 0)
+                              ? FlowaSpacing.sm
+                              : 0,
+                        ),
+                        child: _InvoiceLoanCard(
+                          invoice: others[i],
+                          onMarkPaid: null,
                         ),
                       ),
-                    const SizedBox(height: FlowaSpacing.lg),
-                  ],
-                  if (drafts.isNotEmpty) ...[
-                    const FlowaSectionHeader(label: 'Borradores'),
-                    const SizedBox(height: FlowaSpacing.xs),
-                    for (final invoice in drafts) _InvoiceRow(invoice: invoice),
-                    const SizedBox(height: FlowaSpacing.lg),
-                  ],
-                  if (paid.isNotEmpty) ...[
-                    const FlowaSectionHeader(label: 'Cobradas'),
-                    const SizedBox(height: FlowaSpacing.xs),
-                    for (final invoice in paid) _InvoiceRow(invoice: invoice),
-                  ],
-                  if (_invoices.isEmpty)
-                    const FlowaEmptyState(
-                      title: 'Sin facturas',
-                      message: 'Todavía no has emitido ninguna.',
-                      glyph: FlowaGlyph.receipt,
                     ),
                 ],
-              ),
+              ],
             ),
+          );
+
+    if (widget.embedded) {
+      return SafeArea(bottom: false, child: body);
+    }
+
+    return Scaffold(
+      backgroundColor: FlowaColors.ink,
+      body: FlowaCanvas(
+        child: SafeArea(child: body),
+      ),
     );
   }
 }
 
-class _InvoiceRow extends StatelessWidget {
-  const _InvoiceRow({required this.invoice, this.onMarkPaid});
+class _HeroInvoiceCard extends StatelessWidget {
+  const _HeroInvoiceCard({
+    required this.total,
+    required this.overdue,
+    required this.rateLabel,
+    required this.onApply,
+  });
+
+  final double total;
+  final double overdue;
+  final String rateLabel;
+  final VoidCallback? onApply;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(FlowaSpacing.lg),
+      decoration: const BoxDecoration(
+        color: FlowaColors.inkHigh,
+        borderRadius: FlowaRadii.xxlAll,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text('Pendiente de cobro', style: FlowaType.titleSm()),
+              const Spacer(),
+              const FlowaIcon(FlowaGlyph.arrowRight, size: 18),
+            ],
+          ),
+          const SizedBox(height: FlowaSpacing.md),
+          Text(
+            FlowaFormatters.currency(total),
+            style: FlowaType.figureMd(),
+          ),
+          const SizedBox(height: FlowaSpacing.md),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Text(
+                  overdue > 0
+                      ? '${FlowaFormatters.compact(overdue)} con retraso'
+                      : rateLabel,
+                  style: FlowaType.bodySm(
+                    color: overdue > 0
+                        ? FlowaColors.danger
+                        : FlowaColors.boneMuted,
+                  ),
+                ),
+              ),
+              FlowaPressScale(
+                onTap: onApply,
+                enabled: onApply != null,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: onApply == null
+                        ? FlowaColors.inkPressed
+                        : FlowaColors.mint,
+                    borderRadius: FlowaRadii.pillAll,
+                  ),
+                  child: Text(
+                    'Cobrar',
+                    style: FlowaType.label(
+                      color: onApply == null
+                          ? FlowaColors.boneFaint
+                          : FlowaColors.mintInk,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InvoiceLoanCard extends StatelessWidget {
+  const _InvoiceLoanCard({required this.invoice, this.onMarkPaid});
 
   final Invoice invoice;
   final VoidCallback? onMarkPaid;
@@ -185,87 +314,81 @@ class _InvoiceRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final status = invoice.statusAt(now);
-    final overdue = status == InvoiceStatus.overdue;
     final days = invoice.daysUntilDue(now);
     final issued = DateFormat('d MMM', 'es_ES').format(invoice.issuedAt);
 
-    final caption = switch (status) {
-      InvoiceStatus.overdue => 'Vencida · ${days.abs()} d',
+    final badge = switch (status) {
+      InvoiceStatus.overdue => ('Vencida', FlowaColors.danger, true),
+      InvoiceStatus.paid => ('Cobrada', FlowaColors.mint, false),
+      InvoiceStatus.draft => ('Borrador', FlowaColors.boneMuted, false),
+      InvoiceStatus.sent => ('Activa', FlowaColors.mint, false),
+    };
+
+    final detail = switch (status) {
+      InvoiceStatus.overdue => 'Retraso ${days.abs()} d',
       InvoiceStatus.paid => 'Cobrada · $issued',
       InvoiceStatus.draft => 'Borrador · $issued',
       InvoiceStatus.sent =>
         days <= 0 ? 'Vence hoy' : 'Vence en $days d',
     };
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: overdue ? FlowaColors.dangerSurface : FlowaColors.inkHigh,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              invoice.client.isEmpty ? '·' : invoice.client[0].toUpperCase(),
-              style: FlowaType.titleMd(
-                color: overdue ? FlowaColors.danger : FlowaColors.mint,
-              ),
-            ),
-          ),
-          const SizedBox(width: FlowaSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return FlowaPressScale(
+      onTap: onMarkPaid,
+      enabled: onMarkPaid != null,
+      haptic: false,
+      scale: 0.985,
+      child: Container(
+        padding: const EdgeInsets.all(FlowaSpacing.md),
+        decoration: const BoxDecoration(
+          color: FlowaColors.inkHigh,
+          borderRadius: FlowaRadii.xlAll,
+        ),
+        child: Column(
+          children: [
+            Row(
               children: [
-                Text(
-                  invoice.client,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: FlowaType.titleSm(),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  caption,
-                  style: FlowaType.bodySm(
-                    color: overdue ? FlowaColors.danger : FlowaColors.boneFaint,
+                Expanded(
+                  child: Text(
+                    invoice.client,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: FlowaType.titleSm(),
                   ),
+                ),
+                Text(
+                  FlowaFormatters.currency(invoice.amount),
+                  style: FlowaType.titleMd(),
                 ),
               ],
             ),
-          ),
-          const SizedBox(width: FlowaSpacing.sm),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              FlowaAmountText(signedAmount: invoice.amount),
-              if (onMarkPaid != null) ...[
-                const SizedBox(height: 6),
-                FlowaPressScale(
-                  onTap: onMarkPaid,
-                  scale: 0.96,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: const BoxDecoration(
-                      color: FlowaColors.mint,
-                      borderRadius: FlowaRadii.pillAll,
-                    ),
-                    child: Text(
-                      'Cobrar',
-                      style: FlowaType.micro(color: FlowaColors.mintInk),
+            const SizedBox(height: FlowaSpacing.md),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: badge.$3
+                        ? FlowaColors.dangerSurface
+                        : FlowaColors.mintTintedSurface,
+                    borderRadius: FlowaRadii.pillAll,
+                    border: Border.all(
+                      color: badge.$2.withValues(alpha: 0.35),
                     ),
                   ),
+                  child: Text(
+                    badge.$1,
+                    style: FlowaType.micro(color: badge.$2),
+                  ),
                 ),
+                const Spacer(),
+                Text(detail, style: FlowaType.bodySm()),
               ],
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
