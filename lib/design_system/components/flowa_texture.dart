@@ -5,17 +5,12 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import '../../core/utils/flowa_runtime.dart';
 import '../tokens/flowa_colors.dart';
-
 /// Photocopy grit.
-///
-/// Flat black reads as "screen off". The same black with a faint tooth reads
-/// as paper. It is static on purpose: animated grain strobes on OLED and, more
-/// importantly, a zine is printed once — it does not shimmer.
 class FlowaGrain extends StatefulWidget {
   const FlowaGrain({super.key, this.intensity = 0.055});
 
-  /// Peak alpha of a speck, 0–1.
   final double intensity;
 
   @override
@@ -49,12 +44,7 @@ class _FlowaGrainState extends State<FlowaGrain> {
     final peak = (intensity * 255).clamp(0, 255).toInt();
 
     for (var i = 0; i < _tile * _tile; i++) {
-      // Squaring a uniform random makes most specks invisible and a few
-      // pronounced, which is how real grain is distributed.
       final alpha = (random.nextDouble() * random.nextDouble() * peak).round();
-
-      // rgba8888 is premultiplied. Storing the full bone colour beside a low
-      // alpha resolves every speck to opaque white and fogs the whole screen.
       final scale = alpha / 255;
       final o = i * 4;
       pixels[o] = (0xED * scale).round();
@@ -108,62 +98,99 @@ class _GrainPainter extends CustomPainter {
       oldDelegate.noise != noise;
 }
 
-/// Soft teal dust at the top — blurred cloud, not a hard semicircle.
-class FlowaTopMist extends StatelessWidget {
+/// Top mist — GPU shader: linear turquoise wash + fine grain (no radial).
+class FlowaTopMist extends StatefulWidget {
   const FlowaTopMist({super.key});
 
   @override
+  State<FlowaTopMist> createState() => _FlowaTopMistState();
+}
+
+class _FlowaTopMistState extends State<FlowaTopMist> {
+  static Future<ui.FragmentProgram>? _programFuture;
+  ui.FragmentShader? _shader;
+
+  @override
+  void initState() {
+    super.initState();
+    if (FlowaRuntime.isWidgetTest) {
+      return;
+    }
+    _programFuture ??= ui.FragmentProgram.fromAsset('shaders/top_mist.frag');
+    unawaited(_loadShader());
+  }
+
+  Future<void> _loadShader() async {
+    final program = await _programFuture!;
+    if (!mounted) {
+      return;
+    }
+    setState(() => _shader = program.fragmentShader());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Soft blurred cloud — depth comes from blur, not a sharp radial edge.
-          ImageFiltered(
-            imageFilter: ui.ImageFilter.blur(sigmaX: 48, sigmaY: 56),
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Container(
-                height: 140,
-                margin: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(90),
-                  gradient: RadialGradient(
-                    center: const Alignment(0, -0.2),
-                    radius: 0.95,
-                    colors: [
-                      const Color(0xFF1F6B5C).withValues(alpha: 0.55),
-                      const Color(0xFF0E3D34).withValues(alpha: 0.28),
-                      const Color(0x00000000),
-                    ],
-                    stops: const [0, 0.55, 1],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // Feathered linear falloff so it dissolves into black.
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  const Color(0xFF123D36).withValues(alpha: 0.42),
-                  const Color(0xFF0A2823).withValues(alpha: 0.16),
-                  const Color(0x00000000),
-                ],
-                stops: const [0, 0.38, 1],
-              ),
-            ),
-          ),
-        ],
+    if (FlowaRuntime.isWidgetTest) {
+      return const _MistTestFallback();
+    }
+
+    final shader = _shader;
+    if (shader == null) {
+      return const SizedBox.shrink();
+    }
+
+    return CustomPaint(
+      painter: _MistShaderPainter(shader),
+      size: Size.infinite,
+    );
+  }
+}
+
+class _MistShaderPainter extends CustomPainter {
+  const _MistShaderPainter(this.shader);
+
+  final ui.FragmentShader shader;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) {
+      return;
+    }
+
+    shader
+      ..setFloat(0, size.width)
+      ..setFloat(1, size.height)
+      ..setFloat(2, 0.52);
+
+    canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
+  }
+
+  @override
+  bool shouldRepaint(covariant _MistShaderPainter oldDelegate) => false;
+}
+
+/// Lightweight fallback for widget tests (no shader asset).
+class _MistTestFallback extends StatelessWidget {
+  const _MistTestFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            FlowaColors.mint.withValues(alpha: 0.18),
+            FlowaColors.mint.withValues(alpha: 0.0),
+          ],
+        ),
       ),
     );
   }
 }
 
-/// The standard Flowa backdrop: flat black with optional top mist.
+/// Flat black canvas with optional top mist.
 class FlowaCanvas extends StatelessWidget {
   const FlowaCanvas({
     required this.child,
@@ -178,35 +205,32 @@ class FlowaCanvas extends StatelessWidget {
   final bool mist;
   final Color? color;
 
+  /// Kept for layout helpers; mist now covers the full canvas.
+  static double mistHeightFor(double viewportHeight) => viewportHeight;
+
   @override
   Widget build(BuildContext context) {
     if (context.findAncestorWidgetOfExactType<FlowaCanvas>() != null) {
       return child;
     }
 
-    final layers = <Widget>[
-      if (mist)
-        const Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 260,
-          child: FlowaTopMist(),
-        ),
-      child,
-      if (grain)
-        const Positioned.fill(
-          child: IgnorePointer(child: FlowaGrain()),
-        ),
-    ];
-
-    if (layers.length == 1) {
-      return Material(color: color ?? FlowaColors.ink, child: child);
-    }
-
     return Material(
       color: color ?? FlowaColors.ink,
-      child: Stack(fit: StackFit.expand, children: layers),
+      child: Stack(
+        clipBehavior: Clip.none,
+        fit: StackFit.expand,
+        children: [
+          if (mist)
+            const Positioned.fill(
+              child: IgnorePointer(child: FlowaTopMist()),
+            ),
+          child,
+          if (grain)
+            const Positioned.fill(
+              child: IgnorePointer(child: FlowaGrain()),
+            ),
+        ],
+      ),
     );
   }
 }
