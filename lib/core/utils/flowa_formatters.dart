@@ -39,6 +39,10 @@ abstract final class FlowaFormatters {
     return _transactionStamp.format(value.toLocal());
   }
 
+  static String timeOfDay(DateTime value) {
+    return DateFormat('HH:mm', 'es_ES').format(value.toLocal());
+  }
+
   static String dayHeading(DateTime value) {
     final local = value.toLocal();
     final now = DateTime.now();

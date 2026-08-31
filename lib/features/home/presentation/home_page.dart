@@ -15,11 +15,13 @@ import '../../../domain/entities/finance_entities.dart';
 import '../../../domain/entities/freelance_entities.dart';
 import '../../../shared/navigation/flowa_routes.dart';
 import '../../../shared/widgets/flowa_states.dart';
+import '../../insights/domain/spending_snapshot.dart';
 import '../../insights/presentation/insights_page.dart';
 import '../../invoices/presentation/invoices_page.dart';
 import '../../notifications/presentation/notification_inbox_page.dart';
 import '../../receive/presentation/receive_page.dart';
 import '../../send_money/presentation/send_money_page.dart';
+import '../../profile/presentation/profile_page.dart';
 import '../../transactions/presentation/transaction_detail_page.dart';
 import '../../vault/presentation/tax_vault_sheet.dart';
 import 'card_wallet_sheet.dart';
@@ -36,11 +38,13 @@ class HomePage extends StatefulWidget {
     this.onSeeAllTransactions,
     this.onBadgeRefresh,
     this.onOpenProfile,
+    this.onLogout,
   });
 
   final VoidCallback? onSeeAllTransactions;
   final VoidCallback? onBadgeRefresh;
   final VoidCallback? onOpenProfile;
+  final Future<void> Function()? onLogout;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -53,6 +57,13 @@ class _HomePageState extends State<HomePage> {
   List<Invoice> _invoices = const [];
   TaxVault _vault = const TaxVault(reserved: 0, rate: 0.25);
   FreelanceOverview _overview = FreelanceOverview.empty;
+  SpendingSnapshot _monthSpend = const SpendingSnapshot(
+    incoming: 0,
+    outgoing: 0,
+    net: 0,
+    topMerchant: '',
+    transactionCount: 0,
+  );
 
   bool _loading = true;
   bool _balanceVisible = true;
@@ -105,6 +116,11 @@ class _HomePageState extends State<HomePage> {
           invoices: invoices,
           commitments: commitments,
           now: now,
+        );
+        _monthSpend = SpendingInsights.from(
+          all,
+          month: DateTime(now.year, now.month),
+          range: InsightRange.month,
         );
         _loading = false;
       });
@@ -166,7 +182,8 @@ class _HomePageState extends State<HomePage> {
               child: _Header(
                 user: user,
                 unread: _unread,
-                onProfile: widget.onOpenProfile ?? () {},
+                onProfile: widget.onOpenProfile ??
+                    () => _open(ProfilePage(onLogout: widget.onLogout)),
                 onInbox: () => _open(const NotificationInboxPage()),
                 onSearch: () => _open(const InsightsPage()),
               ),
@@ -242,6 +259,7 @@ class _HomePageState extends State<HomePage> {
             FlowaEntrance(
               delay: FlowaMotion.stagger(3),
               child: _TwinCards(
+                monthSpend: _monthSpend,
                 overview: _overview,
                 invoices: outstanding,
                 visible: _balanceVisible,
@@ -352,6 +370,7 @@ class _Header extends StatelessWidget {
 /// Expenses + recent invoices, side by side like Privat.
 class _TwinCards extends StatelessWidget {
   const _TwinCards({
+    required this.monthSpend,
     required this.overview,
     required this.invoices,
     required this.visible,
@@ -359,6 +378,7 @@ class _TwinCards extends StatelessWidget {
     required this.onRecent,
   });
 
+  final SpendingSnapshot monthSpend;
   final FreelanceOverview overview;
   final List<Invoice> invoices;
   final bool visible;
@@ -394,7 +414,7 @@ class _TwinCards extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     visible
-                        ? FlowaFormatters.compact(overview.monthlyBurn)
+                        ? FlowaFormatters.compact(monthSpend.outgoing)
                         : '••••',
                     style: FlowaType.figureMd(),
                   ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 
 import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/transaction_export.dart';
@@ -8,6 +9,7 @@ import '../../../design_system/components/flowa_icon.dart';
 import '../../../design_system/components/flowa_primitives.dart';
 import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/components/flowa_transaction_tile.dart';
+import '../../../design_system/icons/flowa_lucide_icons.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../design_system/tokens/flowa_typography.dart';
@@ -27,62 +29,131 @@ class TransactionDetailPage extends StatelessWidget {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Recibo copiado.')),
+      const SnackBar(
+        behavior: SnackBarBehavior.fixed,
+        content: Text('Recibo copiado.'),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final income = item.isIncome;
+
     return FlowaScreen(
       title: 'Detalle',
       child: ListView(
+        padding: const EdgeInsets.only(bottom: FlowaSpacing.xl),
         children: [
-          const SizedBox(height: FlowaSpacing.md),
-          Center(
-            child: FlowaIconOrb(
-              glyph: FlowaTransactionTile.glyphFor(item),
-              size: 72,
-              background: item.isIncome
-                  ? FlowaColors.mint
-                  : FlowaColors.inkHigh,
-              foreground:
-                  item.isIncome ? FlowaColors.mintInk : FlowaColors.bone,
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
+            decoration: const BoxDecoration(
+              color: FlowaColors.inkHigh,
+              borderRadius: FlowaRadii.xxlAll,
+            ),
+            child: Column(
+              children: [
+                FlowaLucideOrb(
+                  icon: FlowaTransactionTile.iconFor(item),
+                  size: 72,
+                  background: income ? FlowaColors.mint : FlowaColors.ink,
+                  foreground: income ? FlowaColors.mintInk : FlowaColors.bone,
+                ),
+                const SizedBox(height: FlowaSpacing.lg),
+                Text(
+                  item.merchant,
+                  textAlign: TextAlign.center,
+                  style: FlowaType.titleLg(),
+                ),
+                const SizedBox(height: FlowaSpacing.sm),
+                Text(
+                  FlowaFormatters.signedCurrency(item.signedAmount),
+                  textAlign: TextAlign.center,
+                  style: FlowaType.figureXl(
+                    color: income ? FlowaColors.mint : FlowaColors.bone,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  FlowaFormatters.transactionStamp(item.occurredAt),
+                  textAlign: TextAlign.center,
+                  style: FlowaType.bodySm(),
+                ),
+                const SizedBox(height: 18),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: income
+                        ? FlowaColors.mintTintedSurface
+                        : FlowaColors.ink,
+                    borderRadius: FlowaRadii.pillAll,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FlowaLucideIcon(
+                        income
+                            ? LucideIcons.arrow_down_to_line
+                            : LucideIcons.arrow_up_from_line,
+                        size: 16,
+                        color: income ? FlowaColors.mint : FlowaColors.boneMuted,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        income ? 'Entrada' : 'Salida',
+                        style: FlowaType.label(
+                          color: income ? FlowaColors.mint : FlowaColors.boneMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: FlowaSpacing.lg),
-          Text(
-            item.merchant,
-            textAlign: TextAlign.center,
-            style: FlowaType.titleLg(),
-          ),
-          const SizedBox(height: FlowaSpacing.sm),
-          Text(
-            FlowaFormatters.signedCurrency(item.signedAmount),
-            textAlign: TextAlign.center,
-            style: FlowaType.figureXl(
-              color: item.isIncome ? FlowaColors.mint : FlowaColors.bone,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+            decoration: const BoxDecoration(
+              color: FlowaColors.inkHigh,
+              borderRadius: FlowaRadii.xxlAll,
+            ),
+            child: Column(
+              children: [
+                FlowaLedgerRow(
+                  label: 'Categoría',
+                  value: item.category ?? 'General',
+                ),
+                FlowaLedgerRow(
+                  label: 'Importe',
+                  value: FlowaFormatters.currency(item.amount.abs()),
+                ),
+                FlowaLedgerRow(
+                  label: 'Referencia',
+                  value: item.id,
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            FlowaFormatters.transactionStamp(item.occurredAt),
-            textAlign: TextAlign.center,
-            style: FlowaType.bodySm(),
-          ),
-          const SizedBox(height: FlowaSpacing.xxl),
-          FlowaLedgerRow(
-            label: 'Categoría',
-            value: item.category ?? 'General',
-          ),
-          FlowaLedgerRow(
-            label: 'Dirección',
-            value: item.isIncome ? 'Entrada' : 'Salida',
-          ),
-          FlowaLedgerRow(label: 'Referencia', value: item.id),
           const SizedBox(height: FlowaSpacing.xl),
-          FlowaGhostButton(
-            label: 'Compartir recibo',
-            onPressed: () => _shareReceipt(context),
+          FlowaPressScale(
+            onTap: () => _shareReceipt(context),
+            child: Container(
+              height: 52,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                color: FlowaColors.mint,
+                borderRadius: FlowaRadii.pillAll,
+              ),
+              child: Text(
+                'Compartir recibo',
+                style: FlowaType.label(color: FlowaColors.mintInk),
+              ),
+            ),
           ),
           const SizedBox(height: FlowaSpacing.md),
           FlowaMenuRow(

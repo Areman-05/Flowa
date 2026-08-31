@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import '../../../domain/entities/finance_entities.dart';
 import '../../transactions/domain/transaction_filters.dart';
 
@@ -55,7 +57,7 @@ class SpendingSnapshot {
   }
 }
 
-enum InsightRange { week, month, quarter, year }
+enum InsightRange { day, week, month, quarter, year }
 
 abstract final class SpendingInsights {
   static SpendingSnapshot from(
@@ -171,26 +173,39 @@ abstract final class SpendingInsights {
     required InsightRange range,
     required DateTime now,
   }) {
+    final monthStart = DateTime(anchor.year, anchor.month);
+    final monthEnd = DateTime(anchor.year, anchor.month + 1);
+    final isCurrentMonth =
+        anchor.year == now.year && anchor.month == now.month;
+    final today = DateTime(now.year, now.month, now.day);
+    final lastDayOfMonth = DateTime(anchor.year, anchor.month + 1, 0);
+
     switch (range) {
+      case InsightRange.day:
+        final focusDay = isCurrentMonth ? today : lastDayOfMonth;
+        final start = focusDay;
+        final end = focusDay.add(const Duration(days: 1));
+        final prevStart = focusDay.subtract(const Duration(days: 1));
+        return (start, end, prevStart, start);
       case InsightRange.week:
-        final end = DateTime(now.year, now.month, now.day).add(
-          const Duration(days: 1),
-        );
-        final start = end.subtract(const Duration(days: 7));
-        return (
-          start,
-          end,
-          start.subtract(const Duration(days: 7)),
-          start,
-        );
+        final end = isCurrentMonth
+            ? today.add(const Duration(days: 1))
+            : monthEnd;
+        var start = end.subtract(const Duration(days: 7));
+        if (start.isBefore(monthStart)) {
+          start = monthStart;
+        }
+        final prevEnd = start;
+        final prevStart = prevEnd.subtract(const Duration(days: 7));
+        return (start, end, prevStart, prevEnd);
       case InsightRange.month:
-        final start = DateTime(anchor.year, anchor.month);
-        final end = DateTime(anchor.year, anchor.month + 1);
+        final start = monthStart;
+        final end = monthEnd;
         final prevStart = DateTime(anchor.year, anchor.month - 1);
         return (start, end, prevStart, start);
       case InsightRange.quarter:
         final start = DateTime(anchor.year, anchor.month - 2);
-        final end = DateTime(anchor.year, anchor.month + 1);
+        final end = monthEnd;
         final prevStart = DateTime(anchor.year, anchor.month - 5);
         return (start, end, prevStart, start);
       case InsightRange.year:
@@ -200,6 +215,51 @@ abstract final class SpendingInsights {
         return (start, end, prevStart, start);
     }
   }
+
+  /// Human-readable label for the active insight window.
+  static String periodLabel({
+    required DateTime anchor,
+    required InsightRange range,
+    required DateTime now,
+  }) {
+    final monthName = _monthsShort[anchor.month - 1];
+    final isCurrentMonth =
+        anchor.year == now.year && anchor.month == now.month;
+
+    switch (range) {
+      case InsightRange.day:
+        final day = isCurrentMonth
+            ? now.day
+            : DateTime(anchor.year, anchor.month + 1, 0).day;
+        return 'Hoy · $day $monthName ${anchor.year}';
+      case InsightRange.week:
+        if (isCurrentMonth) {
+          return 'Últimos 7 días · $monthName ${anchor.year}';
+        }
+        return 'Última semana · $monthName ${anchor.year}';
+      case InsightRange.month:
+        return '$monthName ${anchor.year}';
+      case InsightRange.quarter:
+        return 'Trimestre · $monthName ${anchor.year}';
+      case InsightRange.year:
+        return 'Año ${anchor.year}';
+    }
+  }
+
+  static const _monthsShort = [
+    'Ene',
+    'Feb',
+    'Mar',
+    'Abr',
+    'May',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dic',
+  ];
 
   static List<SpendBar> _barsFor(
     List<TransactionItem> items, {
@@ -223,6 +283,36 @@ abstract final class SpendingInsights {
     ];
 
     switch (range) {
+      case InsightRange.day:
+        final dayStart = DateTime(start.year, start.month, start.day);
+        const franjas = <(int, int, String)>[
+          (0, 4, '0–4'),
+          (4, 8, '4–8'),
+          (8, 12, '8–12'),
+          (12, 16, '12–16'),
+          (16, 20, '16–20'),
+          (20, 24, '20–24'),
+        ];
+        return [
+          for (final franja in franjas)
+            () {
+              final from = dayStart.add(Duration(hours: franja.$1));
+              final to = dayStart.add(Duration(hours: franja.$2));
+              final sum = items
+                  .where(
+                    (t) =>
+                        !t.isIncome &&
+                        !t.occurredAt.isBefore(from) &&
+                        t.occurredAt.isBefore(to),
+                  )
+                  .fold<double>(0, (s, t) => s + t.amount.abs());
+              return SpendBar(
+                label: franja.$3,
+                amount: sum,
+                bucketStart: from,
+              );
+            }(),
+        ];
       case InsightRange.week:
         return [
           for (var i = 0; i < 7; i++)
@@ -245,11 +335,23 @@ abstract final class SpendingInsights {
             }(),
         ];
       case InsightRange.month:
+        final daysInMonth = DateTime(start.year, start.month + 1, 0).day;
         return [
           for (var i = 0; i < 4; i++)
             () {
-              final weekStart = start.add(Duration(days: i * 7));
-              final weekEnd = weekStart.add(const Duration(days: 7));
+              final fromDay = 1 + i * 7;
+              if (fromDay > daysInMonth) {
+                return SpendBar(
+                  label: '',
+                  amount: 0,
+                  bucketStart: DateTime(start.year, start.month, daysInMonth),
+                );
+              }
+              final toDay = i == 3 ? daysInMonth : math.min(fromDay + 6, daysInMonth);
+              final weekStart = DateTime(start.year, start.month, fromDay);
+              final weekEnd = DateTime(start.year, start.month, toDay).add(
+                const Duration(days: 1),
+              );
               final sum = items
                   .where(
                     (t) =>
@@ -259,12 +361,12 @@ abstract final class SpendingInsights {
                   )
                   .fold<double>(0, (s, t) => s + t.amount.abs());
               return SpendBar(
-                label: 'S${i + 1}',
+                label: '$fromDay–$toDay',
                 amount: sum,
                 bucketStart: weekStart,
               );
             }(),
-        ];
+        ].where((bar) => bar.label.isNotEmpty).toList(growable: false);
       case InsightRange.quarter:
       case InsightRange.year:
         final count = range == InsightRange.quarter ? 3 : 12;

@@ -6,6 +6,7 @@ import '../tokens/flowa_colors.dart';
 import '../tokens/flowa_spacing.dart';
 import '../tokens/flowa_typography.dart';
 import 'flowa_actions.dart';
+import '../icons/flowa_lucide_icons.dart';
 import 'flowa_icon.dart';
 import 'flowa_money_text.dart';
 
@@ -23,23 +24,11 @@ class FlowaTransactionTile extends StatelessWidget {
   final bool masked;
   final Color orbBackground;
 
-  static FlowaGlyph glyphFor(TransactionItem item) {
+  static IconData iconFor(TransactionItem item) {
     if (item.isIncome) {
-      return FlowaGlyph.arrowDown;
+      return categoryLucideIcon('Ingresos');
     }
-    return switch (item.category) {
-      'Software' => FlowaGlyph.chart,
-      'Espacio' => FlowaGlyph.home,
-      'Vivienda' => FlowaGlyph.home,
-      'Impuestos' => FlowaGlyph.vault,
-      'Alimentación' => FlowaGlyph.plus,
-      'Transporte' => FlowaGlyph.transfer,
-      'Ocio' => FlowaGlyph.card,
-      'Salud' => FlowaGlyph.person,
-      'Servicios' => FlowaGlyph.receipt,
-      'Material' => FlowaGlyph.more,
-      _ => FlowaGlyph.arrowUp,
-    };
+    return categoryLucideIcon(item.category ?? 'General');
   }
 
   @override
@@ -52,8 +41,8 @@ class FlowaTransactionTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: Row(
           children: [
-            FlowaIconOrb(
-              glyph: glyphFor(item),
+            FlowaLucideOrb(
+              icon: iconFor(item),
               size: 44,
               background: orbBackground,
               foreground: item.isIncome ? FlowaColors.mint : FlowaColors.bone,
@@ -133,6 +122,7 @@ class FlowaGroupedTransactionList extends StatelessWidget {
     this.physics,
     this.shrinkWrap = true,
     this.bottomPadding = 0,
+    this.orbBackground = FlowaColors.inkHigh,
   });
 
   final List<TransactionItem> items;
@@ -141,6 +131,7 @@ class FlowaGroupedTransactionList extends StatelessWidget {
   final ScrollPhysics? physics;
   final bool shrinkWrap;
   final double bottomPadding;
+  final Color orbBackground;
 
   @override
   Widget build(BuildContext context) {
@@ -171,6 +162,7 @@ class FlowaGroupedTransactionList extends StatelessWidget {
               FlowaTransactionTile(
                 item: item,
                 masked: masked,
+                orbBackground: orbBackground,
                 onTap: onItemTap == null ? null : () => onItemTap!(item),
               ),
           ],
