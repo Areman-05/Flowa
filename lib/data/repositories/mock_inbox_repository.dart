@@ -34,4 +34,9 @@ class MockInboxRepository implements InboxRepository {
       _items[i] = _items[i].copyWith(isRead: true);
     }
   }
+
+  @override
+  Future<void> push(InboxNotification notification) async {
+    _items.insert(0, notification);
+  }
 }

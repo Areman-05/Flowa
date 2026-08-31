@@ -65,7 +65,7 @@ enum FlowaCardTint {
   bool get needsEdge => !isLight;
 
   Color get edge => switch (this) {
-        FlowaCardTint.black => const Color(0xFF3A3A40),
+        FlowaCardTint.black => const Color(0x66FFFFFF),
         FlowaCardTint.navy => const Color(0xFF2A3F5C),
         FlowaCardTint.gray => const Color(0xFF4A4A52),
         _ => FlowaColors.hairlineStrong,

@@ -9,4 +9,6 @@ abstract class InboxRepository {
   Future<void> markRead(String id);
 
   Future<void> markAllRead();
+
+  Future<void> push(InboxNotification notification);
 }
