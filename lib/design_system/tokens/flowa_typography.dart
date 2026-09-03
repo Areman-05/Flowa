@@ -94,7 +94,7 @@ abstract final class FlowaType {
 
   static TextStyle amountMd({Color color = FlowaColors.bone}) =>
       GoogleFonts.manrope(
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: FontWeight.w700,
         height: 1.2,
         letterSpacing: -0.2,
@@ -115,7 +115,7 @@ abstract final class FlowaType {
   /// the reference keeps its small labels quiet and normally capitalised.
   static TextStyle micro({Color color = FlowaColors.boneFaint}) =>
       GoogleFonts.manrope(
-        fontSize: 11.5,
+        fontSize: 13,
         fontWeight: FontWeight.w600,
         height: 1.25,
         letterSpacing: 0.2,
@@ -124,7 +124,7 @@ abstract final class FlowaType {
 
   static TextStyle microLg({Color color = FlowaColors.boneMuted}) =>
       GoogleFonts.manrope(
-        fontSize: 13,
+        fontSize: 14.5,
         fontWeight: FontWeight.w600,
         height: 1.3,
         letterSpacing: 0.1,
@@ -135,7 +135,7 @@ abstract final class FlowaType {
 
   static TextStyle titleLg({Color color = FlowaColors.bone}) =>
       GoogleFonts.manrope(
-        fontSize: 20,
+        fontSize: 22,
         fontWeight: FontWeight.w700,
         height: 1.25,
         letterSpacing: -0.4,
@@ -144,7 +144,7 @@ abstract final class FlowaType {
 
   static TextStyle titleMd({Color color = FlowaColors.bone}) =>
       GoogleFonts.manrope(
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: FontWeight.w700,
         height: 1.3,
         letterSpacing: -0.2,
@@ -153,7 +153,7 @@ abstract final class FlowaType {
 
   static TextStyle titleSm({Color color = FlowaColors.bone}) =>
       GoogleFonts.manrope(
-        fontSize: 14.5,
+        fontSize: 16,
         fontWeight: FontWeight.w600,
         height: 1.3,
         color: color,
@@ -161,7 +161,7 @@ abstract final class FlowaType {
 
   static TextStyle body({Color color = FlowaColors.boneMuted}) =>
       GoogleFonts.manrope(
-        fontSize: 14.5,
+        fontSize: 16,
         fontWeight: FontWeight.w500,
         height: 1.5,
         color: color,
@@ -169,7 +169,7 @@ abstract final class FlowaType {
 
   static TextStyle bodySm({Color color = FlowaColors.boneMuted}) =>
       GoogleFonts.manrope(
-        fontSize: 12.5,
+        fontSize: 14,
         fontWeight: FontWeight.w500,
         height: 1.45,
         color: color,
@@ -177,7 +177,7 @@ abstract final class FlowaType {
 
   static TextStyle label({Color color = FlowaColors.bone}) =>
       GoogleFonts.manrope(
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: FontWeight.w700,
         height: 1.2,
         letterSpacing: -0.1,

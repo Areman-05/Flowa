@@ -55,7 +55,7 @@ class _FlowaPaymentProcessingOverlayState
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: FlowaColors.ink,
+      color: FlowaColors.inkSurface,
       child: FadeTransition(
         opacity: _contentFade,
         child: Center(
@@ -121,7 +121,7 @@ Future<T> runFlowaPaymentProcessing<T>({
     showGeneralDialog<void>(
       context: context,
       barrierDismissible: false,
-      barrierColor: FlowaColors.ink,
+      barrierColor: FlowaColors.inkSurface,
       transitionDuration: Duration.zero,
       pageBuilder: (_, _, _) => FlowaPaymentProcessingOverlay(
         label: label,

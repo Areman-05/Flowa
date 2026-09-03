@@ -166,7 +166,7 @@ class _RewardsPageState extends State<RewardsPage> {
               decoration: BoxDecoration(
                 color: FlowaColors.inkHigh,
                 borderRadius: FlowaRadii.xlAll,
-                boxShadow: FlowaShadows.soft,
+                border: Border.all(color: FlowaColors.hairlineStrong),
               ),
               child: Column(
                 children: [
@@ -221,9 +221,9 @@ class _CashbackHeroCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 22, 16, 22),
       decoration: BoxDecoration(
-        gradient: FlowaColors.cardFace,
+        color: FlowaColors.inkHigh,
         borderRadius: FlowaRadii.xxlAll,
-        boxShadow: FlowaShadows.soft,
+        border: Border.all(color: FlowaColors.mint.withValues(alpha: 0.25)),
       ),
       child: Stack(
         clipBehavior: Clip.none,
@@ -232,11 +232,11 @@ class _CashbackHeroCard extends StatelessWidget {
             right: -4,
             top: -6,
             child: Opacity(
-              opacity: 0.22,
+              opacity: 0.10,
               child: FlowaLucideIcon(
                 LucideIcons.gift,
                 size: 88,
-                color: FlowaColors.mintInk,
+                color: FlowaColors.mint,
               ),
             ),
           ),
@@ -245,21 +245,17 @@ class _CashbackHeroCard extends StatelessWidget {
             children: [
               Text(
                 'Tu cashback',
-                style: FlowaType.bodySm(
-                  color: FlowaColors.mintInk.withValues(alpha: 0.72),
-                ),
+                style: FlowaType.bodySm(color: FlowaColors.boneMuted),
               ),
               const SizedBox(height: 8),
               Text(
                 FlowaFormatters.currency(balance),
-                style: FlowaType.figureLg(color: FlowaColors.mintInk),
+                style: FlowaType.figureLg(color: FlowaColors.mint),
               ),
               const SizedBox(height: 6),
               Text(
                 'Disponible para retirar o aplicar a gastos',
-                style: FlowaType.micro(
-                  color: FlowaColors.mintInk.withValues(alpha: 0.62),
-                ),
+                style: FlowaType.micro(color: FlowaColors.boneFaint),
               ),
             ],
           ),

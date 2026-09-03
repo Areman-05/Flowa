@@ -23,6 +23,8 @@ class FlowaScreen extends StatelessWidget {
     this.footer,
     this.embedded,
     this.showBack,
+    this.canvasMist,
+    this.canvasColor,
   });
 
   final String title;
@@ -33,6 +35,8 @@ class FlowaScreen extends StatelessWidget {
   final Widget? footer;
   final bool? embedded;
   final bool? showBack;
+  final bool? canvasMist;
+  final Color? canvasColor;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +65,7 @@ class FlowaScreen extends StatelessWidget {
                 child: Text(
                   title,
                   textAlign: TextAlign.center,
-                  style: FlowaType.titleMd(),
+                  style: FlowaType.titleLg(),
                 ),
               ),
               if (actions.isEmpty)
@@ -98,8 +102,10 @@ class FlowaScreen extends StatelessWidget {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
-        backgroundColor: FlowaColors.ink,
+        backgroundColor: canvasColor ?? FlowaColors.inkSurface,
         body: FlowaCanvas(
+          mist: canvasMist ?? false,
+          color: canvasColor,
           child: SafeArea(child: content),
         ),
       ),

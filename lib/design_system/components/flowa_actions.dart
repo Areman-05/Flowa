@@ -136,7 +136,6 @@ class FlowaAcidButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: enabled ? FlowaColors.mint : FlowaColors.inkHigh,
           borderRadius: FlowaRadii.pillAll,
-          boxShadow: enabled ? FlowaShadows.mintGlow : null,
         ),
         child: content,
       ),

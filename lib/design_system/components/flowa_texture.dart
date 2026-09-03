@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/utils/flowa_runtime.dart';
 import '../tokens/flowa_colors.dart';
+
 /// Photocopy grit.
 class FlowaGrain extends StatefulWidget {
   const FlowaGrain({super.key, this.intensity = 0.055});
@@ -89,7 +90,8 @@ class _GrainPainter extends CustomPainter {
         TileMode.repeated,
         TileMode.repeated,
         Matrix4.identity().storage,
-      );
+      )
+      ..filterQuality = FilterQuality.none;
     canvas.drawRect(Offset.zero & size, paint);
   }
 
@@ -98,35 +100,31 @@ class _GrainPainter extends CustomPainter {
       oldDelegate.noise != noise;
 }
 
-/// Top mist — GPU shader: linear turquoise wash + fine grain (no radial).
-class FlowaTopMist extends StatefulWidget {
+/// Full-screen top mist — same curve as the original shader (`exp(-3.2y) * 0.52`)
+/// but drawn with a multi-stop [LinearGradient] instead of a fragment shader.
+///
+/// The shader + grain banded and blurred when the emulator window was resized;
+/// this stays stable because Flutter paints the gradient in logical pixels.
+class FlowaTopMist extends StatelessWidget {
   const FlowaTopMist({super.key});
 
-  @override
-  State<FlowaTopMist> createState() => _FlowaTopMistState();
-}
+  static const _strength = 0.52;
+  static const _decay = 3.2;
+  static const _steps = 20;
 
-class _FlowaTopMistState extends State<FlowaTopMist> {
-  static Future<ui.FragmentProgram>? _programFuture;
-  ui.FragmentShader? _shader;
-
-  @override
-  void initState() {
-    super.initState();
-    if (FlowaRuntime.isWidgetTest) {
-      return;
-    }
-    _programFuture ??= ui.FragmentProgram.fromAsset('shaders/top_mist.frag');
-    unawaited(_loadShader());
-  }
-
-  Future<void> _loadShader() async {
-    final program = await _programFuture!;
-    if (!mounted) {
-      return;
-    }
-    setState(() => _shader = program.fragmentShader());
-  }
+  static final LinearGradient _gradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: List.generate(
+      _steps + 1,
+      (i) {
+        final y = i / _steps;
+        final alpha = _strength * math.exp(-_decay * y);
+        return FlowaColors.mint.withValues(alpha: alpha.clamp(0.0, 1.0));
+      },
+    ),
+    stops: List.generate(_steps + 1, (i) => i / _steps),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -134,69 +132,33 @@ class _FlowaTopMistState extends State<FlowaTopMist> {
       return const _MistTestFallback();
     }
 
-    final shader = _shader;
-    if (shader == null) {
-      return const SizedBox.shrink();
-    }
-
-    return CustomPaint(
-      painter: _MistShaderPainter(shader),
-      size: Size.infinite,
+    return RepaintBoundary(
+      child: DecoratedBox(
+        decoration: BoxDecoration(gradient: FlowaTopMist._gradient),
+      ),
     );
   }
 }
 
-class _MistShaderPainter extends CustomPainter {
-  const _MistShaderPainter(this.shader);
-
-  final ui.FragmentShader shader;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (size.isEmpty) {
-      return;
-    }
-
-    shader
-      ..setFloat(0, size.width)
-      ..setFloat(1, size.height)
-      ..setFloat(2, 0.52);
-
-    canvas.drawRect(Offset.zero & size, Paint()..shader = shader);
-  }
-
-  @override
-  bool shouldRepaint(covariant _MistShaderPainter oldDelegate) => false;
-}
-
-/// Lightweight fallback for widget tests (no shader asset).
+/// Lightweight fallback for widget tests.
 class _MistTestFallback extends StatelessWidget {
   const _MistTestFallback();
 
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            FlowaColors.mint.withValues(alpha: 0.18),
-            FlowaColors.mint.withValues(alpha: 0.0),
-          ],
-        ),
-      ),
+      decoration: BoxDecoration(gradient: FlowaTopMist._gradient),
     );
   }
 }
 
-/// Flat black canvas with optional top mist.
+/// Flat canvas — soft black by default, optional mist for legacy screens.
 class FlowaCanvas extends StatelessWidget {
   const FlowaCanvas({
     required this.child,
     super.key,
     this.grain = false,
-    this.mist = true,
+    this.mist = false,
     this.color,
   });
 
@@ -205,7 +167,6 @@ class FlowaCanvas extends StatelessWidget {
   final bool mist;
   final Color? color;
 
-  /// Kept for layout helpers; mist now covers the full canvas.
   static double mistHeightFor(double viewportHeight) => viewportHeight;
 
   @override
@@ -214,10 +175,10 @@ class FlowaCanvas extends StatelessWidget {
       return child;
     }
 
-    return Material(
-      color: color ?? FlowaColors.ink,
+    return ColoredBox(
+      color: color ?? FlowaColors.inkSurface,
       child: Stack(
-        clipBehavior: Clip.none,
+        clipBehavior: Clip.hardEdge,
         fit: StackFit.expand,
         children: [
           if (mist)

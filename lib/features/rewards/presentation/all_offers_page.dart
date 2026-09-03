@@ -46,7 +46,7 @@ class _OfferListTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: FlowaColors.inkHigh,
         borderRadius: FlowaRadii.xlAll,
-        boxShadow: FlowaShadows.soft,
+        border: Border.all(color: FlowaColors.hairlineStrong),
       ),
       child: Row(
         children: [

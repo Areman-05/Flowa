@@ -480,7 +480,7 @@ class _EnvelopeCategoryCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: FlowaColors.inkHigh,
           borderRadius: FlowaRadii.xlAll,
-          boxShadow: FlowaShadows.soft,
+          border: Border.all(color: FlowaColors.hairlineStrong),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -604,7 +604,7 @@ class _InsightBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: FlowaColors.inkHigh,
         borderRadius: FlowaRadii.xlAll,
-        boxShadow: FlowaShadows.soft,
+        border: Border.all(color: FlowaColors.hairlineStrong),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,

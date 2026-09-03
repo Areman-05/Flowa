@@ -38,15 +38,8 @@ enum FlowaCardTint {
         FlowaCardTint.softPurple => const Color(0xFFB8A4E8),
       };
 
-  /// Optional soft sheen for light cards only (mint/yellow/etc).
-  Color? get sheen => switch (this) {
-        FlowaCardTint.turquoise => const Color(0xFF3DFFCB),
-        FlowaCardTint.softOrange => const Color(0xFFFFC9A0),
-        FlowaCardTint.softYellow => const Color(0xFFFFF3C4),
-        FlowaCardTint.softPurple => const Color(0xFFD0C2F2),
-        FlowaCardTint.white => const Color(0xFFFFFFFF),
-        _ => null,
-      };
+  /// No sheen — flat fills so mint cards don’t glow at the edges.
+  Color? get sheen => null;
 
   bool get isLight => switch (this) {
         FlowaCardTint.turquoise ||
