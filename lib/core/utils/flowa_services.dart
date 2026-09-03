@@ -34,7 +34,8 @@ abstract final class FlowaServices {
   static InboxRepository inboxRepository = MockInboxRepository();
   static ScheduledTransferRepository scheduledTransferRepository =
       MockScheduledTransferRepository();
-  static ContactRepository contactRepository = InMemoryContactRepository();
+  static ContactRepository contactRepository =
+      InMemoryContactRepository(seed: InMemoryContactRepository.demoSeed);
   static FreelanceRepository freelanceRepository = MockFreelanceRepository();
 
   /// Guard so demo data is only injected once per session.
@@ -51,7 +52,8 @@ abstract final class FlowaServices {
     aiAssistant = MockAiAssistantService();
     inboxRepository = MockInboxRepository();
     scheduledTransferRepository = MockScheduledTransferRepository();
-    contactRepository = InMemoryContactRepository();
+    contactRepository =
+        InMemoryContactRepository(seed: InMemoryContactRepository.demoSeed);
   }
 
   static void resetToMocks({

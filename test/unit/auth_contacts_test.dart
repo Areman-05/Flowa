@@ -63,6 +63,12 @@ void main() {
       final items = await repo.getAll();
       expect(items, hasLength(1));
       expect(items.first.kindLabel, 'Empresa');
+
+      final updated = await repo.update(
+        items.first.copyWith(name: 'Mega Corp', note: 'VIP'),
+      );
+      expect(updated.name, 'Mega Corp');
+      expect(updated.note, 'VIP');
     });
   });
 }

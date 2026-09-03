@@ -10,5 +10,7 @@ abstract class ContactRepository {
     String? note,
   });
 
+  Future<PayeeContact> update(PayeeContact contact);
+
   Future<void> delete(String id);
 }

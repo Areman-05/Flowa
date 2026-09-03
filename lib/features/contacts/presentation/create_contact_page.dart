@@ -3,22 +3,41 @@ import 'package:flutter/material.dart';
 import '../../../core/utils/flowa_services.dart';
 import '../../../design_system/components/flowa_actions.dart';
 import '../../../design_system/components/flowa_screen.dart';
+import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
+import '../../../design_system/tokens/flowa_typography.dart';
 import '../../../domain/entities/payee_contact.dart';
+import '../../more/presentation/widgets/more_service_ui.dart';
 
 class CreateContactPage extends StatefulWidget {
-  const CreateContactPage({super.key});
+  const CreateContactPage({super.key, this.existing});
+
+  final PayeeContact? existing;
 
   @override
   State<CreateContactPage> createState() => _CreateContactPageState();
 }
 
 class _CreateContactPageState extends State<CreateContactPage> {
-  final _nameController = TextEditingController();
-  final _accountController = TextEditingController();
-  final _noteController = TextEditingController();
-  PayeeKind _kind = PayeeKind.person;
+  late final TextEditingController _nameController;
+  late final TextEditingController _accountController;
+  late final TextEditingController _noteController;
+  late PayeeKind _kind;
   String? _error;
+  bool _saving = false;
+
+  bool get _isEditing => widget.existing != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final existing = widget.existing;
+    _nameController = TextEditingController(text: existing?.name ?? '');
+    _accountController =
+        TextEditingController(text: existing?.accountNumber ?? '');
+    _noteController = TextEditingController(text: existing?.note ?? '');
+    _kind = existing?.kind ?? PayeeKind.person;
+  }
 
   @override
   void dispose() {
@@ -34,34 +53,71 @@ class _CreateContactPageState extends State<CreateContactPage> {
       setState(() => _error = 'El nombre es obligatorio');
       return;
     }
-    final contact = await FlowaServices.contactRepository.create(
-      name: name,
-      kind: _kind,
-      accountNumber: _accountController.text,
-      note: _noteController.text,
-    );
-    if (!mounted) {
-      return;
+
+    setState(() {
+      _error = null;
+      _saving = true;
+    });
+
+    try {
+      final PayeeContact contact;
+      if (_isEditing) {
+        contact = await FlowaServices.contactRepository.update(
+          widget.existing!.copyWith(
+            name: name,
+            kind: _kind,
+            accountNumber: _accountController.text,
+            note: _noteController.text,
+            clearNote: _noteController.text.trim().isEmpty,
+          ),
+        );
+      } else {
+        contact = await FlowaServices.contactRepository.create(
+          name: name,
+          kind: _kind,
+          accountNumber: _accountController.text,
+          note: _noteController.text,
+        );
+      }
+      if (!mounted) {
+        return;
+      }
+      Navigator.of(context).pop(contact);
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _error = 'No se pudo guardar el contacto';
+        _saving = false;
+      });
     }
-    Navigator.of(context).pop(contact);
   }
 
   @override
   Widget build(BuildContext context) {
     return FlowaScreen(
-      title: 'Nuevo contacto',
-      footer: FlowaAcidButton(label: 'Guardar', onPressed: _save),
+      title: _isEditing ? 'Editar contacto' : 'Nuevo contacto',
+      footer: FlowaAcidButton(
+        label: 'Guardar',
+        loading: _saving,
+        onPressed: _saving ? null : _save,
+      ),
       child: ListView(
         children: [
           TextField(
             controller: _nameController,
+            style: moreFieldStyle,
             textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(
-              labelText: 'Nombre',
-              errorText: _error,
-            ),
+            decoration: moreInputDecoration(
+              label: 'Nombre',
+              hint: 'Nombre o empresa',
+              prefixIcon: Icons.person_outline_rounded,
+            ).copyWith(errorText: _error),
           ),
           const SizedBox(height: FlowaSpacing.md),
+          Text('Tipo', style: FlowaType.bodySm(color: FlowaColors.boneMuted)),
+          const SizedBox(height: 8),
           Row(
             children: [
               FlowaFilterChip(
@@ -80,15 +136,23 @@ class _CreateContactPageState extends State<CreateContactPage> {
           const SizedBox(height: FlowaSpacing.md),
           TextField(
             controller: _accountController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Nº de cuenta (opcional)',
+            style: moreFieldStyle,
+            keyboardType: TextInputType.text,
+            decoration: moreInputDecoration(
+              label: 'Nº de cuenta',
+              hint: 'IBAN u otro identificador',
+              prefixIcon: Icons.account_balance_outlined,
             ),
           ),
-          const SizedBox(height: FlowaSpacing.sm),
+          const SizedBox(height: FlowaSpacing.md),
           TextField(
             controller: _noteController,
-            decoration: const InputDecoration(labelText: 'Nota (opcional)'),
+            style: moreFieldStyle,
+            decoration: moreInputDecoration(
+              label: 'Nota',
+              hint: 'Opcional',
+              prefixIcon: Icons.sticky_note_2_outlined,
+            ),
           ),
         ],
       ),
