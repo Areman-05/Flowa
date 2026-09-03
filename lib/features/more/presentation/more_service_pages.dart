@@ -6,6 +6,7 @@ import '../../../core/utils/flowa_formatters.dart';
 import '../../../design_system/components/flowa_actions.dart';
 import '../../../design_system/components/flowa_amount_chips.dart';
 import '../../../design_system/components/flowa_icon.dart';
+import '../../../design_system/components/flowa_primitives.dart';
 import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
@@ -13,6 +14,7 @@ import '../../../design_system/tokens/flowa_typography.dart';
 import '../domain/more_service_catalog.dart';
 import 'more_payment_helper.dart';
 import 'more_qr_scanner_page.dart';
+import 'widgets/more_payment_ui.dart';
 import 'widgets/more_service_ui.dart';
 
 /// Compra de entradas para cine, conciertos y deporte.
@@ -25,6 +27,13 @@ class MoreTicketsPage extends StatefulWidget {
 
 class _MoreTicketsPageState extends State<MoreTicketsPage> {
   String _filter = 'Todos';
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,64 +41,58 @@ class _MoreTicketsPageState extends State<MoreTicketsPage> {
       'Todos',
       ...MoreServiceCatalog.tickets.map((e) => e.category).toSet(),
     ];
-    final events = _filter == 'Todos'
-        ? MoreServiceCatalog.tickets
-        : MoreServiceCatalog.tickets
-            .where((event) => event.category == _filter)
-            .toList();
+    final query = _searchController.text;
+    final events = MoreServiceCatalog.tickets.where((event) {
+      if (_filter != 'Todos' && event.category != _filter) {
+        return false;
+      }
+      return moreMatchesQuery(query, [
+        event.title,
+        event.venue,
+        event.category,
+        event.dateLabel,
+      ]);
+    }).toList();
 
     return FlowaScreen(
       title: 'Entradas',
+      canvasColor: FlowaColors.inkSurface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const MoreServiceIntro(
-            icon: LucideIcons.ticket,
-            title: 'Entradas',
-            description: 'Cine, conciertos, teatro y deporte en un solo sitio.',
-            accent: Color(0xFF9A7EC8),
-          ),
-          const SizedBox(height: FlowaSpacing.lg),
-          SizedBox(
-            height: 42,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: categories.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final label = categories.elementAt(index);
-                final selected = label == _filter;
-                return FlowaPressScale(
-                  onTap: () => setState(() => _filter = label),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color:
-                          selected ? FlowaColors.mint : FlowaColors.inkHigh,
-                      borderRadius: FlowaRadii.pillAll,
-                      border: Border.all(
-                        color: selected
-                            ? FlowaColors.mint
-                            : FlowaColors.hairlineStrong,
-                      ),
-                    ),
-                    child: Text(
-                      label,
-                      style: FlowaType.titleSm(
-                        color: selected
-                            ? FlowaColors.mintInk
-                            : FlowaColors.boneMuted,
-                      ),
-                    ),
-                  ),
-                );
-              },
+          FlowaEntrance(
+            child: MoreContextLine(
+              'Cine, conciertos, teatro y deporte en un solo sitio.',
             ),
           ),
-          const SizedBox(height: FlowaSpacing.lg),
+          const SizedBox(height: FlowaSpacing.md),
+          FlowaEntrance(
+            delay: const Duration(milliseconds: 20),
+            child: MoreSearchField(
+              controller: _searchController,
+              hint: 'Artista, recinto o ciudad',
+              onChanged: (_) => setState(() {}),
+            ),
+          ),
+          const SizedBox(height: FlowaSpacing.md),
+          FlowaEntrance(
+            delay: const Duration(milliseconds: 30),
+            child: MoreFilterRail(
+              options: categories,
+              selected: _filter,
+              onSelected: (value) => setState(() => _filter = value),
+            ),
+          ),
+          const SizedBox(height: FlowaSpacing.md),
           Expanded(
-            child: ListView.separated(
+            child: events.isEmpty
+                ? Center(
+                    child: Text(
+                      'Sin resultados',
+                      style: FlowaType.body(color: FlowaColors.boneMuted),
+                    ),
+                  )
+                : ListView.separated(
               itemCount: events.length,
               separatorBuilder: (_, _) =>
                   const SizedBox(height: FlowaSpacing.sm),
@@ -123,71 +126,80 @@ class _EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final parts = event.dateLabel.split('·');
+    final datePart = parts.isNotEmpty ? parts.first.trim() : event.dateLabel;
+    final timePart = parts.length > 1 ? parts.sublist(1).join('·').trim() : '';
+
     return MoreServiceCard(
       padding: const EdgeInsets.all(18),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: FlowaColors.mintTintedSurface,
-                  borderRadius: FlowaRadii.lgAll,
+          Container(
+            width: 58,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF9A7EC8).withValues(alpha: 0.16),
+              borderRadius: FlowaRadii.lgAll,
+            ),
+            child: Column(
+              children: [
+                Text(
+                  datePart.split(' ').first,
+                  style: FlowaType.titleMd(color: const Color(0xFF9A7EC8)),
                 ),
-                alignment: Alignment.center,
-                child: const FlowaLucideIcon(
-                  LucideIcons.ticket,
-                  size: 26,
-                  color: FlowaColors.mint,
+                if (datePart.contains(' '))
+                  Text(
+                    datePart.split(' ').skip(1).join(' '),
+                    style: FlowaType.bodySm(color: FlowaColors.boneMuted),
+                  ),
+                if (timePart.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(timePart, style: FlowaType.bodySm()),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(event.title, style: FlowaType.titleLg()),
+                const SizedBox(height: 6),
+                Text(
+                  event.venue,
+                  style: FlowaType.body(color: FlowaColors.boneMuted),
                 ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(height: 12),
+                Row(
                   children: [
-                    Text(event.title, style: FlowaType.titleMd()),
-                    const SizedBox(height: 6),
                     Text(
-                      event.venue,
-                      style: FlowaType.body(color: FlowaColors.boneMuted),
+                      'Desde ${FlowaFormatters.currency(event.priceFrom)}',
+                      style: FlowaType.titleMd(color: FlowaColors.mint),
                     ),
-                    Text(event.dateLabel, style: FlowaType.bodySm()),
+                    const Spacer(),
+                    FlowaPressScale(
+                      onTap: onBuy,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: FlowaColors.mint,
+                          borderRadius: FlowaRadii.pillAll,
+                        ),
+                        child: Text(
+                          'Comprar',
+                          style: FlowaType.titleSm(color: FlowaColors.mintInk),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Text(
-                'Desde ${FlowaFormatters.currency(event.priceFrom)}',
-                style: FlowaType.titleSm(color: FlowaColors.mint),
-              ),
-              const Spacer(),
-              FlowaPressScale(
-                onTap: onBuy,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: FlowaColors.mint,
-                    borderRadius: FlowaRadii.pillAll,
-                  ),
-                  child: Text(
-                    'Comprar',
-                    style: FlowaType.titleSm(color: FlowaColors.mintInk),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -206,6 +218,13 @@ class MoreInsurancePage extends StatefulWidget {
 class _MoreInsurancePageState extends State<MoreInsurancePage> {
   String _filter = 'Todos';
   String? _expandedPlan;
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -213,62 +232,58 @@ class _MoreInsurancePageState extends State<MoreInsurancePage> {
       'Todos',
       ...MoreServiceCatalog.insurance.map((p) => p.category).toSet(),
     ];
-    final plans = _filter == 'Todos'
-        ? MoreServiceCatalog.insurance
-        : MoreServiceCatalog.insurance
-            .where((plan) => plan.category == _filter)
-            .toList();
+    final query = _searchController.text;
+    final plans = MoreServiceCatalog.insurance.where((plan) {
+      if (_filter != 'Todos' && plan.category != _filter) {
+        return false;
+      }
+      return moreMatchesQuery(query, [
+        plan.name,
+        plan.summary,
+        plan.category,
+        ...plan.coverages,
+        ...?plan.highlights,
+      ]);
+    }).toList();
 
     return FlowaScreen(
       title: 'Seguro',
+      canvasColor: FlowaColors.inkSurface,
       child: ListView(
         padding: const EdgeInsets.only(bottom: FlowaSpacing.xl),
         children: [
-          const MoreServiceIntro(
-            icon: LucideIcons.shield,
-            title: 'Seguros',
-            description:
-                'Salud, hogar, RC profesional y más. Compara coberturas antes de contratar.',
-            accent: Color(0xFFCC7888),
-          ),
-          const SizedBox(height: FlowaSpacing.lg),
-          SizedBox(
-            height: 42,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: categories.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final label = categories.elementAt(index);
-                final selected = label == _filter;
-                return FlowaPressScale(
-                  onTap: () => setState(() => _filter = label),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: selected ? FlowaColors.mint : FlowaColors.inkHigh,
-                      borderRadius: FlowaRadii.pillAll,
-                      border: Border.all(
-                        color: selected
-                            ? FlowaColors.mint
-                            : FlowaColors.hairlineStrong,
-                      ),
-                    ),
-                    child: Text(
-                      label,
-                      style: FlowaType.titleSm(
-                        color: selected
-                            ? FlowaColors.mintInk
-                            : FlowaColors.boneMuted,
-                      ),
-                    ),
-                  ),
-                );
-              },
+          const FlowaEntrance(
+            child: MoreContextLine(
+              'Compara coberturas antes de contratar. Sin permanencia en demo.',
             ),
           ),
-          const SizedBox(height: FlowaSpacing.lg),
+          const SizedBox(height: FlowaSpacing.md),
+          FlowaEntrance(
+            delay: const Duration(milliseconds: 20),
+            child: MoreSearchField(
+              controller: _searchController,
+              hint: 'Plan, cobertura o categoría',
+              onChanged: (_) => setState(() {}),
+            ),
+          ),
+          const SizedBox(height: FlowaSpacing.md),
+          FlowaEntrance(
+            delay: const Duration(milliseconds: 30),
+            child: MoreFilterRail(
+              options: categories,
+              selected: _filter,
+              onSelected: (value) => setState(() => _filter = value),
+            ),
+          ),
+          const SizedBox(height: FlowaSpacing.md),
+          if (plans.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: FlowaSpacing.lg),
+              child: Text(
+                'Sin resultados',
+                style: FlowaType.body(color: FlowaColors.boneMuted),
+              ),
+            ),
           for (final plan in plans) ...[
             _InsurancePlanCard(
               plan: plan,
@@ -342,7 +357,7 @@ class _InsurancePlanCard extends StatelessWidget {
                       Row(
                         children: [
                           Expanded(
-                            child: Text(plan.name, style: FlowaType.titleMd()),
+                            child: Text(plan.name, style: FlowaType.titleLg()),
                           ),
                           FlowaLucideIcon(
                             expanded
@@ -562,36 +577,40 @@ class _MoreQrPayPageState extends State<MoreQrPayPage> {
   Widget build(BuildContext context) {
     return FlowaScreen(
       title: 'Pago QR',
+      canvasColor: FlowaColors.inkSurface,
       footer: FlowaAcidButton(label: 'Confirmar pago', onPressed: _pay),
       child: ListView(
         padding: const EdgeInsets.only(bottom: FlowaSpacing.xl),
         children: [
-          const MoreServiceIntro(
-            icon: LucideIcons.qr_code,
-            title: 'Pago QR',
-            description: 'Escanea en comercio o pega el código del ticket.',
+          FlowaEntrance(
+            child: MoreContextLine(
+              'Escanea en comercio o pega el código del ticket.',
+            ),
           ),
-          const SizedBox(height: FlowaSpacing.xl),
-          FlowaPressScale(
-            onTap: _scan,
-            enabled: !_scanning,
-            child: AspectRatio(
-              aspectRatio: 1.2,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: FlowaColors.inkHigh,
-                  borderRadius: FlowaRadii.xxlAll,
-                  border: Border.all(color: FlowaColors.hairlineStrong),
-                ),
+          const SizedBox(height: FlowaSpacing.lg),
+          FlowaEntrance(
+            delay: const Duration(milliseconds: 30),
+            child: FlowaPressScale(
+              onTap: _scan,
+              enabled: !_scanning,
+              child: MoreFintechCard(
+                accent: const Color(0xFF8B7FD4),
+                padding: const EdgeInsets.symmetric(vertical: 36),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
                       width: 88,
                       height: 88,
                       decoration: BoxDecoration(
-                        color: FlowaColors.mintTintedSurface,
+                        color: FlowaColors.inkSurface,
                         shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF8B7FD4).withValues(alpha: 0.5),
+                        ),
+                        boxShadow: moreNeonGlow(
+                          const Color(0xFF8B7FD4),
+                          intensity: 0.18,
+                        ),
                       ),
                       alignment: Alignment.center,
                       child: _scanning
@@ -599,49 +618,68 @@ class _MoreQrPayPageState extends State<MoreQrPayPage> {
                               width: 28,
                               height: 28,
                               child: CircularProgressIndicator(
-                                color: FlowaColors.mint,
+                                color: Color(0xFF8B7FD4),
                                 strokeWidth: 2.5,
                               ),
                             )
                           : const FlowaLucideIcon(
                               LucideIcons.camera,
                               size: 36,
-                              color: FlowaColors.mint,
+                              color: Color(0xFF8B7FD4),
                             ),
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Toca para escanear',
-                      style: FlowaType.titleSm(),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Usa la cámara del móvil',
-                      style: FlowaType.body(color: FlowaColors.boneMuted),
-                    ),
-                  ],
-                ),
+                  const SizedBox(height: 16),
+                  Text('Toca para escanear', style: FlowaType.titleSm()),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Usa la cámara del móvil',
+                    style: FlowaType.body(color: FlowaColors.boneMuted),
+                  ),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: FlowaSpacing.xl),
-          TextField(
-            controller: _codeController,
-            style: moreFieldStyle,
-            decoration: moreInputDecoration(
-              label: 'Código QR / referencia',
-              hint: 'QR-92837465',
-            ),
           ),
           const SizedBox(height: FlowaSpacing.lg),
-          TextField(
-            controller: _amountController,
-            style: moreFieldStyle,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-            ],
-            decoration: moreInputDecoration(label: 'Importe', prefixText: '€ '),
+          FlowaEntrance(
+            delay: const Duration(milliseconds: 70),
+            child: MoreFintechCard(
+              accent: const Color(0xFF8B7FD4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: _codeController,
+                    style: moreFieldStyle,
+                    decoration: moreInputDecoration(
+                      label: 'Código QR / referencia',
+                      hint: 'QR-92837465',
+                      prefixIcon: Icons.qr_code_2_rounded,
+                    ).copyWith(fillColor: FlowaColors.inkSurface),
+                  ),
+                  const SizedBox(height: FlowaSpacing.md),
+                  TextField(
+                    controller: _amountController,
+                    style: FlowaType.figureMd(color: const Color(0xFF8B7FD4)),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d+\.?\d{0,2}'),
+                      ),
+                    ],
+                    decoration: moreInputDecoration(
+                      label: 'Importe',
+                      prefixText: '€ ',
+                    ).copyWith(
+                      fillColor: FlowaColors.inkSurface,
+                      prefixStyle:
+                          FlowaType.figureMd(color: const Color(0xFF8B7FD4)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -662,10 +700,12 @@ class _MoreDonationsPageState extends State<MoreDonationsPage> {
   double? _chip;
   String _filter = 'Todos';
   final _amountController = TextEditingController();
+  final _searchController = TextEditingController();
 
   @override
   void dispose() {
     _amountController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -701,63 +741,57 @@ class _MoreDonationsPageState extends State<MoreDonationsPage> {
           .whereType<String>()
           .toSet(),
     ];
-    final orgs = _filter == 'Todos'
-        ? MoreServiceCatalog.donations
-        : MoreServiceCatalog.donations
-            .where((org) => org.category == _filter)
-            .toList();
+    final query = _searchController.text;
+    final orgs = MoreServiceCatalog.donations.where((org) {
+      if (_filter != 'Todos' && org.category != _filter) {
+        return false;
+      }
+      return moreMatchesQuery(query, [
+        org.name,
+        org.summary,
+        org.category ?? '',
+      ]);
+    }).toList();
 
     return FlowaScreen(
       title: 'Donaciones',
+      canvasColor: FlowaColors.inkSurface,
       footer: FlowaAcidButton(label: 'Donar ahora', onPressed: _donate),
       child: ListView(
         padding: const EdgeInsets.only(bottom: FlowaSpacing.xl),
         children: [
-          const MoreServiceIntro(
-            icon: LucideIcons.heart_handshake,
-            title: 'Donaciones',
-            description:
-                'Contribuye a causas sociales, salud y medio ambiente desde tu cuenta.',
-            accent: Color(0xFF6DB892),
-          ),
-          const SizedBox(height: FlowaSpacing.lg),
-          SizedBox(
-            height: 42,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: categories.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final label = categories.elementAt(index);
-                final selected = label == _filter;
-                return FlowaPressScale(
-                  onTap: () => setState(() => _filter = label),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: selected ? FlowaColors.mint : FlowaColors.inkHigh,
-                      borderRadius: FlowaRadii.pillAll,
-                      border: Border.all(
-                        color: selected
-                            ? FlowaColors.mint
-                            : FlowaColors.hairlineStrong,
-                      ),
-                    ),
-                    child: Text(
-                      label,
-                      style: FlowaType.titleSm(
-                        color: selected
-                            ? FlowaColors.mintInk
-                            : FlowaColors.boneMuted,
-                      ),
-                    ),
-                  ),
-                );
-              },
+          const FlowaEntrance(
+            child: MoreContextLine(
+              'Elige una causa y el importe. 100% va a la ONG en demo.',
             ),
           ),
-          const SizedBox(height: FlowaSpacing.lg),
+          const SizedBox(height: FlowaSpacing.md),
+          FlowaEntrance(
+            delay: const Duration(milliseconds: 20),
+            child: MoreSearchField(
+              controller: _searchController,
+              hint: 'Organización o causa',
+              onChanged: (_) => setState(() {}),
+            ),
+          ),
+          const SizedBox(height: FlowaSpacing.md),
+          FlowaEntrance(
+            delay: const Duration(milliseconds: 30),
+            child: MoreFilterRail(
+              options: categories,
+              selected: _filter,
+              onSelected: (value) => setState(() => _filter = value),
+            ),
+          ),
+          const SizedBox(height: FlowaSpacing.md),
+          if (orgs.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: FlowaSpacing.md),
+              child: Text(
+                'Sin resultados',
+                style: FlowaType.body(color: FlowaColors.boneMuted),
+              ),
+            ),
           for (final org in orgs) ...[
             FlowaPressScale(
               onTap: () => setState(() => _org = org),
@@ -779,7 +813,7 @@ class _MoreDonationsPageState extends State<MoreDonationsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(org.name, style: FlowaType.titleMd()),
+                          Text(org.name, style: FlowaType.titleLg()),
                           const SizedBox(height: 4),
                           Text(
                             org.summary,
@@ -795,22 +829,11 @@ class _MoreDonationsPageState extends State<MoreDonationsPage> {
             const SizedBox(height: FlowaSpacing.sm),
           ],
           const SizedBox(height: FlowaSpacing.md),
-          const MoreSectionLabel('Importe'),
-          TextField(
+          MoreAmountPanel(
             controller: _amountController,
-            style: moreFieldStyle,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-            ],
-            onChanged: (_) => setState(() => _chip = null),
-            decoration: moreInputDecoration(label: 'Cantidad', prefixText: '€ '),
-          ),
-          const SizedBox(height: FlowaSpacing.lg),
-          FlowaAmountChips(
-            values: const [5, 10, 25, 50, 100, 250],
-            selected: _chip,
-            onSelected: (value) {
+            chips: const [5, 10, 25, 50, 100, 250],
+            selectedChip: _chip,
+            onChipSelected: (value) {
               setState(() {
                 _chip = value;
                 _amountController.text = value.toStringAsFixed(2);
@@ -878,22 +901,25 @@ class _MoreExchangePageState extends State<MoreExchangePage> {
   Widget build(BuildContext context) {
     return FlowaScreen(
       title: 'Cambio',
+      canvasColor: FlowaColors.inkSurface,
       footer: FlowaAcidButton(label: 'Convertir', onPressed: _exchange),
       child: ListView(
         padding: const EdgeInsets.only(bottom: FlowaSpacing.xl),
         children: [
-          const MoreServiceIntro(
-            icon: LucideIcons.refresh_cw,
-            title: 'Cambio de divisa',
-            description: 'Tipo orientativo. Sin comisión en demo.',
-            accent: Color(0xFF6890B8),
+          const FlowaEntrance(
+            child: MoreContextLine(
+              'Tipo orientativo. Sin comisión ni spread oculto en demo.',
+            ),
           ),
-          const SizedBox(height: FlowaSpacing.xl),
-          _CurrencySelector(
-            label: 'Desde',
-            value: _from,
-            exclude: _to,
-            onChanged: (value) => setState(() => _from = value),
+          const SizedBox(height: FlowaSpacing.lg),
+          FlowaEntrance(
+            delay: const Duration(milliseconds: 30),
+            child: _CurrencySelector(
+              label: 'Desde',
+              value: _from,
+              exclude: _to,
+              onChanged: (value) => setState(() => _from = value),
+            ),
           ),
           const SizedBox(height: FlowaSpacing.md),
           Center(
@@ -939,23 +965,12 @@ class _MoreExchangePageState extends State<MoreExchangePage> {
             ),
           ),
           const SizedBox(height: FlowaSpacing.lg),
-          MoreServiceCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Recibirás', style: FlowaType.body(color: FlowaColors.boneMuted)),
-                const SizedBox(height: 8),
-                Text(
-                  '${_symbol(_to)} ${_converted.toStringAsFixed(2)}',
-                  style: FlowaType.figureLg(color: FlowaColors.mint),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Tipo: 1 $_from = ${(MoreServiceCatalog.currencies.firstWhere((c) => c.code == _to).rate / MoreServiceCatalog.currencies.firstWhere((c) => c.code == _from).rate).toStringAsFixed(4)} $_to',
-                  style: FlowaType.bodySm(color: FlowaColors.boneMuted),
-                ),
-              ],
-            ),
+          MoreExchangeCalculator(
+            fromCode: _from,
+            toCode: _to,
+            fromSymbol: _symbol(_from),
+            toSymbol: _symbol(_to),
+            converted: _converted,
           ),
         ],
       ),
@@ -1130,23 +1145,60 @@ class _CurrencyPickerSheet extends StatelessWidget {
 }
 
 /// Oficinas y puntos de atención.
-class MoreBranchesPage extends StatelessWidget {
+class MoreBranchesPage extends StatefulWidget {
   const MoreBranchesPage({super.key});
 
   @override
+  State<MoreBranchesPage> createState() => _MoreBranchesPageState();
+}
+
+class _MoreBranchesPageState extends State<MoreBranchesPage> {
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final query = _searchController.text;
+    final branches = MoreServiceCatalog.branches.where((branch) {
+      return moreMatchesQuery(query, [
+        branch.name,
+        branch.address,
+        branch.hours,
+        ...?branch.services,
+      ]);
+    }).toList();
+
     return FlowaScreen(
       title: 'Sucursales',
       child: ListView(
         padding: const EdgeInsets.only(bottom: FlowaSpacing.xl),
         children: [
-          const MoreServiceIntro(
-            icon: LucideIcons.map_pin,
-            title: 'Sucursales',
-            description: 'Encuentra oficinas Flowa cerca de ti.',
+          const FlowaEntrance(
+            child: MoreContextLine(
+              'Encuentra oficinas Flowa cerca de ti.',
+            ),
+          ),
+          const SizedBox(height: FlowaSpacing.md),
+          FlowaEntrance(
+            delay: const Duration(milliseconds: 20),
+            child: MoreSearchField(
+              controller: _searchController,
+              hint: 'Ciudad, dirección o servicio',
+              onChanged: (_) => setState(() {}),
+            ),
           ),
           const SizedBox(height: FlowaSpacing.lg),
-          for (final branch in MoreServiceCatalog.branches) ...[
+          if (branches.isEmpty)
+            Text(
+              'Sin resultados',
+              style: FlowaType.body(color: FlowaColors.boneMuted),
+            ),
+          for (final branch in branches) ...[
             MoreServiceCard(
               padding: const EdgeInsets.all(20),
               child: Row(
@@ -1155,15 +1207,15 @@ class MoreBranchesPage extends StatelessWidget {
                   Container(
                     width: 52,
                     height: 52,
-                    decoration: const BoxDecoration(
-                      color: FlowaColors.mintTintedSurface,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8A838).withValues(alpha: 0.14),
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
                     child: const FlowaLucideIcon(
                       LucideIcons.map_pin,
                       size: 24,
-                      color: FlowaColors.mint,
+                      color: Color(0xFFE8A838),
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -1171,14 +1223,14 @@ class MoreBranchesPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(branch.name, style: FlowaType.titleMd()),
+                        Text(branch.name, style: FlowaType.titleLg()),
                         const SizedBox(height: 6),
                         Text(
                           branch.address,
                           style: FlowaType.body(color: FlowaColors.boneMuted),
                         ),
                         const SizedBox(height: 4),
-                        Text(branch.hours, style: FlowaType.bodySm()),
+                        Text(branch.hours, style: FlowaType.body()),
                         if (branch.services != null) ...[
                           const SizedBox(height: 10),
                           Wrap(
@@ -1192,12 +1244,14 @@ class MoreBranchesPage extends StatelessWidget {
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: FlowaColors.mintTintedSurface,
+                                    color: const Color(0xFFE8A838).withValues(alpha: 0.12),
                                     borderRadius: FlowaRadii.pillAll,
                                   ),
                                   child: Text(
                                     service,
-                                    style: FlowaType.bodySm(color: FlowaColors.mint),
+                                    style: FlowaType.body(
+                                      color: const Color(0xFFE8A838),
+                                    ),
                                   ),
                                 ),
                             ],
@@ -1208,7 +1262,7 @@ class MoreBranchesPage extends StatelessWidget {
                   ),
                   Text(
                     '${branch.distanceKm.toStringAsFixed(1)} km',
-                    style: FlowaType.titleSm(color: FlowaColors.mint),
+                    style: FlowaType.titleMd(color: Color(0xFFE8A838)),
                   ),
                 ],
               ),

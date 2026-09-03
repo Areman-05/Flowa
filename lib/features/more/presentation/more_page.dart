@@ -16,6 +16,7 @@ import '../../support/presentation/support_center_page.dart';
 import '../domain/more_service_catalog.dart';
 import 'more_bill_pay_page.dart';
 import 'more_service_pages.dart';
+import 'widgets/more_payment_ui.dart';
 
 class _MoreMenuItem {
   const _MoreMenuItem({
@@ -78,7 +79,7 @@ class _MorePageState extends State<MorePage> {
       _MoreMenuItem(
         label: 'Móvil',
         icon: LucideIcons.smartphone,
-        accent: FlowaColors.mint,
+        accent: Color(0xFF00A9E0),
         page: MoreBillPayPage(service: MoreServiceCatalog.mobile),
       ),
       _MoreMenuItem(
@@ -91,7 +92,7 @@ class _MorePageState extends State<MorePage> {
       _MoreMenuItem(
         label: 'Internet',
         icon: LucideIcons.globe,
-        accent: Color(0xFF5FA4B2),
+        accent: Color(0xFF6B7FD7),
         page: MoreBillPayPage(service: MoreServiceCatalog.internet),
       ),
       _MoreMenuItem(
@@ -119,7 +120,7 @@ class _MorePageState extends State<MorePage> {
         label: 'Pago QR',
         hubLabel: 'QR',
         icon: LucideIcons.qr_code,
-        accent: FlowaColors.mint,
+        accent: Color(0xFF8B7FD4),
         page: MoreQrPayPage(),
       ),
       _MoreMenuItem(
@@ -142,7 +143,7 @@ class _MorePageState extends State<MorePage> {
         label: 'Sucursales',
         hubLabel: 'Oficinas',
         icon: LucideIcons.map_pin,
-        accent: FlowaColors.mint,
+        accent: Color(0xFFE8A838),
         page: MoreBranchesPage(),
       ),
       _MoreMenuItem(
@@ -194,7 +195,7 @@ class _MorePageState extends State<MorePage> {
                     onTap: (page) => _open(context, page),
                   ),
                 ),
-                const SizedBox(height: FlowaSpacing.lg),
+                const SizedBox(height: FlowaSpacing.md),
                 FlowaEntrance(
                   rise: 0,
                   delay: const Duration(milliseconds: 40),
@@ -204,7 +205,7 @@ class _MorePageState extends State<MorePage> {
                     onTap: (page) => _open(context, page),
                   ),
                 ),
-                const SizedBox(height: FlowaSpacing.lg),
+                const SizedBox(height: FlowaSpacing.md),
                 FlowaEntrance(
                   rise: 0,
                   delay: const Duration(milliseconds: 80),
@@ -245,21 +246,21 @@ class _MoreSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: FlowaType.titleMd()),
-        const SizedBox(height: FlowaSpacing.md),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            const gap = FlowaSpacing.sm;
-            final tileWidth = (constraints.maxWidth - gap * 3) / 4;
+    return MoreFintechCard(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: FlowaType.titleSm()),
+          const SizedBox(height: FlowaSpacing.md),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              const gap = FlowaSpacing.sm;
+              final tileWidth = (constraints.maxWidth - gap * 3) / 4;
 
-            return Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: Wrap(
+              return Wrap(
                 spacing: gap,
-                runSpacing: FlowaSpacing.md,
+                runSpacing: FlowaSpacing.sm,
                 children: [
                   for (final item in items)
                     SizedBox(
@@ -270,11 +271,11 @@ class _MoreSection extends StatelessWidget {
                       ),
                     ),
                 ],
-              ),
-            );
-          },
-        ),
-      ],
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }
@@ -298,40 +299,42 @@ class _MoreTile extends StatelessWidget {
         children: [
           AspectRatio(
             aspectRatio: 1,
-            child: DecoratedBox(
+            child: Container(
               decoration: BoxDecoration(
-                color: FlowaColors.inkHigh,
-                borderRadius: FlowaRadii.xlAll,
-                border: Border.all(color: FlowaColors.hairlineStrong),
+                color: FlowaColors.inkSurface,
+                borderRadius: FlowaRadii.lgAll,
+                border: Border.all(
+                  color: item.accent.withValues(alpha: 0.18),
+                ),
               ),
               child: Center(
                 child: Container(
-                  width: 52,
-                  height: 52,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
-                    color: item.accent.withValues(alpha: 0.14),
+                    color: item.accent.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   alignment: Alignment.center,
                   child: FlowaLucideIcon(
                     item.icon,
-                    size: 26,
+                    size: 22,
                     color: item.accent,
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           SizedBox(
-            height: 34,
+            height: 32,
             child: Center(
               child: Text(
                 item.displayLabel,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: FlowaType.bodySm().copyWith(fontSize: 12),
+                style: FlowaType.micro(color: FlowaColors.boneMuted),
               ),
             ),
           ),

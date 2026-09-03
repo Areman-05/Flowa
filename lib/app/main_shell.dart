@@ -72,7 +72,7 @@ class _MainShellState extends State<MainShell> {
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
         extendBody: true,
-        backgroundColor: FlowaColors.ink,
+        backgroundColor: FlowaColors.inkSurface,
         body: FlowaCanvas(
           child: AnimatedSwitcher(
             duration: FlowaMotion.base,
