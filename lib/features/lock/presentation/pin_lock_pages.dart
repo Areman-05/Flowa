@@ -190,23 +190,29 @@ class _PinSetupPageState extends State<PinSetupPage> {
             )
           : ListView(
               children: [
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Require PIN on launch'),
-                  subtitle: const Text('Protects the app after onboarding'),
-                  value: _enabled,
-                  onChanged: (value) => setState(() => _enabled = value),
-                ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Biometric unlock'),
-                  subtitle: const Text(
-                    'Face ID / fingerprint placeholder for a future release',
+                Material(
+                  color: Colors.transparent,
+                  child: SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Require PIN on launch'),
+                    subtitle: const Text('Protects the app after onboarding'),
+                    value: _enabled,
+                    onChanged: (value) => setState(() => _enabled = value),
                   ),
-                  value: _biometric,
-                  onChanged: _enabled
-                      ? (value) => setState(() => _biometric = value)
-                      : null,
+                ),
+                Material(
+                  color: Colors.transparent,
+                  child: SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Biometric unlock'),
+                    subtitle: const Text(
+                      'Face ID / fingerprint placeholder for a future release',
+                    ),
+                    value: _biometric,
+                    onChanged: _enabled
+                        ? (value) => setState(() => _biometric = value)
+                        : null,
+                  ),
                 ),
                 if (_enabled) ...[
                   const SizedBox(height: FlowaSpacing.md),

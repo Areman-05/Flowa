@@ -107,15 +107,18 @@ class _MoreRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: CircleAvatar(
-        backgroundColor: color,
-        child: Icon(icon, color: FlowaColors.textPrimary),
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: CircleAvatar(
+          backgroundColor: color,
+          child: Icon(icon, color: FlowaColors.textPrimary),
+        ),
+        title: Text(title),
+        subtitle: Text(subtitle),
+        onTap: onTap,
       ),
-      title: Text(title),
-      subtitle: Text(subtitle),
-      onTap: onTap,
     );
   }
 }

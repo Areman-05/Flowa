@@ -177,7 +177,7 @@ class _ReceivePageState extends State<ReceivePage> {
           ? const Center(
               child: CircularProgressIndicator(color: FlowaColors.mint),
             )
-          : Column(
+          : ListView(
               children: [
                 _AccountShareCard(
                   account: account,
@@ -214,7 +214,7 @@ class _ReceivePageState extends State<ReceivePage> {
                     ),
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(height: FlowaSpacing.md),
                 FlowaMoneyKeypad(onKey: _digit),
                 const SizedBox(height: FlowaSpacing.sm),
               ],

@@ -59,50 +59,59 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
             )
           : ListView(
               children: [
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Permitir avisos'),
-                  value: _allowNotifications,
-                  activeThumbColor: FlowaColors.mintInk,
-                  activeTrackColor: FlowaColors.mint,
-                  onChanged: (value) async {
-                    setState(() {
-                      _allowNotifications = value;
-                      if (!value) {
-                        _transactionNotifications = false;
-                        _marketingPromotions = false;
-                      }
-                    });
-                    await _persist();
-                  },
+                Material(
+                  color: Colors.transparent,
+                  child: SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Permitir avisos'),
+                    value: _allowNotifications,
+                    activeThumbColor: FlowaColors.mintInk,
+                    activeTrackColor: FlowaColors.mint,
+                    onChanged: (value) async {
+                      setState(() {
+                        _allowNotifications = value;
+                        if (!value) {
+                          _transactionNotifications = false;
+                          _marketingPromotions = false;
+                        }
+                      });
+                      await _persist();
+                    },
+                  ),
                 ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Movimientos'),
-                  subtitle: const Text('Cuando entra o sale dinero'),
-                  value: _allowNotifications && _transactionNotifications,
-                  activeThumbColor: FlowaColors.mintInk,
-                  activeTrackColor: FlowaColors.mint,
-                  onChanged: !_allowNotifications
-                      ? null
-                      : (value) async {
-                          setState(() => _transactionNotifications = value);
-                          await _persist();
-                        },
+                Material(
+                  color: Colors.transparent,
+                  child: SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Movimientos'),
+                    subtitle: const Text('Cuando entra o sale dinero'),
+                    value: _allowNotifications && _transactionNotifications,
+                    activeThumbColor: FlowaColors.mintInk,
+                    activeTrackColor: FlowaColors.mint,
+                    onChanged: !_allowNotifications
+                        ? null
+                        : (value) async {
+                            setState(() => _transactionNotifications = value);
+                            await _persist();
+                          },
+                  ),
                 ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Promos y marketing'),
-                  subtitle: const Text('Novedades y ofertas. Mejor apagado.'),
-                  value: _allowNotifications && _marketingPromotions,
-                  activeThumbColor: FlowaColors.mintInk,
-                  activeTrackColor: FlowaColors.mint,
-                  onChanged: !_allowNotifications
-                      ? null
-                      : (value) async {
-                          setState(() => _marketingPromotions = value);
-                          await _persist();
-                        },
+                Material(
+                  color: Colors.transparent,
+                  child: SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Promos y marketing'),
+                    subtitle: const Text('Novedades y ofertas. Mejor apagado.'),
+                    value: _allowNotifications && _marketingPromotions,
+                    activeThumbColor: FlowaColors.mintInk,
+                    activeTrackColor: FlowaColors.mint,
+                    onChanged: !_allowNotifications
+                        ? null
+                        : (value) async {
+                            setState(() => _marketingPromotions = value);
+                            await _persist();
+                          },
+                  ),
                 ),
               ],
             ),

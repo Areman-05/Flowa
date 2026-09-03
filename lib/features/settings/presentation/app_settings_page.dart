@@ -375,17 +375,20 @@ class _SettingsToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SwitchListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(title, style: FlowaType.titleSm()),
-      subtitle: Text(
-        subtitle,
-        style: FlowaType.bodySm(color: FlowaColors.boneMuted),
+    return Material(
+      color: Colors.transparent,
+      child: SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(title, style: FlowaType.titleSm()),
+        subtitle: Text(
+          subtitle,
+          style: FlowaType.bodySm(color: FlowaColors.boneMuted),
+        ),
+        value: value,
+        activeThumbColor: FlowaColors.mintInk,
+        activeTrackColor: FlowaColors.mint,
+        onChanged: onChanged,
       ),
-      value: value,
-      activeThumbColor: FlowaColors.mintInk,
-      activeTrackColor: FlowaColors.mint,
-      onChanged: onChanged,
     );
   }
 }
