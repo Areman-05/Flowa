@@ -8,6 +8,7 @@ class InMemoryAuthRepository implements AuthRepository {
   AuthUser? _user;
   String? _passwordHash;
   bool _loggedIn = false;
+  UserProfileExtras _extras = const UserProfileExtras();
 
   @override
   Future<bool> isLoggedIn() async => _loggedIn;
@@ -77,6 +78,51 @@ class InMemoryAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> updateAccount({
+    String? fullName,
+    String? email,
+  }) async {
+    final current = _user;
+    if (current == null) {
+      throw AuthException('No hay ninguna cuenta.');
+    }
+    _user = AuthUser(
+      id: current.id,
+      fullName: fullName?.trim().isNotEmpty == true
+          ? fullName!.trim()
+          : current.fullName,
+      email: email?.trim().isNotEmpty == true
+          ? email!.trim().toLowerCase()
+          : current.email,
+    );
+  }
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    if (_passwordHash != LocalAuthDataSource.hashPassword(currentPassword)) {
+      throw AuthException('La contraseña actual no es correcta');
+    }
+    if (!FlowaPassword.isStrong(newPassword)) {
+      throw AuthException(
+        FlowaPassword.validationMessage(newPassword) ??
+            'La contraseña no cumple los requisitos',
+      );
+    }
+    _passwordHash = LocalAuthDataSource.hashPassword(newPassword);
+  }
+
+  @override
+  Future<UserProfileExtras> getProfileExtras() async => _extras;
+
+  @override
+  Future<void> saveProfileExtras(UserProfileExtras extras) async {
+    _extras = extras;
+  }
+
+  @override
   Future<void> logout() async {
     _loggedIn = false;
   }
@@ -85,5 +131,6 @@ class InMemoryAuthRepository implements AuthRepository {
     _user = null;
     _passwordHash = null;
     _loggedIn = false;
+    _extras = const UserProfileExtras();
   }
 }

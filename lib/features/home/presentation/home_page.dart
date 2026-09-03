@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/flowa_services.dart';
 import '../../../design_system/components/flowa_actions.dart';
+import '../../../design_system/components/flowa_avatar.dart';
 import '../../../design_system/components/flowa_icon.dart';
 import '../../../design_system/components/flowa_primitives.dart';
 import '../../../design_system/components/flowa_transaction_tile.dart';
@@ -43,7 +44,7 @@ class HomePage extends StatefulWidget {
 
   final VoidCallback? onSeeAllTransactions;
   final VoidCallback? onBadgeRefresh;
-  final VoidCallback? onOpenProfile;
+  final Future<void> Function()? onOpenProfile;
   final Future<void> Function()? onLogout;
 
   @override
@@ -182,8 +183,16 @@ class _HomePageState extends State<HomePage> {
               child: _Header(
                 user: user,
                 unread: _unread,
-                onProfile: widget.onOpenProfile ??
-                    () => _open(ProfilePage(onLogout: widget.onLogout)),
+                onProfile: () async {
+                  if (widget.onOpenProfile != null) {
+                    await widget.onOpenProfile!();
+                  } else {
+                    await _open(ProfilePage(onLogout: widget.onLogout));
+                  }
+                  if (mounted) {
+                    await _load();
+                  }
+                },
                 onInbox: () => _open(const NotificationInboxPage()),
                 onSearch: () => _open(const InsightsPage()),
               ),
@@ -318,20 +327,10 @@ class _Header extends StatelessWidget {
             behavior: HitTestBehavior.opaque,
             child: Row(
               children: [
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: const BoxDecoration(
-                    color: FlowaColors.mint,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    user.firstName.isEmpty
-                        ? 'F'
-                        : user.firstName[0].toUpperCase(),
-                    style: FlowaType.titleMd(color: FlowaColors.mintInk),
-                  ),
+                FlowaAvatar(
+                  name: user.fullName,
+                  path: user.avatarPath,
+                  size: 46,
                 ),
                 const SizedBox(width: FlowaSpacing.sm),
                 Expanded(

@@ -155,20 +155,68 @@ class UserProfile extends Equatable {
   const UserProfile({
     required this.id,
     required this.fullName,
+    this.username,
     this.avatarUrl,
+    this.avatarPath,
     this.email,
+    this.dateOfBirth,
   });
 
   final String id;
   final String fullName;
+  final String? username;
   final String? avatarUrl;
+  final String? avatarPath;
   final String? email;
+  final DateTime? dateOfBirth;
 
   String get firstName {
     final parts = fullName.trim().split(RegExp(r'\s+'));
     return parts.isEmpty ? fullName : parts.first;
   }
 
+  String get handle {
+    final value = username?.trim();
+    if (value != null && value.isNotEmpty) {
+      return value;
+    }
+    final mail = email?.split('@').first;
+    if (mail != null && mail.isNotEmpty) {
+      return mail;
+    }
+    return firstName.toLowerCase();
+  }
+
+  UserProfile copyWith({
+    String? id,
+    String? fullName,
+    String? username,
+    String? avatarUrl,
+    String? avatarPath,
+    String? email,
+    DateTime? dateOfBirth,
+    bool clearAvatarPath = false,
+    bool clearDateOfBirth = false,
+  }) {
+    return UserProfile(
+      id: id ?? this.id,
+      fullName: fullName ?? this.fullName,
+      username: username ?? this.username,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      avatarPath: clearAvatarPath ? null : (avatarPath ?? this.avatarPath),
+      email: email ?? this.email,
+      dateOfBirth: clearDateOfBirth ? null : (dateOfBirth ?? this.dateOfBirth),
+    );
+  }
+
   @override
-  List<Object?> get props => [id, fullName, avatarUrl, email];
+  List<Object?> get props => [
+        id,
+        fullName,
+        username,
+        avatarUrl,
+        avatarPath,
+        email,
+        dateOfBirth,
+      ];
 }

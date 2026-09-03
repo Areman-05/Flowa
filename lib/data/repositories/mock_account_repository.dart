@@ -25,12 +25,12 @@ class MockAccountRepository implements AccountRepository {
 
   @override
   Future<void> updateDisplayName(String fullName) async {
-    _user = UserProfile(
-      id: _user.id,
-      fullName: fullName,
-      avatarUrl: _user.avatarUrl,
-      email: _user.email,
-    );
+    _user = _user.copyWith(fullName: fullName);
+  }
+
+  @override
+  Future<void> updateProfile(UserProfile profile) async {
+    _user = profile;
   }
 
   @override

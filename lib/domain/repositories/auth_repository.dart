@@ -22,7 +22,33 @@ abstract class AuthRepository {
   /// Unlock for returning users — email read from stored account.
   Future<AuthUser> unlockWithPassword(String password);
 
+  Future<void> updateAccount({
+    String? fullName,
+    String? email,
+  });
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
+
+  Future<UserProfileExtras> getProfileExtras();
+
+  Future<void> saveProfileExtras(UserProfileExtras extras);
+
   Future<void> logout();
+}
+
+class UserProfileExtras {
+  const UserProfileExtras({
+    this.username,
+    this.avatarPath,
+    this.dateOfBirth,
+  });
+
+  final String? username;
+  final String? avatarPath;
+  final DateTime? dateOfBirth;
 }
 
 class AuthException implements Exception {

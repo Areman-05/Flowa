@@ -45,8 +45,7 @@ class AboutPage extends StatelessWidget {
           const FlowaLedgerRow(label: 'Licencia', value: 'MIT'),
           const SizedBox(height: FlowaSpacing.xl),
           Text(
-            'Banco para quien factura. Paleta e iconos de Vare Wallet; '
-            'estructura y flujo de Privat Bank. Adaptado, no copiado.',
+            'Banco para quien factura. Tu dinero, claro y bajo control.',
             textAlign: TextAlign.center,
             style: FlowaType.bodySm(),
           ),

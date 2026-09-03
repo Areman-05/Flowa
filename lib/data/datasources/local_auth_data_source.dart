@@ -10,6 +10,9 @@ abstract final class AuthKeys {
   static const userEmail = 'auth_user_email';
   static const passwordHash = 'auth_password_hash';
   static const registered = 'auth_registered';
+  static const username = 'auth_username';
+  static const avatarPath = 'auth_avatar_path';
+  static const dateOfBirth = 'auth_date_of_birth';
 }
 
 /// Thin SharedPreferences wrapper for email/password auth.
@@ -66,5 +69,51 @@ class LocalAuthDataSource {
       return false;
     }
     return stored == hashPassword(password);
+  }
+
+  Future<void> updateFullName(String fullName) =>
+      _prefs.setString(AuthKeys.userName, fullName);
+
+  Future<void> updateEmail(String email) =>
+      _prefs.setString(AuthKeys.userEmail, email.toLowerCase().trim());
+
+  Future<void> updatePassword(String password) =>
+      _prefs.setString(AuthKeys.passwordHash, hashPassword(password));
+
+  String? get username => _prefs.getString(AuthKeys.username);
+
+  String? get avatarPath => _prefs.getString(AuthKeys.avatarPath);
+
+  DateTime? get dateOfBirth {
+    final raw = _prefs.getString(AuthKeys.dateOfBirth);
+    if (raw == null || raw.isEmpty) {
+      return null;
+    }
+    return DateTime.tryParse(raw);
+  }
+
+  Future<void> saveProfileExtras({
+    String? username,
+    String? avatarPath,
+    DateTime? dateOfBirth,
+  }) async {
+    if (username == null) {
+      await _prefs.remove(AuthKeys.username);
+    } else {
+      await _prefs.setString(AuthKeys.username, username);
+    }
+    if (avatarPath == null) {
+      await _prefs.remove(AuthKeys.avatarPath);
+    } else {
+      await _prefs.setString(AuthKeys.avatarPath, avatarPath);
+    }
+    if (dateOfBirth == null) {
+      await _prefs.remove(AuthKeys.dateOfBirth);
+    } else {
+      await _prefs.setString(
+        AuthKeys.dateOfBirth,
+        dateOfBirth.toIso8601String(),
+      );
+    }
   }
 }

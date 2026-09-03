@@ -48,7 +48,11 @@
 		</dict>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Flowa necesita la cámara para escanear códigos QR de pago.</string>
+	<string>Flowa necesita la cámara para escanear códigos QR y actualizar tu foto de perfil.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Flowa usa tu galería para elegir una foto de perfil.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Flowa puede guardar una copia de tu foto de perfil.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

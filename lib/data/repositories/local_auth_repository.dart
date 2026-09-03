@@ -103,6 +103,65 @@ class LocalAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> updateAccount({
+    String? fullName,
+    String? email,
+  }) async {
+    if (fullName != null) {
+      final trimmed = fullName.trim();
+      if (trimmed.isEmpty) {
+        throw AuthException('El nombre es obligatorio');
+      }
+      await _source.updateFullName(trimmed);
+    }
+    if (email != null) {
+      final trimmed = email.trim().toLowerCase();
+      if (!_isValidEmail(trimmed)) {
+        throw AuthException('Introduce un email válido');
+      }
+      await _source.updateEmail(trimmed);
+    }
+  }
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    if (!_source.verifyPassword(currentPassword)) {
+      throw AuthException('La contraseña actual no es correcta');
+    }
+    if (!FlowaPassword.isStrong(newPassword)) {
+      throw AuthException(
+        FlowaPassword.validationMessage(newPassword) ??
+            'La contraseña no cumple los requisitos',
+      );
+    }
+    if (currentPassword == newPassword) {
+      throw AuthException('La nueva contraseña debe ser distinta');
+    }
+    await _source.updatePassword(newPassword);
+  }
+
+  @override
+  Future<UserProfileExtras> getProfileExtras() async {
+    return UserProfileExtras(
+      username: _source.username,
+      avatarPath: _source.avatarPath,
+      dateOfBirth: _source.dateOfBirth,
+    );
+  }
+
+  @override
+  Future<void> saveProfileExtras(UserProfileExtras extras) {
+    return _source.saveProfileExtras(
+      username: extras.username,
+      avatarPath: extras.avatarPath,
+      dateOfBirth: extras.dateOfBirth,
+    );
+  }
+
+  @override
   Future<void> logout() => _source.clearSession();
 
   static bool _isValidEmail(String email) {

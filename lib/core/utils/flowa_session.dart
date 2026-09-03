@@ -17,10 +17,15 @@ abstract final class FlowaSession {
       return null;
     }
 
+    final extras = await FlowaServices.authRepository.getProfileExtras();
     final profile = MockFinanceData.profileFromAuth(
       id: authUser.id,
       fullName: authUser.fullName,
       email: authUser.email,
+    ).copyWith(
+      username: extras.username,
+      avatarPath: extras.avatarPath,
+      dateOfBirth: extras.dateOfBirth,
     );
 
     final shouldSeed = FlowaDemoSeed.enabled && !FlowaServices.demoSeeded;

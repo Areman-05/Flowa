@@ -61,7 +61,9 @@ void main() {
       ),
     );
 
-    expect(find.text('Nombre visible'), findsOneWidget);
+    expect(find.text('Nombre'), findsOneWidget);
+    expect(find.text('Nombre de usuario'), findsOneWidget);
+    expect(find.text('Correo'), findsOneWidget);
     expect(find.text('Guardar'), findsOneWidget);
   });
 }
