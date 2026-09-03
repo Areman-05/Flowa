@@ -31,11 +31,11 @@ void main() {
     expect(find.text('Ana'), findsOneWidget);
     expect(find.text('Enviar'), findsOneWidget);
     expect(find.bySemanticsLabel('Inicio'), findsOneWidget);
-    expect(find.bySemanticsLabel('IA'), findsOneWidget);
+    expect(find.bySemanticsLabel('Más'), findsOneWidget);
 
-    await tester.tap(find.bySemanticsLabel('IA'));
+    await tester.tap(find.bySemanticsLabel('Más'));
     await tester.pumpAndSettle();
 
-    expect(find.text('¿En qué te ayudo?'), findsOneWidget);
+    expect(find.text('Servicios'), findsOneWidget);
   });
 }

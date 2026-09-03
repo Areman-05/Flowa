@@ -25,13 +25,18 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: AppSettingsPage()));
     await tester.pumpAndSettle();
     expect(find.text('Modo oscuro'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Acerca de Flowa'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Acerca de Flowa'), findsOneWidget);
   });
 
   testWidgets('support page shows contact section', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: SupportCenterPage()));
     await tester.pumpAndSettle();
-    expect(find.text('Contact us'), findsOneWidget);
-    expect(find.text('Rate app'), findsOneWidget);
+    expect(find.text('Chat en vivo'), findsOneWidget);
+    expect(find.text('Valorar app'), findsOneWidget);
   });
 }

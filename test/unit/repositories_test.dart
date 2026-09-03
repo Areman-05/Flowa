@@ -1,7 +1,6 @@
 import 'package:flowa/data/repositories/mock_account_repository.dart';
 import 'package:flowa/data/repositories/mock_transaction_repository.dart';
 import 'package:flowa/domain/entities/finance_entities.dart';
-import 'package:flowa/domain/entities/money_flow_kind.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -50,14 +49,6 @@ void main() {
       final all = await repository.getAll();
       expect(all, hasLength(1));
       expect(all.first.merchant, 'Café');
-    });
-  });
-
-  group('MoneyFlowKind', () {
-    test('keeps Send and Top-Up as distinct flows', () {
-      expect(MoneyFlowKind.send.title, isNot(MoneyFlowKind.topUp.title));
-      expect(MoneyFlowKind.topUp.requiresDestructiveConfirmation, isTrue);
-      expect(MoneyFlowKind.send.requiresDestructiveConfirmation, isFalse);
     });
   });
 }

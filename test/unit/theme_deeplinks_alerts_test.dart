@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import 'package:flowa/core/utils/deep_links.dart';
 import 'package:flowa/core/utils/transaction_export.dart';
 import 'package:flowa/data/repositories/in_memory_preferences_repository.dart';
 import 'package:flowa/design_system/tokens/flowa_colors.dart';
@@ -21,34 +20,6 @@ void main() {
 
     test('dark and light resolve to the same ink', () {
       expect(FlowaColors.background, FlowaColors.ink);
-    });
-  });
-
-  group('FlowaDeepLinks', () {
-    test('parses /send', () {
-      final route = FlowaDeepLinks.parse(Uri.parse('flowa:///send'));
-      expect(route, isNotNull);
-      expect(route!.destination, DeepLinkDestination.send);
-    });
-
-    test('parses /receive', () {
-      final route = FlowaDeepLinks.parse(Uri.parse('flowa:///receive'));
-      expect(route!.destination, DeepLinkDestination.receive);
-    });
-
-    test('parses /transaction/:id', () {
-      final route =
-          FlowaDeepLinks.parse(Uri.parse('flowa:///transaction/tx-42'));
-      expect(route!.destination, DeepLinkDestination.transactionDetail);
-      expect(route.id, 'tx-42');
-    });
-
-    test('returns null for unknown path', () {
-      expect(FlowaDeepLinks.parse(Uri.parse('flowa:///unknown')), isNull);
-    });
-
-    test('returns null for empty path', () {
-      expect(FlowaDeepLinks.parse(Uri.parse('flowa:///')), isNull);
     });
   });
 

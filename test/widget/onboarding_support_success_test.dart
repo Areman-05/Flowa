@@ -49,8 +49,9 @@ void main() {
     await tester.pumpWidget(
       const MaterialApp(home: SupportCenterPage()),
     );
+    await tester.pumpAndSettle();
 
-    expect(find.textContaining('Send, not Top-Up'), findsOneWidget);
+    expect(find.textContaining('Quería enviar dinero'), findsOneWidget);
     await tester.enterText(find.byType(TextField), 'paypal');
     await tester.pumpAndSettle();
     expect(find.textContaining('PayPal'), findsWidgets);
@@ -69,8 +70,14 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(home: TransactionDetailPage(item: item)),
     );
+    await tester.pumpAndSettle();
 
     expect(find.text('Apple'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.textContaining('Problema con este pago'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.textContaining('Problema con este pago'), findsOneWidget);
   });
 

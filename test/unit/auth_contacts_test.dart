@@ -69,6 +69,9 @@ void main() {
       );
       expect(updated.name, 'Mega Corp');
       expect(updated.note, 'VIP');
+
+      await repo.delete(updated.id);
+      expect(await repo.getAll(), isEmpty);
     });
   });
 }

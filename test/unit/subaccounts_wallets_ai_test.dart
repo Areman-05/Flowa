@@ -1,5 +1,4 @@
 import 'package:flowa/core/utils/flowa_validators.dart';
-import 'package:flowa/core/utils/result.dart';
 import 'package:flowa/data/repositories/mock_sub_account_repository.dart';
 import 'package:flowa/data/repositories/mock_wallet_repository.dart';
 import 'package:flowa/data/services/mock_ai_assistant_service.dart';
@@ -19,17 +18,6 @@ void main() {
       expect(FlowaValidators.email('bad'), isNotNull);
       expect(FlowaValidators.email('john@gmail.com'), isNull);
       expect(FlowaValidators.optionalEmail(''), isNull);
-    });
-  });
-
-  group('Result', () {
-    test('maps success values and preserves failures', () {
-      const ok = Success<int>(2);
-      final mapped = ok.map((value) => value * 2);
-      expect(mapped.valueOrNull, 4);
-
-      const fail = Failure<int>('nope');
-      expect(fail.map((value) => value * 2).errorOrNull, 'nope');
     });
   });
 

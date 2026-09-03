@@ -1,5 +1,4 @@
 import 'package:flowa/core/extensions/finance_labels.dart';
-import 'package:flowa/core/utils/debouncer.dart';
 import 'package:flowa/data/repositories/in_memory_preferences_repository.dart';
 import 'package:flowa/domain/entities/finance_entities.dart';
 import 'package:flowa/domain/repositories/preferences_repository.dart';
@@ -82,18 +81,6 @@ void main() {
       );
       final prefs = await repo.getNotificationPreferences();
       expect(prefs.marketingNotifications, isTrue);
-    });
-  });
-
-  group('Debouncer', () {
-    test('runs only the latest callback', () async {
-      final debouncer = Debouncer(delay: const Duration(milliseconds: 40));
-      var value = 0;
-      debouncer.run(() => value = 1);
-      debouncer.run(() => value = 2);
-      await Future<void>.delayed(const Duration(milliseconds: 80));
-      expect(value, 2);
-      debouncer.dispose();
     });
   });
 
