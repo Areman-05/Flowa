@@ -135,6 +135,13 @@ class CardWalletStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Drops in-memory cards so the next session can seed a clean wallet.
+  void clear() {
+    _cards.clear();
+    _seeded = false;
+    notifyListeners();
+  }
+
   void add(CardProfile profile) {
     _cards.add(profile);
     notifyListeners();

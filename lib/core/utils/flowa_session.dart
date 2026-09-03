@@ -1,5 +1,6 @@
 import '../../data/datasources/flowa_demo_seed.dart';
 import '../../data/datasources/mock_finance_data.dart';
+import '../../data/repositories/in_memory_contact_repository.dart';
 import '../../data/repositories/mock_account_repository.dart';
 import '../../data/repositories/mock_freelance_repository.dart';
 import '../../data/repositories/mock_transaction_repository.dart';
@@ -46,6 +47,9 @@ abstract final class FlowaSession {
         vault: FlowaDemoSeed.vault(now),
         invoices: FlowaDemoSeed.invoices(now),
         commitments: FlowaDemoSeed.commitments(now),
+      );
+      FlowaServices.contactRepository = InMemoryContactRepository(
+        seed: InMemoryContactRepository.demoSeed,
       );
       FlowaServices.demoSeeded = true;
     }

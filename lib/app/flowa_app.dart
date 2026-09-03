@@ -97,6 +97,7 @@ class _FlowaAppState extends State<FlowaApp> {
 
   Future<void> logout() async {
     await FlowaServices.authRepository.logout();
+    FlowaServices.resetUserData();
     if (!mounted) {
       return;
     }

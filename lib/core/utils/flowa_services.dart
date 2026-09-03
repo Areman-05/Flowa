@@ -1,3 +1,4 @@
+import '../../data/datasources/flowa_demo_seed.dart';
 import '../../data/repositories/in_memory_auth_repository.dart';
 import '../../data/repositories/in_memory_contact_repository.dart';
 import '../../data/repositories/in_memory_preferences_repository.dart';
@@ -19,6 +20,7 @@ import '../../domain/repositories/scheduled_transfer_repository.dart';
 import '../../domain/repositories/sub_account_repository.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../../domain/repositories/wallet_repository.dart';
+import '../../features/home/presentation/card_wallet_store.dart';
 
 /// Tiny manual service locator — keeps dependencies explicit for portfolio demos.
 abstract final class FlowaServices {
@@ -34,14 +36,14 @@ abstract final class FlowaServices {
   static InboxRepository inboxRepository = MockInboxRepository();
   static ScheduledTransferRepository scheduledTransferRepository =
       MockScheduledTransferRepository();
-  static ContactRepository contactRepository =
-      InMemoryContactRepository(seed: InMemoryContactRepository.demoSeed);
+  static ContactRepository contactRepository = InMemoryContactRepository();
   static FreelanceRepository freelanceRepository = MockFreelanceRepository();
 
-  /// Guard so demo data is only injected once per session.
+  /// Guard so demo data is only injected once per process until logout.
   static bool demoSeeded = false;
 
   /// Clears financial data while keeping auth/prefs as provided.
+  /// Contacts stay empty until [FlowaSession.hydrate] seeds the demo world.
   static void resetUserData() {
     demoSeeded = false;
     accountRepository = MockAccountRepository();
@@ -52,14 +54,15 @@ abstract final class FlowaServices {
     aiAssistant = MockAiAssistantService();
     inboxRepository = MockInboxRepository();
     scheduledTransferRepository = MockScheduledTransferRepository();
-    contactRepository =
-        InMemoryContactRepository(seed: InMemoryContactRepository.demoSeed);
+    contactRepository = InMemoryContactRepository();
+    CardWalletStore.instance.clear();
   }
 
   static void resetToMocks({
     PreferencesRepository? preferences,
     AuthRepository? auth,
   }) {
+    FlowaDemoSeed.overrideEnabled = null;
     authRepository = auth ?? InMemoryAuthRepository();
     preferencesRepository = preferences ?? InMemoryPreferencesRepository();
     resetUserData();

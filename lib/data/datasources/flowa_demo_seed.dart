@@ -5,11 +5,17 @@ import '../../domain/entities/freelance_entities.dart';
 /// Portfolio demo data: six months in the life of a freelance designer in
 /// Spain — lumpy income, fixed monthly costs, an invoice that went overdue.
 ///
-/// An empty bank app cannot be evaluated, so a fresh account is hydrated with
-/// a believable history. Widget tests opt out via [enabled] so the existing
-/// empty-state coverage keeps working.
+/// Seeded by [FlowaSession.hydrate] when [enabled]: primary account (~9184 €),
+/// six months of movements, tax vault, invoices, commitments, and payee
+/// contacts. Inbox, scheduled transfers and linked wallets stay empty.
+///
+/// Widget tests opt out via [enabled] so empty-state coverage keeps working.
+/// Tests that need the demo world set [overrideEnabled].
 abstract final class FlowaDemoSeed {
-  static bool get enabled => !FlowaRuntime.isWidgetTest;
+  static bool? overrideEnabled;
+
+  static bool get enabled =>
+      overrideEnabled ?? !FlowaRuntime.isWidgetTest;
 
   static const double startingBalance = 9184.60;
   static const double reservedForTax = 3120;
