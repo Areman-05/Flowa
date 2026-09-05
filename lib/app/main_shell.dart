@@ -12,11 +12,13 @@ import '../features/home/presentation/home_page.dart';
 import '../features/invoices/presentation/invoices_page.dart';
 import '../features/more/presentation/more_page.dart';
 import '../features/profile/presentation/profile_page.dart';
-import '../features/rewards/presentation/rewards_page.dart';
 import '../features/transactions/presentation/transactions_page.dart';
 import '../shared/navigation/flowa_routes.dart';
 
 /// Root shell. The canvas lives here so texture stays continuous across tabs.
+///
+/// Primary nav follows the freelance thesis: money home, invoices, movements,
+/// and Más — rewards stay out of the rail.
 class MainShell extends StatefulWidget {
   const MainShell({super.key, this.onLogout});
 
@@ -64,7 +66,6 @@ class _MainShellState extends State<MainShell> {
       ),
       const _Tab(child: InvoicesPage(embedded: true)),
       const _Tab(child: TransactionsPage(embedded: true)),
-      const _Tab(child: RewardsPage(embedded: true)),
       const _Tab(child: MorePage(embedded: true)),
     ];
 
@@ -98,7 +99,6 @@ class _MainShellState extends State<MainShell> {
             FlowaNavItem(glyph: FlowaGlyph.home, label: 'Inicio'),
             FlowaNavItem(glyph: FlowaGlyph.receipt, label: 'Facturas'),
             FlowaNavItem(glyph: FlowaGlyph.transfer, label: 'Movs'),
-            FlowaNavItem(glyph: FlowaGlyph.gift, label: 'Recompensas'),
             FlowaNavItem(glyph: FlowaGlyph.grid, label: 'Más'),
           ],
         ),

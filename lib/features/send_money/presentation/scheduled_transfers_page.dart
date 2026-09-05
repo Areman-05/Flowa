@@ -6,6 +6,7 @@ import '../../../design_system/components/flowa_actions.dart';
 import '../../../design_system/components/flowa_icon.dart';
 import '../../../design_system/components/flowa_screen.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
+import '../../../design_system/tokens/flowa_typography.dart';
 import '../../../domain/entities/scheduled_transfer.dart';
 import '../../../shared/widgets/flowa_states.dart';
 
@@ -62,9 +63,18 @@ class _ScheduledTransfersPageState extends State<ScheduledTransfersPage> {
                           '${item.frequencyLabel} · ${FlowaFormatters.transactionStamp(item.scheduledFor)}',
                       trailing: Text(
                         FlowaFormatters.currency(item.amount),
-                        style: const TextStyle(color: FlowaColors.mint),
+                        style: FlowaType.titleSm(color: FlowaColors.mint),
                       ),
-                      onTap: () {},
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              '${item.recipientName}: '
+                              '${FlowaFormatters.currency(item.amount)}',
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),

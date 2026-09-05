@@ -6,6 +6,7 @@ import '../../../core/utils/flowa_haptics.dart';
 import '../../../core/utils/flowa_services.dart';
 import '../../../design_system/components/flowa_actions.dart';
 import '../../../design_system/components/flowa_fields.dart';
+import '../../../design_system/components/flowa_icon.dart';
 import '../../../design_system/components/flowa_mark.dart';
 import '../../../design_system/components/flowa_primitives.dart';
 import '../../../design_system/components/flowa_texture.dart';
@@ -104,12 +105,6 @@ class _ReturnLoginPageState extends State<ReturnLoginPage>
     }
   }
 
-  void _soon(String label) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('$label — próximamente')));
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -168,10 +163,10 @@ class _ReturnLoginPageState extends State<ReturnLoginPage>
                                   left: FlowaSpacing.sm,
                                   bottom: 10,
                                 ),
-                                child: Icon(
+                                child: FlowaIcon(
                                   _reveal
-                                      ? Icons.visibility_off_outlined
-                                      : Icons.visibility_outlined,
+                                      ? FlowaGlyph.eyeOff
+                                      : FlowaGlyph.eye,
                                   size: 20,
                                   color: FlowaColors.boneFaint,
                                 ),
@@ -186,41 +181,11 @@ class _ReturnLoginPageState extends State<ReturnLoginPage>
                 ),
                 FlowaAcidButton(
                   label: 'Entrar',
-                  icon: Icons.arrow_forward_rounded,
+                  glyph: FlowaGlyph.arrowRight,
                   loading: _loading,
                   onPressed: _submit,
                 ),
-                const SizedBox(height: FlowaSpacing.sm),
-                Row(
-                  children: [
-                    Expanded(
-                      child: FlowaGhostButton(
-                        label: 'Face ID',
-                        icon: Icons.face_retouching_natural_outlined,
-                        compact: true,
-                        onPressed: () => _soon('Face ID'),
-                      ),
-                    ),
-                    const SizedBox(width: FlowaSpacing.xs),
-                    Expanded(
-                      child: FlowaGhostButton(
-                        label: 'Huella',
-                        icon: Icons.fingerprint_rounded,
-                        compact: true,
-                        onPressed: () => _soon('Huella digital'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: FlowaSpacing.lg),
-                Center(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => _soon('Recuperar contraseña'),
-                    child: const FlowaMicroLabel('¿Olvidaste la contraseña?'),
-                  ),
-                ),
-                const SizedBox(height: FlowaSpacing.lg),
+                const SizedBox(height: FlowaSpacing.xl),
               ],
             ),
           ),

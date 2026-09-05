@@ -103,6 +103,13 @@ class _RewardsPageState extends State<RewardsPage> {
         children: [
           Row(
             children: [
+              if (!widget.embedded)
+                FlowaIconAction(
+                  glyph: FlowaGlyph.arrowLeft,
+                  tooltip: 'Volver',
+                  onTap: () => Navigator.of(context).maybePop(),
+                ),
+              if (!widget.embedded) const SizedBox(width: FlowaSpacing.sm),
               Expanded(
                 child: Text('Recompensas', style: FlowaType.titleLg()),
               ),

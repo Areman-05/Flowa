@@ -27,12 +27,12 @@ void main() {
 
     expect(find.text('Conectar PayPal'), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.text('Secure login handled by PayPal.'),
+      find.textContaining('Inicio de sesión simulado'),
       200,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('Secure login handled by PayPal.'), findsOneWidget);
-    expect(find.text('Log In'), findsOneWidget);
+    expect(find.textContaining('Inicio de sesión simulado'), findsOneWidget);
+    expect(find.text('Conectar'), findsOneWidget);
   });
 
   testWidgets('AI assistant starts chat from quick action', (tester) async {

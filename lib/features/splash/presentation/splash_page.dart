@@ -61,7 +61,7 @@ class _SplashPageState extends State<SplashPage>
                   Text('Flowa', style: FlowaType.wordmark(size: 42)),
                   const SizedBox(height: FlowaSpacing.sm),
                   Text(
-                    'Tu dinero, claro.',
+                    'Lo que puedes gastar.',
                     style: FlowaType.body(color: FlowaColors.boneMuted),
                   ),
                   const Spacer(flex: 4),

@@ -11,19 +11,18 @@ import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../design_system/tokens/flowa_typography.dart';
 import '../../../shared/navigation/flowa_routes.dart';
 import '../../notifications/presentation/notification_inbox_page.dart';
+import '../../rewards/presentation/rewards_page.dart';
 import '../../settings/presentation/app_settings_page.dart';
 import '../../support/presentation/support_center_page.dart';
 import '../domain/more_service_catalog.dart';
 import 'more_bill_pay_page.dart';
 import 'more_service_pages.dart';
-import 'widgets/more_payment_ui.dart';
 
 class _MoreMenuItem {
   const _MoreMenuItem({
     required this.label,
     required this.icon,
     required this.page,
-    required this.accent,
     this.hubLabel,
   });
 
@@ -31,12 +30,11 @@ class _MoreMenuItem {
   final String? hubLabel;
   final IconData icon;
   final Widget page;
-  final Color accent;
 
   String get displayLabel => hubLabel ?? label;
 }
 
-/// Hub bancario — pagos, servicios y utilidades.
+/// Hub utilidades — lista fintech (mint + ink), no supermercado de tiles.
 class MorePage extends StatefulWidget {
   const MorePage({super.key, this.embedded = false});
 
@@ -79,26 +77,22 @@ class _MorePageState extends State<MorePage> {
       _MoreMenuItem(
         label: 'Móvil',
         icon: LucideIcons.smartphone,
-        accent: Color(0xFF00A9E0),
         page: MoreBillPayPage(service: MoreServiceCatalog.mobile),
       ),
       _MoreMenuItem(
         label: 'Suministros',
         hubLabel: 'Luz y gas',
         icon: LucideIcons.house,
-        accent: Color(0xFF7A94D4),
         page: MoreBillPayPage(service: MoreServiceCatalog.utilities),
       ),
       _MoreMenuItem(
         label: 'Internet',
         icon: LucideIcons.globe,
-        accent: Color(0xFF6B7FD7),
         page: MoreBillPayPage(service: MoreServiceCatalog.internet),
       ),
       _MoreMenuItem(
         label: 'TV',
         icon: LucideIcons.tv,
-        accent: Color(0xFFCC9168),
         page: MoreBillPayPage(service: MoreServiceCatalog.tv),
       ),
     ];
@@ -107,55 +101,52 @@ class _MorePageState extends State<MorePage> {
       _MoreMenuItem(
         label: 'Entradas',
         icon: LucideIcons.ticket,
-        accent: Color(0xFF9A7EC8),
         page: MoreTicketsPage(),
       ),
       _MoreMenuItem(
         label: 'Seguro',
         icon: LucideIcons.shield,
-        accent: Color(0xFFCC7888),
         page: MoreInsurancePage(),
       ),
       _MoreMenuItem(
         label: 'Pago QR',
         hubLabel: 'QR',
         icon: LucideIcons.qr_code,
-        accent: Color(0xFF8B7FD4),
         page: MoreQrPayPage(),
       ),
       _MoreMenuItem(
         label: 'Donaciones',
         hubLabel: 'Donar',
         icon: LucideIcons.heart_handshake,
-        accent: Color(0xFF6DB892),
         page: MoreDonationsPage(),
       ),
     ];
 
     const otros = [
       _MoreMenuItem(
+        label: 'Recompensas',
+        icon: LucideIcons.gift,
+        page: RewardsPage(),
+      ),
+      _MoreMenuItem(
         label: 'Cambio',
         icon: LucideIcons.refresh_cw,
-        accent: Color(0xFF6890B8),
         page: MoreExchangePage(),
       ),
       _MoreMenuItem(
         label: 'Sucursales',
         hubLabel: 'Oficinas',
         icon: LucideIcons.map_pin,
-        accent: Color(0xFFE8A838),
         page: MoreBranchesPage(),
       ),
       _MoreMenuItem(
         label: 'Soporte',
         icon: LucideIcons.headset,
-        accent: Color(0xFF8888A0),
         page: SupportCenterPage(),
       ),
       _MoreMenuItem(
         label: 'Ajustes',
         icon: LucideIcons.settings,
-        accent: Color(0xFFC4A060),
         page: AppSettingsPage(),
       ),
     ];
@@ -186,6 +177,11 @@ class _MorePageState extends State<MorePage> {
                     ),
                   ],
                 ),
+                const SizedBox(height: FlowaSpacing.sm),
+                Text(
+                  'Pagos y utilidades',
+                  style: FlowaType.bodySm(color: FlowaColors.boneMuted),
+                ),
                 SizedBox(height: embedded ? FlowaSpacing.lg : FlowaSpacing.xl),
                 FlowaEntrance(
                   rise: 0,
@@ -210,7 +206,7 @@ class _MorePageState extends State<MorePage> {
                   rise: 0,
                   delay: const Duration(milliseconds: 80),
                   child: _MoreSection(
-                    title: 'Otros',
+                    title: 'Cuenta',
                     items: otros,
                     onTap: (page) => _open(context, page),
                   ),
@@ -246,42 +242,46 @@ class _MoreSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MoreFintechCard(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: FlowaType.titleSm()),
-          const SizedBox(height: FlowaSpacing.md),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              const gap = FlowaSpacing.sm;
-              final tileWidth = (constraints.maxWidth - gap * 3) / 4;
-
-              return Wrap(
-                spacing: gap,
-                runSpacing: FlowaSpacing.sm,
-                children: [
-                  for (final item in items)
-                    SizedBox(
-                      width: tileWidth,
-                      child: _MoreTile(
-                        item: item,
-                        onTap: () => onTap(item.page),
-                      ),
-                    ),
-                ],
-              );
-            },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 10),
+          child: Text(
+            title,
+            style: FlowaType.micro(color: FlowaColors.boneMuted),
           ),
-        ],
-      ),
+        ),
+        Container(
+          decoration: const BoxDecoration(
+            color: FlowaColors.inkHigh,
+            borderRadius: FlowaRadii.xxlAll,
+          ),
+          child: Column(
+            children: [
+              for (var i = 0; i < items.length; i++) ...[
+                _MoreRow(
+                  item: items[i],
+                  onTap: () => onTap(items[i].page),
+                ),
+                if (i < items.length - 1)
+                  const Divider(
+                    height: 1,
+                    thickness: 1,
+                    indent: 68,
+                    color: FlowaColors.hairline,
+                  ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
 
-class _MoreTile extends StatelessWidget {
-  const _MoreTile({
+class _MoreRow extends StatelessWidget {
+  const _MoreRow({
     required this.item,
     required this.onTap,
   });
@@ -293,52 +293,36 @@ class _MoreTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return FlowaPressScale(
       onTap: onTap,
-      scale: 0.97,
-      haptic: false,
-      child: Column(
-        children: [
-          AspectRatio(
-            aspectRatio: 1,
-            child: Container(
-              decoration: BoxDecoration(
-                color: FlowaColors.inkSurface,
-                borderRadius: FlowaRadii.lgAll,
-                border: Border.all(
-                  color: item.accent.withValues(alpha: 0.18),
-                ),
+      scale: 0.985,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: const BoxDecoration(
+                color: FlowaColors.mintTintedSurface,
+                shape: BoxShape.circle,
               ),
-              child: Center(
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: item.accent.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: FlowaLucideIcon(
-                    item.icon,
-                    size: 22,
-                    color: item.accent,
-                  ),
-                ),
+              alignment: Alignment.center,
+              child: FlowaLucideIcon(
+                item.icon,
+                size: 20,
+                color: FlowaColors.mint,
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 32,
-            child: Center(
-              child: Text(
-                item.displayLabel,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: FlowaType.micro(color: FlowaColors.boneMuted),
-              ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(item.displayLabel, style: FlowaType.titleSm()),
             ),
-          ),
-        ],
+            const FlowaIcon(
+              FlowaGlyph.arrowRight,
+              size: 18,
+              color: FlowaColors.boneGhost,
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -4,10 +4,13 @@ import 'package:flutter/services.dart';
 import '../../../core/utils/flowa_haptics.dart';
 import '../../../core/utils/flowa_pin.dart';
 import '../../../core/utils/flowa_services.dart';
+import '../../../design_system/components/flowa_actions.dart';
+import '../../../design_system/components/flowa_icon.dart';
 import '../../../design_system/components/flowa_screen.dart';
+import '../../../design_system/components/flowa_texture.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
-import '../../../shared/widgets/flowa_buttons.dart';
+import '../../../design_system/tokens/flowa_typography.dart';
 
 class PinUnlockPage extends StatefulWidget {
   const PinUnlockPage({required this.onUnlocked, super.key});
@@ -44,69 +47,81 @@ class _PinUnlockPageState extends State<PinUnlockPage> {
     }
     await FlowaHaptics.light();
     setState(() {
-      _error = 'Incorrect PIN';
+      _error = 'PIN incorrecto';
       _attempt = '';
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: FlowaColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: FlowaSpacing.screenPadding,
-          child: Column(
-            children: [
-              const Spacer(),
-              const Icon(
-                Icons.lock_outline,
-                size: 40,
-                color: FlowaColors.primary,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: FlowaColors.ink,
+        body: FlowaCanvas(
+          mist: false,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: FlowaSpacing.gutter,
               ),
-              const SizedBox(height: FlowaSpacing.md),
-              Text(
-                'Enter PIN',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: FlowaSpacing.xl),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Column(
                 children: [
-                  for (var i = 0; i < FlowaPin.length; i++)
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      width: 14,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: i < _attempt.length
-                            ? FlowaColors.primary
-                            : FlowaColors.border,
-                      ),
+                  const Spacer(),
+                  const FlowaIcon(
+                    FlowaGlyph.lock,
+                    size: 36,
+                    color: FlowaColors.mint,
+                  ),
+                  const SizedBox(height: FlowaSpacing.md),
+                  Text('Introduce tu PIN', style: FlowaType.titleLg()),
+                  const SizedBox(height: FlowaSpacing.sm),
+                  Text(
+                    'Bloqueo de la app',
+                    style: FlowaType.body(color: FlowaColors.boneMuted),
+                  ),
+                  const SizedBox(height: FlowaSpacing.xl),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      for (var i = 0; i < FlowaPin.length; i++)
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 8),
+                          width: 14,
+                          height: 14,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: i < _attempt.length
+                                ? FlowaColors.mint
+                                : FlowaColors.hairlineStrong,
+                          ),
+                        ),
+                    ],
+                  ),
+                  if (_error != null) ...[
+                    const SizedBox(height: FlowaSpacing.md),
+                    Text(
+                      _error!,
+                      style: FlowaType.body(color: FlowaColors.danger),
                     ),
+                  ],
+                  const Spacer(),
+                  _PinKeypad(
+                    onDigit: _append,
+                    onDelete: () {
+                      if (_attempt.isEmpty) {
+                        return;
+                      }
+                      setState(
+                        () => _attempt =
+                            _attempt.substring(0, _attempt.length - 1),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: FlowaSpacing.xl),
                 ],
               ),
-              if (_error != null) ...[
-                const SizedBox(height: FlowaSpacing.md),
-                Text(
-                  _error!,
-                  style: const TextStyle(color: FlowaColors.danger),
-                ),
-              ],
-              const Spacer(),
-              _PinKeypad(
-                onDigit: _append,
-                onDelete: () {
-                  if (_attempt.isEmpty) {
-                    return;
-                  }
-                  setState(
-                    () => _attempt = _attempt.substring(0, _attempt.length - 1),
-                  );
-                },
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -124,7 +139,6 @@ class PinSetupPage extends StatefulWidget {
 class _PinSetupPageState extends State<PinSetupPage> {
   final _controller = TextEditingController();
   bool _enabled = false;
-  bool _biometric = false;
   bool _loading = true;
   String? _error;
 
@@ -137,14 +151,11 @@ class _PinSetupPageState extends State<PinSetupPage> {
   Future<void> _load() async {
     final enabled = await FlowaServices.preferencesRepository.isPinEnabled();
     final code = await FlowaServices.preferencesRepository.getPinCode();
-    final biometric = await FlowaServices.preferencesRepository
-        .isBiometricEnabled();
     if (!mounted) {
       return;
     }
     setState(() {
       _enabled = enabled;
-      _biometric = biometric;
       _controller.text = code;
       _loading = false;
     });
@@ -172,7 +183,7 @@ class _PinSetupPageState extends State<PinSetupPage> {
     }
     await FlowaServices.preferencesRepository.setPinCode(_controller.text);
     await FlowaServices.preferencesRepository.setPinEnabled(true);
-    await FlowaServices.preferencesRepository.setBiometricEnabled(_biometric);
+    await FlowaServices.preferencesRepository.setBiometricEnabled(false);
     if (!mounted) {
       return;
     }
@@ -183,7 +194,7 @@ class _PinSetupPageState extends State<PinSetupPage> {
   Widget build(BuildContext context) {
     return FlowaScreen(
       title: 'Bloqueo',
-      footer: FlowaPrimaryButton(label: 'Guardar', onPressed: _save),
+      footer: FlowaAcidButton(label: 'Guardar', onPressed: _save),
       child: _loading
           ? const Center(
               child: CircularProgressIndicator(color: FlowaColors.mint),
@@ -194,24 +205,18 @@ class _PinSetupPageState extends State<PinSetupPage> {
                   color: Colors.transparent,
                   child: SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Require PIN on launch'),
-                    subtitle: const Text('Protects the app after onboarding'),
-                    value: _enabled,
-                    onChanged: (value) => setState(() => _enabled = value),
-                  ),
-                ),
-                Material(
-                  color: Colors.transparent,
-                  child: SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Biometric unlock'),
-                    subtitle: const Text(
-                      'Face ID / fingerprint placeholder for a future release',
+                    title: Text(
+                      'Pedir PIN al abrir',
+                      style: FlowaType.titleSm(),
                     ),
-                    value: _biometric,
-                    onChanged: _enabled
-                        ? (value) => setState(() => _biometric = value)
-                        : null,
+                    subtitle: Text(
+                      'Protege la app después del onboarding',
+                      style: FlowaType.bodySm(color: FlowaColors.boneMuted),
+                    ),
+                    value: _enabled,
+                    activeThumbColor: FlowaColors.mintInk,
+                    activeTrackColor: FlowaColors.mint,
+                    onChanged: (value) => setState(() => _enabled = value),
                   ),
                 ),
                 if (_enabled) ...[
@@ -221,9 +226,10 @@ class _PinSetupPageState extends State<PinSetupPage> {
                     keyboardType: TextInputType.number,
                     obscureText: true,
                     maxLength: FlowaPin.length,
+                    style: FlowaType.titleSm(),
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: InputDecoration(
-                      labelText: '4-digit PIN',
+                      labelText: 'PIN de 4 dígitos',
                       errorText: _error,
                     ),
                   ),
@@ -257,7 +263,7 @@ class _PinKeypad extends StatelessWidget {
               onPressed: key == 'del' ? onDelete : () => onDigit(key),
               child: Text(
                 key == 'del' ? '⌫' : key,
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: FlowaType.titleLg(),
               ),
             ),
       ],

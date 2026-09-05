@@ -27,8 +27,6 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
   bool _balanceHidden = true;
   bool _budgetEnabled = false;
   double _budgetLimit = 500;
-  bool _darkMode = false;
-  bool _biometric = false;
   bool _loading = true;
 
   @override
@@ -42,8 +40,6 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
     final hidden = await prefs.isBalanceHiddenByDefault();
     final budgetEnabled = await prefs.isBudgetEnabled();
     final budgetLimit = await prefs.getMonthlyBudgetLimit();
-    final dark = await prefs.isDarkModeEnabled();
-    final biometric = await prefs.isBiometricEnabled();
     if (!mounted) {
       return;
     }
@@ -51,8 +47,6 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
       _balanceHidden = hidden;
       _budgetEnabled = budgetEnabled;
       _budgetLimit = budgetLimit;
-      _darkMode = dark;
-      _biometric = biometric;
       _loading = false;
     });
   }
@@ -117,13 +111,9 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                     ),
                     _SettingsToggle(
                       title: 'Modo oscuro',
-                      subtitle: 'Tema oscuro siempre activo en demo',
-                      value: _darkMode,
-                      onChanged: (value) async {
-                        setState(() => _darkMode = value);
-                        await FlowaServices.preferencesRepository
-                            .setDarkModeEnabled(value);
-                      },
+                      subtitle: 'Flowa usa solo canvas oscuro en esta demo',
+                      value: true,
+                      onChanged: null,
                     ),
                   ],
                 ),
@@ -138,16 +128,6 @@ class _AppSettingsPageState extends State<AppSettingsPage> {
                         context,
                         const PinSetupPage(),
                       ),
-                    ),
-                    _SettingsToggle(
-                      title: 'Desbloqueo biométrico',
-                      subtitle: 'Huella o Face ID si está disponible',
-                      value: _biometric,
-                      onChanged: (value) async {
-                        setState(() => _biometric = value);
-                        await FlowaServices.preferencesRepository
-                            .setBiometricEnabled(value);
-                      },
                     ),
                   ],
                 ),
@@ -371,7 +351,7 @@ class _SettingsToggle extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool>? onChanged;
 
   @override
   Widget build(BuildContext context) {

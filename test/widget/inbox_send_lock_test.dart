@@ -68,6 +68,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Bloqueo'), findsOneWidget);
-    expect(find.text('Require PIN on launch'), findsOneWidget);
+    expect(find.text('Pedir PIN al abrir'), findsOneWidget);
   });
 }

@@ -782,7 +782,7 @@ class MorePayFromCard extends StatelessWidget {
               ),
               Text(
                 'Cambiar',
-                style: FlowaType.titleMd(color: FlowaColors.mint),
+                style: FlowaType.titleMd(color: FlowaColors.mintBright),
               ),
             ],
           ),
@@ -844,13 +844,37 @@ Future<CardProfile?> showMoreCardPicker({
                               height: 168,
                             ),
                             if (isSelected)
-                              const Positioned(
+                              Positioned(
                                 top: 12,
                                 right: 12,
-                                child: Icon(
-                                  Icons.check_circle_rounded,
-                                  color: FlowaColors.mint,
-                                  size: 28,
+                                child: Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color: FlowaColors.mintBright,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: FlowaColors.ink.withValues(
+                                        alpha: 0.35,
+                                      ),
+                                      width: 1.5,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: FlowaColors.ink.withValues(
+                                          alpha: 0.35,
+                                        ),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: const Icon(
+                                    Icons.check_rounded,
+                                    color: FlowaColors.mintInk,
+                                    size: 18,
+                                  ),
                                 ),
                               ),
                           ],
