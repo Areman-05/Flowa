@@ -1,6 +1,17 @@
 # Flowa architecture
 
 Feature-first layout with clean architecture layers inside each feature.
+Portfolio demo: local/mock data only — no real backend.
+
+## Product pillars (UI discourse)
+
+1. **Truly available** — spendable after tax vault + commitments (`home`, `card_wallet_store`, `freelance_entities`)
+2. **Tax vault / Hacienda** — % of income reserved (`vault`, register last step)
+3. **Invoices** — primary nav loop: issue → collect → reserve
+4. **Design system** — ink + mint `#00E6A6` + Manrope (`design_system/`)
+5. **Send confirmation** — Send → Review → Success
+
+Primary shell tabs: Inicio | Facturas | Movs | Más. Rewards is under Más, not primary nav.
 
 ## Layers
 

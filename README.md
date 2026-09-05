@@ -1,43 +1,54 @@
 # Flowa
 
-Premium fintech finance app built with **Flutter** for Android and iOS.
+App fintech en **Flutter** (Android / iOS) pensada para **freelancers y autónomos en España**.
 
-Flowa focuses on **clarity, control, and confidence** when managing money —
-personal, family, and business flows in one place.
+No es un clon de Revolut. El producto gira alrededor de una idea clara:
 
-## Product pillars
+> **Lo que puedes gastar de verdad** — no el saldo del banco.
 
-- Clear money flows (Send ≠ Top-Up ≠ Receive)
-- Customizable sub-accounts (Family / Business)
-- Granular notification preferences
-- AI assistant for guided actions
-- External wallet linking (e.g. PayPal)
-- Confirmation steps that prevent costly mistakes
+Demo de portfolio con datos mock locales (sin backend real).
+
+## Tesis de producto
+
+1. **Disponible de verdad** — Hero del Home: saldo usable tras impuestos y compromisos fijos.
+2. **Bote Hacienda** — Reserva un % de cada cobro para el trimestre IVA.
+3. **Facturas en el rail principal** — Emitir / seguir / cobrar, y al cobrar se alimenta el bote.
+4. **Confirmación en pagos** — Send → revisar → éxito, sin sorpresas.
+5. **Design system minimalista** — Canvas negro, un acento mint `#00E6A6`, tipografía Manrope, motion quieto.
+
+## Navegación
+
+| Tab | Rol |
+| --- | --- |
+| Inicio | Disponible de verdad, tarjetas, CTAs Enviar / Ingresar / Bote / Análisis |
+| Facturas | Loop freelance |
+| Movs | Historial |
+| Más | Servicios, recompensas (secundario), soporte, ajustes |
 
 ## Tech stack
 
-| Layer | Choice |
+| Capa | Elección |
 | --- | --- |
 | Framework | Flutter / Dart |
-| Platforms | Android + iOS |
-| Architecture | Feature-first + clean layers |
-| Quality | Unit, widget, and flow tests |
-| Performance | Lean rebuilds, efficient lists |
+| Plataformas | Android + iOS |
+| Arquitectura | Feature-first + capas clean ligeras |
+| Persistencia demo | SharedPreferences (auth/prefs) + repos in-memory |
+| Calidad | Unit + widget tests |
 
-## Project structure
+## Estructura
 
 ```
 lib/
-  app/           # App widget, theme, routing
-  core/          # Constants, errors, utils, extensions
-  design_system/ # Colors, typography, spacing, components
-  domain/        # Entities and business rules
-  data/          # Repositories and data sources
-  features/      # Feature modules (home, send, ai, ...)
-  shared/        # Cross-feature widgets and helpers
+  app/             # FlowaApp, MainShell
+  core/            # Utils, sesión, validadores
+  design_system/   # Colores, tipografía, componentes
+  domain/          # Entidades (finance, freelance…)
+  data/            # Repos mock / local
+  features/        # home, invoices, vault, send, auth…
+  shared/          # Navegación y widgets cruzados
 ```
 
-## Getting started
+## Cómo correr
 
 ```bash
 flutter pub get
@@ -46,6 +57,10 @@ flutter test
 flutter run
 ```
 
+## Nota de portfolio
+
+Flowa es una **demo honesta**: saldo, movimientos, facturas y contactos viven en memoria de sesión. Auth y preferencias sí se guardan en el dispositivo. Sirve para enseñar craft de producto y UI fintech, no para operar dinero real.
+
 ## License
 
-Private portfolio project.
+Proyecto privado de portfolio.
