@@ -9,7 +9,6 @@ import '../../../design_system/components/flowa_primitives.dart';
 import '../../../design_system/components/flowa_transaction_tile.dart';
 import '../../../design_system/components/flowa_visa_card.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
-import '../../../design_system/tokens/flowa_motion_tokens.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
 import '../../../design_system/tokens/flowa_typography.dart';
 import '../../../domain/entities/finance_entities.dart';
@@ -20,11 +19,11 @@ import '../../insights/domain/spending_snapshot.dart';
 import '../../insights/presentation/insights_page.dart';
 import '../../invoices/presentation/invoices_page.dart';
 import '../../notifications/presentation/notification_inbox_page.dart';
+import '../../profile/presentation/profile_page.dart';
 import '../../receive/presentation/receive_page.dart';
 import '../../send_money/presentation/send_money_page.dart';
-import '../../profile/presentation/profile_page.dart';
 import '../../transactions/presentation/transaction_detail_page.dart';
-import '../../vault/presentation/tax_vault_sheet.dart';
+import '../../vault/presentation/tax_vault_page.dart';
 import 'card_wallet_sheet.dart';
 import 'card_wallet_store.dart';
 
@@ -179,112 +178,105 @@ class _HomePageState extends State<HomePage> {
             FlowaSpacing.navClearance,
           ),
           children: [
-            FlowaEntrance(
-              child: _Header(
-                user: user,
-                unread: _unread,
-                onProfile: () async {
-                  if (widget.onOpenProfile != null) {
-                    await widget.onOpenProfile!();
-                  } else {
-                    await _open(ProfilePage(onLogout: widget.onLogout));
-                  }
-                  if (mounted) {
-                    await _load();
-                  }
-                },
-                onInbox: () => _open(const NotificationInboxPage()),
-                onSearch: () => _open(const InsightsPage()),
-              ),
+            _Header(
+              user: user,
+              unread: _unread,
+              onProfile: () async {
+                if (widget.onOpenProfile != null) {
+                  await widget.onOpenProfile!();
+                } else {
+                  await _open(ProfilePage(onLogout: widget.onLogout));
+                }
+                if (mounted) {
+                  await _load();
+                }
+              },
+              onInbox: () => _open(const NotificationInboxPage()),
             ),
             const SizedBox(height: FlowaSpacing.xl),
-            FlowaEntrance(
-              delay: FlowaMotion.stagger(1),
-              child: Builder(
-                builder: (context) {
-                  final store = CardWalletStore.instance;
-                  store.ensureSeeded(
-                    primary: account,
-                    vault: _vault,
-                    trulyAvailable: _overview.trulyAvailable,
-                  );
-                  return ListenableBuilder(
-                    listenable: store,
-                    builder: (context, _) {
-                      final live = store.deck;
-                      return FlowaCardDeck(
-                        cards: [
-                          for (final c in live)
-                            (
-                              account: c.account,
-                              tint: c.style,
-                              pattern: c.pattern,
-                              caption: c.caption,
-                              amount: c.account.availableBalance,
-                            ),
-                        ],
-                        onOpen: () => showCardWalletSheet(
-                          context: context,
-                          primary: account,
-                          vault: _vault,
-                          trulyAvailable: _overview.trulyAvailable,
-                          onChanged: () => setState(() {}),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+            Builder(
+              builder: (context) {
+                final store = CardWalletStore.instance;
+                store.ensureSeeded(
+                  primary: account,
+                  vault: _vault,
+                  trulyAvailable: _overview.trulyAvailable,
+                );
+                return ListenableBuilder(
+                  listenable: store,
+                  builder: (context, _) {
+                    final live = store.deck;
+                    return FlowaCardDeck(
+                      cards: [
+                        for (final c in live)
+                          (
+                            account: c.account,
+                            tint: c.style,
+                            pattern: c.pattern,
+                            caption: c.caption,
+                            amount: c.account.availableBalance,
+                          ),
+                      ],
+                      onOpen: () => showCardWalletSheet(
+                        context: context,
+                        primary: account,
+                        vault: _vault,
+                        trulyAvailable: _overview.trulyAvailable,
+                        onChanged: () => setState(() {}),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
             const SizedBox(height: FlowaSpacing.xl),
-            FlowaEntrance(
-              delay: FlowaMotion.stagger(2),
-              child: Row(
-                children: [
-                  FlowaRailAction(
+            Row(
+              children: [
+                Expanded(
+                  child: FlowaRailAction(
                     label: 'Ingresar',
                     glyph: FlowaGlyph.arrowDown,
                     onTap: () => _open(const ReceivePage()),
                   ),
-                  FlowaRailAction(
+                ),
+                Expanded(
+                  child: FlowaRailAction(
                     label: 'Enviar',
                     glyph: FlowaGlyph.transfer,
                     onTap: () => _open(const SendMoneyPage()),
                   ),
-                  FlowaRailAction(
+                ),
+                Expanded(
+                  child: FlowaRailAction(
                     label: 'Bote',
                     glyph: FlowaGlyph.vault,
                     onTap: _openVault,
                   ),
-                  FlowaRailAction(
+                ),
+                Expanded(
+                  child: FlowaRailAction(
                     label: 'Análisis',
                     glyph: FlowaGlyph.chart,
                     onTap: () => _open(const InsightsPage()),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
             const SizedBox(height: FlowaSpacing.xl),
-            FlowaEntrance(
-              delay: FlowaMotion.stagger(3),
-              child: _TwinCards(
-                monthSpend: _monthSpend,
-                overview: _overview,
-                invoices: outstanding,
-                visible: _balanceVisible,
-                onExpenses: () => _open(const InsightsPage()),
-                onRecent: () => _open(const InvoicesPage()),
-              ),
+            _TwinCards(
+              monthSpend: _monthSpend,
+              overview: _overview,
+              invoices: outstanding,
+              visible: _balanceVisible,
+              onExpenses: () => _open(const InsightsPage()),
+              onRecent: () => _open(const InvoicesPage()),
             ),
             const SizedBox(height: FlowaSpacing.xl),
-            FlowaEntrance(
-              delay: FlowaMotion.stagger(4),
-              child: _HistoryCard(
-                items: _recent,
-                masked: !_balanceVisible,
-                onSeeAll: widget.onSeeAllTransactions,
-                onItemTap: (item) => _open(TransactionDetailPage(item: item)),
-              ),
+            _HistoryCard(
+              items: _recent,
+              masked: !_balanceVisible,
+              onSeeAll: widget.onSeeAllTransactions,
+              onItemTap: (item) => _open(TransactionDetailPage(item: item)),
             ),
           ],
         ),
@@ -293,12 +285,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _openVault() async {
-    await showTaxVaultSheet(
-      context: context,
-      vault: _vault,
-      overview: _overview,
-    );
-    await _load();
+    await _open(const TaxVaultPage());
   }
 }
 
@@ -308,23 +295,21 @@ class _Header extends StatelessWidget {
     required this.unread,
     required this.onProfile,
     required this.onInbox,
-    required this.onSearch,
   });
 
   final UserProfile user;
   final int unread;
   final VoidCallback onProfile;
   final VoidCallback onInbox;
-  final VoidCallback onSearch;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Expanded(
-          child: GestureDetector(
+          child: FlowaPressScale(
             onTap: onProfile,
-            behavior: HitTestBehavior.opaque,
+            scale: 0.98,
             child: Row(
               children: [
                 FlowaAvatar(
@@ -349,12 +334,6 @@ class _Header extends StatelessWidget {
             ),
           ),
         ),
-        FlowaIconAction(
-          glyph: FlowaGlyph.search,
-          tooltip: 'Buscar',
-          onTap: onSearch,
-        ),
-        const SizedBox(width: FlowaSpacing.xs),
         FlowaIconAction(
           glyph: FlowaGlyph.bell,
           tooltip: 'Notificaciones',
@@ -519,8 +498,9 @@ class _Panel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return FlowaPressScale(
       onTap: onTap,
+      scale: 0.97,
       child: Container(
         padding: const EdgeInsets.all(FlowaSpacing.md),
         decoration: const BoxDecoration(
@@ -571,7 +551,6 @@ class _HistoryCard extends StatelessWidget {
               FlowaTransactionTile(
                 item: item,
                 masked: masked,
-                orbBackground: FlowaColors.ink,
                 onTap: () => onItemTap(item),
               ),
           const SizedBox(height: FlowaSpacing.xs),

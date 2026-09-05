@@ -376,34 +376,32 @@ class FlowaRailAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fg = emphasised ? FlowaColors.mintInk : FlowaColors.bone;
-    return Expanded(
-      child: FlowaPressScale(
-        onTap: onTap,
-        scale: 0.94,
-        child: Column(
-          children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: emphasised ? FlowaColors.mint : FlowaColors.inkHigh,
-                borderRadius: FlowaRadii.lgAll,
-              ),
-              alignment: Alignment.center,
-              child: glyph != null
-                  ? FlowaIcon(glyph!, color: fg, size: 26)
-                  : Icon(icon, size: 26, color: fg),
+    return FlowaPressScale(
+      onTap: onTap,
+      scale: 0.96,
+      child: Column(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: emphasised ? FlowaColors.mint : FlowaColors.inkHigh,
+              borderRadius: FlowaRadii.lgAll,
             ),
-            const SizedBox(height: FlowaSpacing.xs),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: FlowaType.micro(color: FlowaColors.boneMuted),
-            ),
-          ],
-        ),
+            alignment: Alignment.center,
+            child: glyph != null
+                ? FlowaIcon(glyph!, color: fg, size: 26)
+                : Icon(icon, size: 26, color: fg),
+          ),
+          const SizedBox(height: FlowaSpacing.xs),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: FlowaType.micro(color: FlowaColors.boneMuted),
+          ),
+        ],
       ),
     );
   }

@@ -4,6 +4,7 @@ import '../../core/utils/flowa_formatters.dart';
 import '../../domain/entities/finance_entities.dart';
 import '../tokens/flowa_spacing.dart';
 import '../tokens/flowa_typography.dart';
+import 'flowa_actions.dart';
 import 'flowa_card_face.dart';
 import 'flowa_icon.dart';
 
@@ -221,8 +222,9 @@ class FlowaCardDeck extends StatelessWidget {
             right: 0,
             bottom: 0,
             height: cardHeight,
-            child: GestureDetector(
+            child: FlowaPressScale(
               onTap: onOpen,
+              scale: 0.985,
               child: FlowaVisaCard(
                 account: front.account,
                 style: front.tint,

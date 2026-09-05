@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../tokens/flowa_colors.dart';
-import '../tokens/flowa_motion_tokens.dart';
 import '../tokens/flowa_spacing.dart';
 import '../tokens/flowa_typography.dart';
 
@@ -222,9 +221,7 @@ abstract final class FlowaTheme {
   }
 }
 
-/// Screen-to-screen transition: content rises a few pixels and fades while the
-/// outgoing screen recedes slightly. No horizontal slide — the app reads as a
-/// stack of layers, not a carousel.
+/// Soft fade when a Material route is covered / revealed.
 class _FlowaPageTransition extends PageTransitionsBuilder {
   const _FlowaPageTransition();
 
@@ -238,26 +235,13 @@ class _FlowaPageTransition extends PageTransitionsBuilder {
   ) {
     final entering = CurvedAnimation(
       parent: animation,
-      curve: FlowaMotion.expoOut,
-      reverseCurve: FlowaMotion.exit,
-    );
-    final leaving = CurvedAnimation(
-      parent: secondaryAnimation,
-      curve: FlowaMotion.expoOut,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
     );
 
     return FadeTransition(
       opacity: entering,
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, 0.035),
-          end: Offset.zero,
-        ).animate(entering),
-        child: ScaleTransition(
-          scale: Tween<double>(begin: 1, end: 0.97).animate(leaving),
-          child: child,
-        ),
-      ),
+      child: child,
     );
   }
 }

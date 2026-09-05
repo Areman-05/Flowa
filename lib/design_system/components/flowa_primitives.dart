@@ -16,12 +16,16 @@ class FlowaEntrance extends StatefulWidget {
     this.delay = Duration.zero,
     this.duration = FlowaMotion.slow,
     this.rise = 16,
+    this.scaleFrom = 1,
   });
 
   final Widget child;
   final Duration delay;
   final Duration duration;
   final double rise;
+
+  /// Optional grow-in (e.g. `0.96`). Keep at `1` for lists that should only rise.
+  final double scaleFrom;
 
   @override
   State<FlowaEntrance> createState() => _FlowaEntranceState();
@@ -62,13 +66,21 @@ class _FlowaEntranceState extends State<FlowaEntrance>
 
     return AnimatedBuilder(
       animation: curved,
-      builder: (context, child) => Opacity(
-        opacity: curved.value.clamp(0, 1),
-        child: Transform.translate(
-          offset: Offset(0, widget.rise * (1 - curved.value)),
-          child: child,
-        ),
-      ),
+      builder: (context, child) {
+        final t = curved.value.clamp(0.0, 1.0);
+        final scale = widget.scaleFrom + (1 - widget.scaleFrom) * t;
+        return Opacity(
+          opacity: t,
+          child: Transform.translate(
+            offset: Offset(0, widget.rise * (1 - t)),
+            child: Transform.scale(
+              scale: scale,
+              alignment: Alignment.topCenter,
+              child: child,
+            ),
+          ),
+        );
+      },
       child: widget.child,
     );
   }
