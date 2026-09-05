@@ -98,18 +98,21 @@ class FlowaFigure extends StatelessWidget {
 
 enum FlowaFigureSize { xl, lg, md }
 
-/// Signed amount for list rows. Incoming money is the only thing in a list
-/// allowed to use the accent colour; outgoing money stays neutral, because
-/// spending is not an error state.
+/// Signed amount for list rows.
+///
+/// Income stays mint. Outgoing amounts use a muted category tint so the
+/// ledger is scannable without turning every spend into an alarm.
 class FlowaAmountText extends StatelessWidget {
   const FlowaAmountText({
     required this.signedAmount,
     super.key,
     this.masked = false,
+    this.expenseColor,
   });
 
   final double signedAmount;
   final bool masked;
+  final Color? expenseColor;
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +128,9 @@ class FlowaAmountText extends StatelessWidget {
       '$sign${parts.integer},${parts.fraction} '
       '${FlowaConstants.currencySymbol}',
       style: FlowaType.amountMd(
-        color: incoming ? FlowaColors.acid : FlowaColors.bone,
+        color: incoming
+            ? FlowaColors.mint
+            : (expenseColor ?? FlowaColors.bone),
       ),
     );
   }

@@ -12,8 +12,7 @@ import '../../../design_system/components/flowa_icon.dart';
 import '../../../design_system/components/flowa_month_picker.dart';
 import '../../../design_system/components/flowa_primitives.dart';
 import '../../../design_system/components/flowa_texture.dart';
-import '../../../design_system/icons/flowa_lucide_icons.dart';
-import '../../../design_system/tokens/flowa_category_colors.dart';
+import '../../../design_system/components/flowa_transaction_tile.dart';
 import '../../../design_system/tokens/flowa_colors.dart';
 import '../../../design_system/tokens/flowa_motion_tokens.dart';
 import '../../../design_system/tokens/flowa_spacing.dart';
@@ -24,25 +23,10 @@ import '../../../shared/widgets/flowa_states.dart';
 import '../../insights/domain/spending_snapshot.dart';
 import '../../notifications/presentation/notification_inbox_page.dart';
 import '../domain/transaction_filters.dart';
+import 'month_transactions_page.dart';
 import 'transaction_detail_page.dart';
 
-class _CategoryGroup {
-  const _CategoryGroup({
-    required this.name,
-    required this.amount,
-    required this.count,
-    required this.income,
-    required this.items,
-  });
-
-  final String name;
-  final double amount;
-  final int count;
-  final bool income;
-  final List<TransactionItem> items;
-}
-
-/// Movimientos — layout envelope (referencia Privat).
+/// Movimientos — extracto del mes: resumen + últimos 6 + ver todos.
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key, this.embedded = false});
 
@@ -65,11 +49,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
     _load();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   Future<void> _load() async {
     setState(() => _loading = true);
     final results = await Future.wait([
@@ -88,12 +67,17 @@ class _TransactionsPageState extends State<TransactionsPage> {
   }
 
   void _apply() {
-    _visible = TransactionFilters.apply(
+    final filtered = TransactionFilters.apply(
       items: _all,
       filter: TransactionFilter.all,
       month: _month,
     );
+    _visible = List<TransactionItem>.from(filtered)
+      ..sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
   }
+
+  List<TransactionItem> get _preview =>
+      _visible.take(6).toList(growable: false);
 
   SpendingSnapshot _snapshot() {
     return SpendingInsights.from(
@@ -101,34 +85,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
       month: _month,
       range: InsightRange.month,
     );
-  }
-
-  List<_CategoryGroup> _groups() {
-    final map = <String, _CategoryGroup>{};
-    for (final item in _visible) {
-      final name = item.isIncome ? 'Ingresos' : (item.category ?? 'General');
-      final existing = map[name];
-      if (existing == null) {
-        map[name] = _CategoryGroup(
-          name: name,
-          amount: item.amount.abs(),
-          count: 1,
-          income: item.isIncome,
-          items: [item],
-        );
-      } else {
-        map[name] = _CategoryGroup(
-          name: name,
-          amount: existing.amount + item.amount.abs(),
-          count: existing.count + 1,
-          income: existing.income,
-          items: [...existing.items, item],
-        );
-      }
-    }
-    final groups = map.values.toList()
-      ..sort((a, b) => b.amount.compareTo(a.amount));
-    return groups;
   }
 
   Future<void> _pickMonth() async {
@@ -155,12 +111,19 @@ class _TransactionsPageState extends State<TransactionsPage> {
     pushFlowaRoute<void>(context, TransactionDetailPage(item: item));
   }
 
+  void _openAllForMonth() {
+    pushFlowaRoute<void>(
+      context,
+      MonthTransactionsPage(month: _month, items: _visible),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final monthLabel = DateFormat('MMM yyyy', 'es_ES').format(_month);
     final snapshot = _snapshot();
     final sparkValues = snapshot.bars.map((b) => b.amount).toList();
-    final groups = _groups();
+    final preview = _preview;
 
     final body = _loading
         ? const Center(
@@ -233,28 +196,56 @@ class _TransactionsPageState extends State<TransactionsPage> {
                   ),
                 ),
                 const SizedBox(height: FlowaSpacing.xl),
-                Text('Tus movimientos', style: FlowaType.titleSm()),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Últimos movimientos',
+                        style: FlowaType.titleSm(),
+                      ),
+                    ),
+                    FlowaPressScale(
+                      onTap: _openAllForMonth,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 6,
+                        ),
+                        child: Text(
+                          'Ver todos',
+                          style: FlowaType.micro(color: FlowaColors.mint),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: FlowaSpacing.md),
-                if (groups.isEmpty)
+                if (preview.isEmpty)
                   const FlowaEmptyState(
                     title: 'Sin movimientos',
                     message: 'No hay movimientos en este mes.',
                     glyph: FlowaGlyph.transfer,
                   )
                 else
-                  for (var i = 0; i < groups.length; i++) ...[
-                    FlowaEntrance(
-                      delay: FlowaMotion.stagger(i.clamp(0, 8)),
-                      child: _EnvelopeCategoryCard(
-                        group: groups[i],
-                        snapshot: snapshot,
-                        onTap: () => _openDetail(groups[i].items.first),
+                  FlowaEntrance(
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                      decoration: const BoxDecoration(
+                        color: FlowaColors.inkHigh,
+                        borderRadius: FlowaRadii.xxlAll,
+                      ),
+                      child: Column(
+                        children: [
+                          for (final item in preview)
+                            FlowaTransactionTile(
+                              item: item,
+                              onTap: () => _openDetail(item),
+                            ),
+                        ],
                       ),
                     ),
-                    if (i < groups.length - 1)
-                      const SizedBox(height: FlowaSpacing.sm),
-                  ],
-                if (groups.isNotEmpty) ...[
+                  ),
+                if (preview.isNotEmpty) ...[
                   const SizedBox(height: FlowaSpacing.md),
                   FlowaEntrance(
                     delay: FlowaMotion.stagger(2),
@@ -360,7 +351,9 @@ class _AreaChartPainter extends CustomPainter {
     return [
       for (var i = 0; i < data.length; i++)
         Offset(
-          data.length == 1 ? size.width / 2 : (i / (data.length - 1)) * size.width,
+          data.length == 1
+              ? size.width / 2
+              : (i / (data.length - 1)) * size.width,
           topPad + plotH - ((data[i] - min) / span) * plotH,
         ),
     ];
@@ -419,7 +412,7 @@ class _AreaChartPainter extends CustomPainter {
       fillPath,
       Paint()
         ..shader = ui.Gradient.linear(
-          Offset(0, 0),
+          Offset.zero,
           Offset(0, size.height),
           [
             FlowaColors.mint.withValues(alpha: 0.42),
@@ -446,135 +439,6 @@ class _AreaChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _AreaChartPainter oldDelegate) =>
       oldDelegate.values != values;
-}
-
-class _EnvelopeCategoryCard extends StatelessWidget {
-  const _EnvelopeCategoryCard({
-    required this.group,
-    required this.snapshot,
-    required this.onTap,
-  });
-
-  final _CategoryGroup group;
-  final SpendingSnapshot snapshot;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final pool =
-        group.income ? snapshot.incoming : snapshot.outgoing;
-    final progress =
-        pool <= 0 ? 0.0 : (group.amount / pool).clamp(0.0, 1.0);
-    final pct = (progress * 100).round();
-    final tone = FlowaCategoryColors.forCategory(group.name);
-    final goalLabel = group.income
-        ? '$pct% de tus entradas · ${group.count} movs'
-        : '$pct% del gasto del mes · ${group.count} movs';
-
-    return FlowaPressScale(
-      onTap: onTap,
-      scale: 0.985,
-      haptic: false,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
-        decoration: BoxDecoration(
-          color: FlowaColors.inkHigh,
-          borderRadius: FlowaRadii.xlAll,
-          border: Border.all(color: FlowaColors.hairlineStrong),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: FlowaLucideIcon(
-                    LucideIcons.arrow_up_right,
-                    size: 15,
-                    color: FlowaColors.boneGhost,
-                  ),
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: tone.orbBackground,
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      child: FlowaLucideIcon(
-                        categoryLucideIcon(group.name),
-                        size: 22,
-                        color: tone.icon,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  group.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: FlowaType.titleSm(),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                FlowaFormatters.currency(group.amount),
-                                style: FlowaType.titleMd(),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 5),
-                          Text(goalLabel, style: FlowaType.bodySm()),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            ClipRRect(
-              borderRadius: FlowaRadii.pillAll,
-              child: SizedBox(
-                height: 4,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    const ColoredBox(color: FlowaColors.inkPressed),
-                    FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: progress,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [tone.progressStart, tone.progressEnd],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _InsightBanner extends StatelessWidget {
@@ -607,12 +471,11 @@ class _InsightBanner extends StatelessWidget {
         border: Border.all(color: FlowaColors.hairlineStrong),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
             width: 34,
             height: 34,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: FlowaColors.inkPressed,
               shape: BoxShape.circle,
             ),

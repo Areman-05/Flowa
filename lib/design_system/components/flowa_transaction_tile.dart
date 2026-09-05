@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../core/utils/flowa_formatters.dart';
 import '../../domain/entities/finance_entities.dart';
-import '../tokens/flowa_colors.dart';
+import '../tokens/flowa_category_colors.dart';
 import '../tokens/flowa_spacing.dart';
 import '../tokens/flowa_typography.dart';
-import 'flowa_actions.dart';
 import '../icons/flowa_lucide_icons.dart';
+import 'flowa_actions.dart';
 import 'flowa_icon.dart';
 import 'flowa_money_text.dart';
 
@@ -16,13 +16,15 @@ class FlowaTransactionTile extends StatelessWidget {
     super.key,
     this.onTap,
     this.masked = false,
-    this.orbBackground = FlowaColors.inkHigh,
+    this.orbBackground,
   });
 
   final TransactionItem item;
   final VoidCallback? onTap;
   final bool masked;
-  final Color orbBackground;
+
+  /// Override orb fill. When null, uses muted category tone.
+  final Color? orbBackground;
 
   static IconData iconFor(TransactionItem item) {
     if (item.isIncome) {
@@ -31,21 +33,30 @@ class FlowaTransactionTile extends StatelessWidget {
     return categoryLucideIcon(item.category ?? 'General');
   }
 
+  CategoryTone get _tone {
+    if (item.isIncome) {
+      return FlowaCategoryColors.income;
+    }
+    return FlowaCategoryColors.forCategory(item.category ?? 'General');
+  }
+
   @override
   Widget build(BuildContext context) {
+    final tone = _tone;
+
     return FlowaPressScale(
       onTap: onTap,
       scale: 0.985,
       haptic: false,
-        child: Padding(
+      child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: Row(
           children: [
             FlowaLucideOrb(
               icon: iconFor(item),
               size: 44,
-              background: orbBackground,
-              foreground: item.isIncome ? FlowaColors.mint : FlowaColors.bone,
+              background: orbBackground ?? tone.orbBackground,
+              foreground: tone.icon,
             ),
             const SizedBox(width: FlowaSpacing.sm),
             Expanded(
@@ -60,14 +71,23 @@ class FlowaTransactionTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    FlowaFormatters.transactionStamp(item.occurredAt),
+                    [
+                      FlowaFormatters.transactionStamp(item.occurredAt),
+                      if ((item.category ?? '').isNotEmpty) item.category!,
+                    ].join(' · '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: FlowaType.bodySm(),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: FlowaSpacing.sm),
-            FlowaAmountText(signedAmount: item.signedAmount, masked: masked),
+            FlowaAmountText(
+              signedAmount: item.signedAmount,
+              masked: masked,
+              expenseColor: tone.icon,
+            ),
           ],
         ),
       ),
@@ -83,7 +103,7 @@ class FlowaTransactionList extends StatelessWidget {
     this.masked = false,
     this.physics,
     this.shrinkWrap = true,
-    this.orbBackground = FlowaColors.inkHigh,
+    this.orbBackground,
   });
 
   final List<TransactionItem> items;
@@ -91,7 +111,7 @@ class FlowaTransactionList extends StatelessWidget {
   final bool masked;
   final ScrollPhysics? physics;
   final bool shrinkWrap;
-  final Color orbBackground;
+  final Color? orbBackground;
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +119,7 @@ class FlowaTransactionList extends StatelessWidget {
       shrinkWrap: shrinkWrap,
       physics: physics ?? const NeverScrollableScrollPhysics(),
       itemCount: items.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 2),
+      separatorBuilder: (_, _) => const SizedBox(height: 2),
       itemBuilder: (context, index) {
         final item = items[index];
         return FlowaTransactionTile(
@@ -122,7 +142,7 @@ class FlowaGroupedTransactionList extends StatelessWidget {
     this.physics,
     this.shrinkWrap = true,
     this.bottomPadding = 0,
-    this.orbBackground = FlowaColors.inkHigh,
+    this.orbBackground,
   });
 
   final List<TransactionItem> items;
@@ -131,7 +151,7 @@ class FlowaGroupedTransactionList extends StatelessWidget {
   final ScrollPhysics? physics;
   final bool shrinkWrap;
   final double bottomPadding;
-  final Color orbBackground;
+  final Color? orbBackground;
 
   @override
   Widget build(BuildContext context) {
