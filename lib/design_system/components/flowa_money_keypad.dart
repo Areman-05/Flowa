@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 
 import '../tokens/flowa_colors.dart';
 import '../tokens/flowa_spacing.dart';
 import '../tokens/flowa_typography.dart';
 import 'flowa_actions.dart';
-import 'flowa_icon.dart';
 
-/// Circular money keypad shared by Ingresar / Enviar.
+/// Numeric money keypad — digits + clear delete. Shared by Ingresar / Enviar.
 class FlowaMoneyKeypad extends StatelessWidget {
   const FlowaMoneyKeypad({required this.onKey, super.key});
 
-  /// Digit, `00`, or `<` for backspace.
+  /// Digit `0`–`9`, or `<` for backspace.
   final ValueChanged<String> onKey;
 
   static const _keys = [
     ['1', '2', '3'],
     ['4', '5', '6'],
     ['7', '8', '9'],
-    ['00', '0', '<'],
+    ['', '0', '<'],
   ];
 
   @override
@@ -30,36 +30,68 @@ class FlowaMoneyKeypad extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                for (final key in row)
-                  SizedBox(
-                    width: 72,
-                    height: 56,
-                    child: FlowaPressScale(
-                      onTap: () => onKey(key),
-                      scale: 0.94,
-                      haptic: false,
-                      child: Container(
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: key == '<'
-                              ? Colors.transparent
-                              : FlowaColors.inkHigh,
-                          shape: BoxShape.circle,
-                        ),
-                        child: key == '<'
-                            ? const FlowaIcon(
-                                FlowaGlyph.arrowLeft,
-                                size: 20,
-                                color: FlowaColors.boneMuted,
-                              )
-                            : Text(key, style: FlowaType.titleLg()),
-                      ),
-                    ),
-                  ),
+                for (final key in row) _KeySlot(label: key, onKey: onKey),
               ],
             ),
           ),
       ],
+    );
+  }
+}
+
+class _KeySlot extends StatelessWidget {
+  const _KeySlot({required this.label, required this.onKey});
+
+  final String label;
+  final ValueChanged<String> onKey;
+
+  @override
+  Widget build(BuildContext context) {
+    const size = Size(76, 56);
+
+    if (label.isEmpty) {
+      return SizedBox(width: size.width, height: size.height);
+    }
+
+    final isDelete = label == '<';
+
+    return SizedBox(
+      width: size.width,
+      height: size.height,
+      child: FlowaPressScale(
+        onTap: () => onKey(label),
+        scale: 0.94,
+        haptic: false,
+        child: Container(
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isDelete ? FlowaColors.dangerSurface : FlowaColors.inkHigh,
+            borderRadius: FlowaRadii.xlAll,
+            border: Border.all(
+              color: isDelete
+                  ? FlowaColors.danger.withValues(alpha: 0.35)
+                  : FlowaColors.hairline,
+            ),
+          ),
+          child: isDelete
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      LucideIcons.delete,
+                      size: 22,
+                      color: FlowaColors.danger,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Borrar',
+                      style: FlowaType.micro(color: FlowaColors.danger),
+                    ),
+                  ],
+                )
+              : Text(label, style: FlowaType.titleLg()),
+        ),
+      ),
     );
   }
 }

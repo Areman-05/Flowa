@@ -13,4 +13,7 @@ abstract class ContactRepository {
   Future<PayeeContact> update(PayeeContact contact);
 
   Future<void> delete(String id);
+
+  /// Bumps usage + last-used timestamp (Send recientes).
+  Future<PayeeContact> touch(String id);
 }

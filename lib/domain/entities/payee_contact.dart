@@ -13,6 +13,8 @@ class PayeeContact extends Equatable {
     required this.kind,
     this.accountNumber = '',
     this.note,
+    this.useCount = 0,
+    this.lastUsedAt,
   });
 
   final String id;
@@ -20,6 +22,10 @@ class PayeeContact extends Equatable {
   final PayeeKind kind;
   final String accountNumber;
   final String? note;
+  final int useCount;
+
+  /// Last time this contact was chosen for a send (drives “Recientes”).
+  final DateTime? lastUsedAt;
 
   String get kindLabel =>
       kind == PayeeKind.business ? 'Empresa' : 'Persona';
@@ -30,7 +36,10 @@ class PayeeContact extends Equatable {
     PayeeKind? kind,
     String? accountNumber,
     String? note,
+    int? useCount,
+    DateTime? lastUsedAt,
     bool clearNote = false,
+    bool clearLastUsed = false,
   }) {
     return PayeeContact(
       id: id ?? this.id,
@@ -38,9 +47,12 @@ class PayeeContact extends Equatable {
       kind: kind ?? this.kind,
       accountNumber: accountNumber ?? this.accountNumber,
       note: clearNote ? null : (note ?? this.note),
+      useCount: useCount ?? this.useCount,
+      lastUsedAt: clearLastUsed ? null : (lastUsedAt ?? this.lastUsedAt),
     );
   }
 
   @override
-  List<Object?> get props => [id, name, kind, accountNumber, note];
+  List<Object?> get props =>
+      [id, name, kind, accountNumber, note, useCount, lastUsedAt];
 }

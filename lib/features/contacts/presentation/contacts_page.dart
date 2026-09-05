@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 
+import '../../../core/utils/flowa_haptics.dart';
 import '../../../core/utils/flowa_services.dart';
 import '../../../design_system/components/flowa_actions.dart';
 import '../../../design_system/components/flowa_icon.dart';
@@ -79,6 +80,10 @@ class _ContactsPageState extends State<ContactsPage> {
 
   Future<void> _open(PayeeContact item) async {
     if (widget.selectMode) {
+      await FlowaHaptics.selection();
+      if (!mounted) {
+        return;
+      }
       Navigator.of(context).pop(item);
       return;
     }
@@ -127,34 +132,55 @@ class _ContactsPageState extends State<ContactsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final select = widget.selectMode;
     final filtered = _filtered;
 
     return FlowaScreen(
-      title: widget.selectMode ? 'Elegir contacto' : 'Contactos',
+      title: select ? 'Elegir contacto' : 'Contactos',
       actions: [
         FlowaIconAction(glyph: FlowaGlyph.plus, onTap: _create),
       ],
-      footer: widget.selectMode
-          ? null
-          : FlowaAcidButton(label: 'Nuevo contacto', onPressed: _create),
+      footer: FlowaAcidButton(
+        label: 'Nuevo contacto',
+        onPressed: _create,
+      ),
       child: _loading
           ? const Center(
               child: CircularProgressIndicator(color: FlowaColors.mint),
             )
           : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (select)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: FlowaSpacing.md),
+                    child: Text(
+                      'Toca una tarjeta para enviar.',
+                      style: FlowaType.bodySm(),
+                    ),
+                  ),
                 MoreSearchField(
                   controller: _search,
-                  hint: 'Nombre, cuenta o nota',
+                  hint: 'Buscar por nombre o cuenta',
                   onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: FlowaSpacing.md),
+                if (_items.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: FlowaSpacing.sm),
+                    child: Text(
+                      '${filtered.length} '
+                      '${filtered.length == 1 ? 'contacto' : 'contactos'}',
+                      style: FlowaType.micro(),
+                    ),
+                  ),
                 Expanded(
                   child: _items.isEmpty
                       ? FlowaEmptyState(
                           title: 'Sin contactos',
-                          message:
-                              'Añade personas o empresas a las que envías dinero.',
+                          message: select
+                              ? 'Crea uno para poder enviarle dinero.'
+                              : 'Añade personas o empresas a las que envías dinero.',
                           glyph: FlowaGlyph.person,
                           actionLabel: 'Añadir contacto',
                           onAction: _create,
@@ -171,12 +197,12 @@ class _ContactsPageState extends State<ContactsPage> {
                           : ListView.separated(
                               itemCount: filtered.length,
                               separatorBuilder: (_, _) =>
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: 10),
                               itemBuilder: (context, index) {
                                 final item = filtered[index];
                                 return _ContactTile(
                                   contact: item,
-                                  selectMode: widget.selectMode,
+                                  selectMode: select,
                                   onTap: () => _open(item),
                                   onDelete: () => _confirmDelete(item),
                                 );
@@ -209,27 +235,37 @@ class _ContactTile extends StatelessWidget {
 
     return FlowaPressScale(
       onTap: onTap,
+      scale: 0.98,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.fromLTRB(14, 14, 12, 14),
         decoration: BoxDecoration(
           color: FlowaColors.inkHigh,
-          borderRadius: FlowaRadii.xlAll,
-          border: Border.all(color: FlowaColors.hairlineStrong),
+          borderRadius: FlowaRadii.xxlAll,
+          border: Border.all(
+            color: selectMode
+                ? FlowaColors.mint.withValues(alpha: 0.4)
+                : FlowaColors.hairline,
+          ),
         ),
         child: Row(
           children: [
             Container(
-              width: 44,
-              height: 44,
-              decoration: const BoxDecoration(
-                color: FlowaColors.mint,
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: selectMode ? FlowaColors.mint : FlowaColors.inkRaised,
                 shape: BoxShape.circle,
+                border: selectMode
+                    ? null
+                    : Border.all(color: FlowaColors.hairline),
               ),
               alignment: Alignment.center,
               child: Text(
                 initial,
-                style: FlowaType.titleMd(color: FlowaColors.mintInk),
+                style: FlowaType.titleMd(
+                  color: selectMode ? FlowaColors.mintInk : FlowaColors.bone,
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -238,7 +274,7 @@ class _ContactTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(contact.name, style: FlowaType.titleSm()),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
                   Text(
                     [
                       contact.kindLabel,
@@ -265,17 +301,17 @@ class _ContactTile extends StatelessWidget {
               IconButton(
                 onPressed: onDelete,
                 tooltip: 'Eliminar',
-                icon: const FlowaLucideIcon(
+                icon: const Icon(
                   LucideIcons.trash_2,
                   size: 18,
                   color: FlowaColors.boneFaint,
                 ),
               )
             else
-              const FlowaLucideIcon(
+              const Icon(
                 LucideIcons.chevron_right,
                 size: 20,
-                color: FlowaColors.boneFaint,
+                color: FlowaColors.mint,
               ),
           ],
         ),
