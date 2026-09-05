@@ -12,7 +12,7 @@ Demo de portfolio con datos mock locales (sin backend real).
 
 1. **Disponible de verdad** — Hero del Home: saldo usable tras impuestos y compromisos fijos.
 2. **Bote Hacienda** — Reserva un % de cada cobro para el trimestre IVA.
-3. **Facturas en el rail principal** — Emitir / seguir / cobrar, y al cobrar se alimenta el bote.
+3. **Por cobrar en el rail** — Sigue cobros de clientes; al cobrar se alimenta el bote.
 4. **Confirmación en pagos** — Send → revisar → éxito, sin sorpresas.
 5. **Design system minimalista** — Canvas negro, un acento mint `#00E6A6`, tipografía Manrope, motion quieto.
 
@@ -21,7 +21,7 @@ Demo de portfolio con datos mock locales (sin backend real).
 | Tab | Rol |
 | --- | --- |
 | Inicio | Disponible de verdad, tarjetas, CTAs Enviar / Ingresar / Bote / Análisis |
-| Facturas | Loop freelance |
+| Por cobrar | Loop freelance: te deben → cobras |
 | Movs | Historial |
 | Más | Servicios, recompensas (secundario), soporte, ajustes |
 

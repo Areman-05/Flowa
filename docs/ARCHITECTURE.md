@@ -7,11 +7,11 @@ Portfolio demo: local/mock data only — no real backend.
 
 1. **Truly available** — spendable after tax vault + commitments (`home`, `card_wallet_store`, `freelance_entities`)
 2. **Tax vault / Hacienda** — % of income reserved (`vault`, register last step)
-3. **Invoices** — primary nav loop: issue → collect → reserve
+3. **Por cobrar** — primary nav loop: client owes you → collect → reserve
 4. **Design system** — ink + mint `#00E6A6` + Manrope (`design_system/`)
 5. **Send confirmation** — Send → Review → Success
 
-Primary shell tabs: Inicio | Facturas | Movs | Más. Rewards is under Más, not primary nav.
+Primary shell tabs: Inicio | Por cobrar | Movs | Más. Rewards is under Más, not primary nav.
 
 ## Layers
 
