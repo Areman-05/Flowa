@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/utils/flowa_alerts.dart';
 import '../../../core/utils/flowa_services.dart';
 import '../../../design_system/components/flowa_actions.dart';
 import '../../../design_system/components/flowa_amount_chips.dart';
@@ -84,6 +85,10 @@ class _TopUpPageState extends State<TopUpPage> {
       ),
     );
     await FlowaServices.accountRepository.applyBalanceDelta(-_amount);
+    await FlowaAlerts.moneySent(
+      to: 'Recarga ${_numberController.text}',
+      amount: _amount,
+    );
 
     if (!mounted) {
       return;

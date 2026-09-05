@@ -88,9 +88,11 @@ class _SupportChatPageState extends State<SupportChatPage> {
       return 'Ve a Más → Ajustes → Bloqueo de la app para cambiar tu PIN. '
           'Si lo olvidaste, te envío un enlace de recuperación por email.';
     }
-    if (lower.contains('factura')) {
-      return 'Las facturas emitidas están en la pestaña Facturas. '
-          '¿Buscas una emitida o una recibida de un cliente?';
+    if (lower.contains('factura') ||
+        lower.contains('cobrar') ||
+        lower.contains('cobro')) {
+      return 'Lo que te deben los clientes está en Por cobrar. '
+          '¿Buscas un cobro pendiente o uno ya cerrado?';
     }
     if (lower.contains('humano') || lower.contains('persona')) {
       return 'Te paso con un agente senior. Tiempo de espera estimado: 2 min. '

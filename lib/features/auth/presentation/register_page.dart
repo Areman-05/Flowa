@@ -295,7 +295,7 @@ class _ReserveStep extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const FlowaMicroLabel('De una factura de 3.400 €'),
+      const FlowaMicroLabel('De un cobro de 3.400 €'),
                   const SizedBox(height: 4),
                   Text(
                     '${reserved.round()} € al bote',

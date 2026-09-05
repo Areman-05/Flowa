@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core/utils/flowa_services.dart';
+import '../core/utils/flowa_shell_nav.dart';
 import '../design_system/components/flowa_capsule_nav.dart';
 import '../design_system/components/flowa_icon.dart';
 import '../design_system/components/flowa_texture.dart';
@@ -17,7 +18,7 @@ import '../shared/navigation/flowa_routes.dart';
 
 /// Root shell. The canvas lives here so texture stays continuous across tabs.
 ///
-/// Primary nav follows the freelance thesis: money home, invoices, movements,
+/// Primary nav follows the freelance thesis: money home, por cobrar, movements,
 /// and Más — rewards stay out of the rail.
 class MainShell extends StatefulWidget {
   const MainShell({super.key, this.onLogout});
@@ -34,10 +35,23 @@ class _MainShellState extends State<MainShell> {
   @override
   void initState() {
     super.initState();
+    FlowaShellNav.openHome = () => setState(() => _index = 0);
+    FlowaShellNav.openPorCobrar = () => setState(() => _index = 1);
+    FlowaShellNav.openMovimientos = () => setState(() => _index = 2);
     _refreshBadge();
   }
 
+  @override
+  void dispose() {
+    FlowaShellNav.openHome = null;
+    FlowaShellNav.openPorCobrar = null;
+    FlowaShellNav.openMovimientos = null;
+    super.dispose();
+  }
+
   void _openTransactionsTab() => setState(() => _index = 2);
+
+  void _openPorCobrarTab() => setState(() => _index = 1);
 
   Future<void> _refreshBadge() async {
     await FlowaServices.inboxRepository.unreadCount();
@@ -60,6 +74,7 @@ class _MainShellState extends State<MainShell> {
     final pages = <Widget>[
       HomePage(
         onSeeAllTransactions: _openTransactionsTab,
+        onOpenPorCobrar: _openPorCobrarTab,
         onBadgeRefresh: _refreshBadge,
         onLogout: widget.onLogout,
         onOpenProfile: _openProfile,
@@ -97,7 +112,7 @@ class _MainShellState extends State<MainShell> {
           },
           items: const [
             FlowaNavItem(glyph: FlowaGlyph.home, label: 'Inicio'),
-            FlowaNavItem(glyph: FlowaGlyph.receipt, label: 'Facturas'),
+            FlowaNavItem(glyph: FlowaGlyph.receipt, label: 'Por cobrar'),
             FlowaNavItem(glyph: FlowaGlyph.transfer, label: 'Movs'),
             FlowaNavItem(glyph: FlowaGlyph.grid, label: 'Más'),
           ],

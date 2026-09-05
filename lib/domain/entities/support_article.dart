@@ -94,18 +94,18 @@ abstract final class SupportCatalog {
     ),
     SupportArticle(
       id: 's5',
-      title: 'Emitir y cobrar facturas',
-      teaser: 'Crea, envía y cobra desde Facturas',
+      title: 'Cobrar a clientes',
+      teaser: 'Sigue y cobra desde Por cobrar',
       summary:
-          'Flowa te permite emitir facturas a clientes y recibir el pago en tu cuenta. El estado del cobro se actualiza en Movimientos.',
-      category: 'Facturación',
+          'Por cobrar es lo que te deben tus clientes. Al cobrar puedes ingresar en Flowa (y alimentar el bote) o marcar que ya cobraste fuera.',
+      category: 'Cobros',
       steps: [
-        'Abre la pestaña Facturas.',
-        'Pulsa «Nueva factura» y rellena cliente, concepto e importe.',
-        'Envía el enlace de pago por email o WhatsApp.',
-        'Cuando el cliente pague, verás «Cobrada» en la factura.',
+        'Abre la pestaña Por cobrar.',
+        'Revisa los cobros pendientes.',
+        'Pulsa Cobrar y elige cómo cerrarlo.',
+        'En Historial verás el detalle de cada cobro.',
       ],
-      actionLabel: 'Ir a Facturas',
+      actionLabel: 'Ir a Por cobrar',
       actionRoute: 'invoices',
     ),
     SupportArticle(

@@ -16,9 +16,14 @@ import '../../more/presentation/widgets/more_service_ui.dart';
 import 'create_contact_page.dart';
 
 class ContactsPage extends StatefulWidget {
-  const ContactsPage({super.key, this.selectMode = false});
+  const ContactsPage({
+    super.key,
+    this.selectMode = false,
+    this.selectHint,
+  });
 
   final bool selectMode;
+  final String? selectHint;
 
   @override
   State<ContactsPage> createState() => _ContactsPageState();
@@ -155,7 +160,8 @@ class _ContactsPageState extends State<ContactsPage> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: FlowaSpacing.md),
                     child: Text(
-                      'Toca una tarjeta para enviar.',
+                      widget.selectHint ??
+                          'Toca una tarjeta para elegir el contacto.',
                       style: FlowaType.bodySm(),
                     ),
                   ),

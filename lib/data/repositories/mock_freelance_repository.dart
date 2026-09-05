@@ -44,6 +44,20 @@ class MockFreelanceRepository implements FreelanceRepository {
   }
 
   @override
+  Future<Invoice> updateInvoice(Invoice invoice) async {
+    final index = _invoices.indexWhere((item) => item.id == invoice.id);
+    if (index >= 0) {
+      _invoices[index] = invoice;
+    }
+    return invoice;
+  }
+
+  @override
+  Future<void> deleteInvoice(String invoiceId) async {
+    _invoices.removeWhere((invoice) => invoice.id == invoiceId);
+  }
+
+  @override
   Future<void> markPaid(String invoiceId) async {
     final index = _invoices.indexWhere((invoice) => invoice.id == invoiceId);
     if (index >= 0) {

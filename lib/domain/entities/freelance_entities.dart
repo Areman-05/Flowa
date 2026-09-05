@@ -8,7 +8,7 @@ enum InvoiceStatus { draft, sent, paid, overdue }
 extension InvoiceStatusLabel on InvoiceStatus {
   String get label => switch (this) {
         InvoiceStatus.draft => 'Borrador',
-        InvoiceStatus.sent => 'Enviada',
+        InvoiceStatus.sent => 'Pendiente',
         InvoiceStatus.paid => 'Cobrada',
         InvoiceStatus.overdue => 'Vencida',
       };
@@ -39,25 +39,43 @@ class Invoice extends Equatable {
   final InvoiceStatus status;
   final String? number;
 
-  int daysUntilDue(DateTime now) => dueAt.difference(now).inDays;
+  int daysUntilDue(DateTime now) {
+    final today = DateTime(now.year, now.month, now.day);
+    final dueDay = DateTime(dueAt.year, dueAt.month, dueAt.day);
+    return dueDay.difference(today).inDays;
+  }
 
-  /// A sent invoice silently becomes overdue once its due date passes.
+  /// Overdue only after the due calendar day has passed (due day = still pending).
   InvoiceStatus statusAt(DateTime now) {
-    if (status == InvoiceStatus.sent && now.isAfter(dueAt)) {
-      return InvoiceStatus.overdue;
+    if (status == InvoiceStatus.sent) {
+      final today = DateTime(now.year, now.month, now.day);
+      final dueDay = DateTime(dueAt.year, dueAt.month, dueAt.day);
+      if (today.isAfter(dueDay)) {
+        return InvoiceStatus.overdue;
+      }
     }
     return status;
   }
 
-  Invoice copyWith({InvoiceStatus? status}) => Invoice(
+  Invoice copyWith({
+    String? client,
+    String? concept,
+    double? amount,
+    DateTime? issuedAt,
+    DateTime? dueAt,
+    InvoiceStatus? status,
+    String? number,
+    bool clearNumber = false,
+  }) =>
+      Invoice(
         id: id,
-        client: client,
-        concept: concept,
-        amount: amount,
-        issuedAt: issuedAt,
-        dueAt: dueAt,
+        client: client ?? this.client,
+        concept: concept ?? this.concept,
+        amount: amount ?? this.amount,
+        issuedAt: issuedAt ?? this.issuedAt,
+        dueAt: dueAt ?? this.dueAt,
         status: status ?? this.status,
-        number: number,
+        number: clearNumber ? null : (number ?? this.number),
       );
 
   @override

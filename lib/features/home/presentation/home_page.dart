@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/utils/flowa_alerts.dart';
 import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/flowa_services.dart';
 import '../../../design_system/components/flowa_actions.dart';
@@ -36,12 +37,14 @@ class HomePage extends StatefulWidget {
   const HomePage({
     super.key,
     this.onSeeAllTransactions,
+    this.onOpenPorCobrar,
     this.onBadgeRefresh,
     this.onOpenProfile,
     this.onLogout,
   });
 
   final VoidCallback? onSeeAllTransactions;
+  final VoidCallback? onOpenPorCobrar;
   final VoidCallback? onBadgeRefresh;
   final Future<void> Function()? onOpenProfile;
   final Future<void> Function()? onLogout;
@@ -91,9 +94,10 @@ class _HomePageState extends State<HomePage> {
           await FlowaServices.transactionRepository.getRecent(limit: 6);
       final hidden =
           await FlowaServices.preferencesRepository.isBalanceHiddenByDefault();
-      final unread = await FlowaServices.inboxRepository.unreadCount();
       final vault = await FlowaServices.freelanceRepository.getVault();
       final invoices = await FlowaServices.freelanceRepository.getInvoices();
+      await FlowaAlerts.syncOverdue(invoices);
+      final unread = await FlowaServices.inboxRepository.unreadCount();
       final commitments =
           await FlowaServices.freelanceRepository.getCommitments();
 
@@ -269,7 +273,13 @@ class _HomePageState extends State<HomePage> {
               invoices: outstanding,
               visible: _balanceVisible,
               onExpenses: () => _open(const InsightsPage()),
-              onRecent: () => _open(const InvoicesPage()),
+              onPorCobrar: () {
+                if (widget.onOpenPorCobrar != null) {
+                  widget.onOpenPorCobrar!();
+                } else {
+                  _open(const InvoicesPage());
+                }
+              },
             ),
             const SizedBox(height: FlowaSpacing.xl),
             _HistoryCard(
@@ -353,7 +363,7 @@ class _TwinCards extends StatelessWidget {
     required this.invoices,
     required this.visible,
     required this.onExpenses,
-    required this.onRecent,
+    required this.onPorCobrar,
   });
 
   final SpendingSnapshot monthSpend;
@@ -361,7 +371,7 @@ class _TwinCards extends StatelessWidget {
   final List<Invoice> invoices;
   final bool visible;
   final VoidCallback onExpenses;
-  final VoidCallback onRecent;
+  final VoidCallback onPorCobrar;
 
   @override
   Widget build(BuildContext context) {
@@ -403,15 +413,15 @@ class _TwinCards extends StatelessWidget {
           const SizedBox(width: FlowaSpacing.sm),
           Expanded(
             child: _Panel(
-              onTap: onRecent,
+              onTap: onPorCobrar,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Pendiente', style: FlowaType.titleSm()),
+                  Text('Por cobrar', style: FlowaType.titleSm()),
                   const SizedBox(height: FlowaSpacing.md),
                   if (invoices.isEmpty)
                     Text(
-                      'Sin facturas abiertas',
+                      'Nada pendiente',
                       style: FlowaType.bodySm(),
                     )
                   else

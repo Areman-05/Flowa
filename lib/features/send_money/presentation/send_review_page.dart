@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/utils/flowa_alerts.dart';
 import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/flowa_haptics.dart';
 import '../../../core/utils/flowa_services.dart';
@@ -40,6 +41,7 @@ class SendReviewPage extends StatelessWidget {
       ),
     );
     await FlowaServices.accountRepository.applyBalanceDelta(-amount);
+    await FlowaAlerts.moneySent(to: recipientName, amount: amount);
     await FlowaHaptics.success();
 
     if (!context.mounted) {

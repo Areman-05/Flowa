@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/utils/flowa_alerts.dart';
 import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/flowa_haptics.dart';
 import '../../../core/utils/flowa_services.dart';
@@ -140,6 +141,10 @@ class _ReceivePageState extends State<ReceivePage> {
       ),
     );
     await FlowaServices.accountRepository.applyBalanceDelta(_amount);
+    await FlowaAlerts.moneyReceived(
+      amount: _amount,
+      note: note.isEmpty ? null : note,
+    );
     await FlowaHaptics.success();
     final labelled = FlowaFormatters.currency(_amount);
     await _load();

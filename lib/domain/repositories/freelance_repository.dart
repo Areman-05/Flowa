@@ -15,6 +15,10 @@ abstract interface class FreelanceRepository {
 
   Future<Invoice> addInvoice(Invoice invoice);
 
+  Future<Invoice> updateInvoice(Invoice invoice);
+
+  Future<void> deleteInvoice(String invoiceId);
+
   Future<void> markPaid(String invoiceId);
 
   Future<List<Commitment>> getCommitments();

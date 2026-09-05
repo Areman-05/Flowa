@@ -370,7 +370,7 @@ class _RateCard extends StatelessWidget {
             ),
           ),
           Text(
-            'Al cobrar una factura, este % va al bote automáticamente.',
+            'Al ingresar un cobro en Flowa, este % va al bote automáticamente.',
             style: FlowaType.bodySm(),
           ),
           const SizedBox(height: 4),
@@ -399,7 +399,7 @@ class _TipCard extends StatelessWidget {
           Text('Consejo', style: FlowaType.micro(color: FlowaColors.mint)),
           const SizedBox(height: 6),
           Text(
-            'Aparta en cada factura cobrada para no improvisar '
+            'Aparta en cada cobro ingresado para no improvisar '
             'en la declaración.',
             style: FlowaType.bodySm(),
           ),

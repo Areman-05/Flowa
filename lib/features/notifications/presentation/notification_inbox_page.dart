@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/flowa_services.dart';
+import '../../../core/utils/flowa_shell_nav.dart';
 import '../../../design_system/components/flowa_actions.dart';
 import '../../../design_system/components/flowa_icon.dart';
 import '../../../design_system/components/flowa_screen.dart';
@@ -47,7 +48,14 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
     if (!mounted) {
       return;
     }
-    if (item.kind == InboxNotificationKind.moneyRequest) {
+    if (item.actionLabel == 'Ver cobro') {
+      final openPorCobrar = FlowaShellNav.openPorCobrar;
+      if (openPorCobrar != null) {
+        Navigator.of(context).pop();
+        openPorCobrar();
+        return;
+      }
+    } else if (item.kind == InboxNotificationKind.moneyRequest) {
       await pushFlowaRoute<void>(context, const SendMoneyPage());
     } else if (item.kind == InboxNotificationKind.security) {
       await pushFlowaRoute<void>(context, const SupportCenterPage());
@@ -91,7 +99,8 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
                     children: const [
                       FlowaEmptyState(
                         title: 'Sin alertas',
-                        message: 'Aquí verás avisos de pagos y seguridad.',
+                        message:
+                            'Aquí verás cobros, vencimientos, envíos e ingresos.',
                         glyph: FlowaGlyph.bell,
                       ),
                     ],

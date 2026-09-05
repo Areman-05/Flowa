@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/utils/flowa_alerts.dart';
 import '../../../core/utils/flowa_formatters.dart';
 import '../../../core/utils/flowa_services.dart';
 import '../../../domain/entities/finance_entities.dart';
-import '../../../domain/entities/inbox_notification.dart';
 import '../../../shared/navigation/flowa_routes.dart';
 import '../domain/more_service_catalog.dart';
 import 'more_payment_review_page.dart';
@@ -54,14 +54,9 @@ Future<void> completeMoreServicePaymentCore({
     ),
   );
   await FlowaServices.accountRepository.applyBalanceDelta(-amount);
-  await FlowaServices.inboxRepository.push(
-    InboxNotification(
-      id: 'inbox-${DateTime.now().millisecondsSinceEpoch}',
-      title: successTitle,
-      body: '$merchant · ${FlowaFormatters.currency(amount)} · $cardLabel',
-      kind: InboxNotificationKind.transaction,
-      createdAt: DateTime.now(),
-    ),
+  await FlowaAlerts.paymentMade(
+    title: successTitle,
+    body: '$merchant · ${FlowaFormatters.currency(amount)} · $cardLabel',
   );
 }
 

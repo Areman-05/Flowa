@@ -105,7 +105,10 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
   Future<void> _pickContact() async {
     final contact = await pushFlowaRoute<PayeeContact>(
       context,
-      const ContactsPage(selectMode: true),
+      const ContactsPage(
+        selectMode: true,
+        selectHint: 'Toca una tarjeta para enviarle dinero.',
+      ),
     );
     if (contact == null || !mounted) {
       return;
